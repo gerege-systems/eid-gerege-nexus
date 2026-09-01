@@ -1,6 +1,6 @@
 module github.com/gerege-systems/eid-gerege-nexus
 
-go 1.26.4
+go 1.26
 
 require github.com/gerege-systems/open-gerege-nexus/backend v1.16.0
 
