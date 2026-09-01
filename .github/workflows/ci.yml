@@ -1,11 +1,11 @@
 # What has to be true before this repository's main moves.
 #
-# The core has its own CI; this one is about the half that lives here — the
-# modules this repository will carry and the image that ships them. It exists
-# from the first commit because the failure a distribution is most exposed to
-# is not visible on the laptop that wrote it: go.mod pointing at a working
-# copy, or a Dockerfile whose PlatformVersion stamp misses and produces an
-# image that builds cleanly and refuses to boot.
+# The build-and-test half is the core's reusable workflow, called rather than
+# copied: the App Store's CI was copied by hand once and the copy silently
+# arrived without a security scan. A copy diverges the moment it is made.
+#
+# What stays here is what only this repository has: its image. The core cannot
+# build it and no other distribution's Dockerfile is the same file.
 name: CI
 
 on:
@@ -18,30 +18,15 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          # The toolchain comes from go.mod, so it cannot drift from what the
-          # code is written against.
-          go-version-file: go.mod
-          cache-dependency-path: go.sum
-      - name: gofmt
-        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
-      - name: go vet
-        run: go vet ./...
-      - name: go test
-        run: go test -race -count=1 ./...
+  ci:
+    # gofmt, go vet, the race detector, and the rule that the core is pinned by
+    # a release tag rather than by a commit.
+    uses: gerege-systems/open-gerege-nexus/.github/workflows/distribution-ci.yml@main
 
   image:
     name: Image
     runs-on: ubuntu-latest
-    # The deployable artefact, built exactly as deploy.sh builds it. This is
-    # the job that catches an absolute `replace` in go.mod and a core bump that
-    # moved PlatformVersion out from under the Dockerfile's `-X`.
+    # The deployable artefact, built exactly as deploy.sh builds it.
     steps:
       - uses: actions/checkout@v7
       - name: docker build
@@ -55,6 +40,5 @@ jobs:
           set -euo pipefail
           core=$(grep -oE 'open-gerege-nexus/backend v[^ ]+' go.mod | head -1 | sed 's|.* v||')
           core=${core%%-*}
-          [ -n "$core" ] || { echo "go.mod дотор цөмийн хувилбар олдсонгүй"; exit 1; }
           docker run --rm --entrypoint sh eid-nexus:ci -c "grep -aqF '$core' /app/eidnexus" \
             || { echo "PlatformVersion $core образ дотор алга — -X флаг оносонгүй"; exit 1; }

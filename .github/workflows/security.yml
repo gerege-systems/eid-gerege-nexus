@@ -1,0 +1,22 @@
+# Сканердах хагас нь тусдаа: build-and-test нь push бүрд, сканердалт нь push
+# БОЛОН долоо хоног тутам ажиллана. Эмзэг байдал нь бидний commit хийж байгаа
+# үед нийтлэгддэггүй тул cron-гүй репо бол хайхаа больсон репо.
+#
+# Байрлуулалтад цөмөөс илүү хэрэгтэй: цөм бол сан, нийтийн хост дээр
+# ажилладаг нь энэ. Цөмийн сканердалт цөмийн хамаарлын графыг үздэг; энд
+# ажиллах нь pin хийсэн платформ ба энэ репогийн модулиуд ХАМТ шийдэгдсэн граф.
+name: Security
+
+on:
+  schedule: [{cron: "20 9 * * 1"}]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    uses: gerege-systems/open-gerege-nexus/.github/workflows/distribution-security.yml@main

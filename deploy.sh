@@ -17,7 +17,9 @@ COMPOSE="$SRC_DIR/deploy/docker-compose.yml"
 docker build -q -t eid-nexus:latest -f "$SRC_DIR/deploy/Dockerfile" "$SRC_DIR"
 
 cp "$APP_DIR/.env" "$SRC_DIR/deploy/.env"
-docker compose -f "$COMPOSE" pull -q web
+# Татаж чадахгүй нь өөрөө үхлийн шалтгаан биш — образ хостод аль хэдийн байж
+# болно. Байхгүй бол дараагийн `up` нь тодорхой алдаа өгнө.
+docker compose -f "$COMPOSE" pull -q web || echo "анхааруулга: бүрхүүлийн образыг татаж чадсангүй; хостод байгааг нь хэрэглэнэ" >&2
 # --force-recreate нь сайн дурын биш: `up -d` шинэ образ барьсан ч ажиллаж
 # байгаа контейнерийг хэвээр үлдээж чадах бөгөөд тэгвэл эрүүл мэндийн шалгалт
 # ХУУЧИН хувилбар дээр ногоон өнгө өгнө.
