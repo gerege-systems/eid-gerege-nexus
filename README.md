@@ -31,8 +31,19 @@ github.com/gerege-systems/open-gerege-nexus/backend
 | `.env.example` | `/opt/eid-nexus/.env`-ийн хэлбэр |
 
 Frontend-ийг **барихгүй**: бүрхүүл нь каталогоор ажилладаг тул цөмийн
-нийтэлсэн образ яг таарна. `WEB_IMAGE` нь `go.mod`-ийн цөмийн commit-той ижил
-образыг заана — цөмийн хувилбар хөдлөх бүрд хоёулаа хамт хөдөлнө.
+нийтэлсэн образ яг таарна. `WEB_IMAGE` нь `go.mod`-ийн цөмийн хувилбарын
+commit-ыг заана — хоёулаа хамт хөдөлнө.
+
+Тэр образ нь **ghcr.io дээр private** бөгөөд байгууллагын бодлого public
+болгохыг хаасан. Тиймээс хост нэг удаа нэвтэрсэн байх ёстой:
+
+```
+gh auth token | ssh eid-gerege 'docker login ghcr.io -u <хэрэглэгч> --password-stdin'
+```
+
+Токен нь `/home/deploy/.docker/config.json` дотор base64-оор хэвтэнэ. Хугацаа
+нь дуусвал rollout «denied» гэж хэлнэ — `deploy.sh` дээрх `pull` нь үхлийн
+шалтгаан биш тул хостод байгаа образ дээр ажиллаж үлдэнэ.
 
 ## Сервер
 
