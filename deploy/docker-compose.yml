@@ -163,6 +163,13 @@ services:
       # never uses it: it asks its own origin (lib/apiBase.ts). A server has no
       # origin, which is the whole reason this exists.
       API_INTERNAL_URL: http://backend:8080/api/v1
+      # The console's hostname, read by app/cp/layout.tsx on the server. Both
+      # halves need it and they need the SAME value: the API answers 404 to a
+      # /api/platform/v1 request that arrived on any other host, and the shell
+      # answers 404 for /cp on any other host. Give it to only one of them and
+      # the console's API works while every one of its pages is a 404 — which
+      # is exactly how this deployment came up the first time.
+      CONTROL_PLANE_HOST: ${CONTROL_PLANE_HOST:-}
       # Read per request — see frontend/lib/brand.ts — so brand is a setting
       # rather than a build.
       BRAND_NAME: ${BRAND_NAME:-}
