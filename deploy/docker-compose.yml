@@ -1,0 +1,182 @@
+# eID Gerege, as a Gerege Nexus distribution.
+#
+# Four services: postgres, the platform's migrations, this product's binary,
+# and the platform's shell. There is no second migration history here — this
+# repository has no schema of its own yet — and no redis: the core runs without
+# one and nothing on this host needs a second thing to keep alive.
+#
+# Required environment (deploy/.env, copied there by deploy.sh):
+#   EID_NEXUS_POSTGRES_PASSWORD  this stack's own database
+#   SSO_DEFAULT_CLIENT_SECRET    the platform refuses to start without it in
+#                                production — see config.ValidateProduction
+#   PUBLIC_ORIGIN                where this instance answers
+#   WEB_IMAGE                    the core's published shell, at the commit
+#                                go.mod pins
+#
+# The ports ARE the core's defaults (5434 / 8082 / 3008), and that is a fact
+# about this host rather than a convention: this machine carries eid.gerege.mn
+# and nothing else. A second stack landing here would have to move, the way
+# client.gerege.mn had to on the core's own box.
+
+name: eid-nexus
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gerege_eid_nexus_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: platform_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${EID_NEXUS_POSTGRES_PASSWORD:?EID_NEXUS_POSTGRES_PASSWORD is required}
+      TZ: ${TZ:-Asia/Ulaanbaatar}
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - gerege_eid_nexus_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d platform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: ${IMAGE:-eid-nexus:latest}
+    container_name: gerege_eid_nexus_migrate
+    # The platform's migrations, from the core version this product's go.mod
+    # pins — the image carries both, so they cannot drift apart.
+    command: ["/app/migrate", "up"]
+    environment:
+      DATABASE_URL: postgres://postgres:${EID_NEXUS_POSTGRES_PASSWORD}@postgres:5432/platform_db?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    image: ${IMAGE:-eid-nexus:latest}
+    container_name: gerege_eid_nexus_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://postgres:${EID_NEXUS_POSTGRES_PASSWORD}@postgres:5432/platform_db?sslmode=disable
+      ENVIRONMENT: production
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}
+      ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}
+      # nginx terminates TLS in front of this, so the forwarded client address
+      # can be trusted — and the login rate limiter counts on it being real.
+      TRUST_PROXY_HEADERS: "true"
+      # Postgres and the Go process keep the same wall clock. Two different
+      # ones and `CURRENT_DATE` and `nexus.Today()` land on different days.
+      TZ: ${TZ:-Asia/Ulaanbaatar}
+      PLATFORM_TIMEZONE: ${TZ:-Asia/Ulaanbaatar}
+
+      # The catalogue shipped in the image, fetched at build time from the
+      # pinned core. File mode: an instance that pulled a catalogue from a
+      # registry would be offering whatever that registry says today rather
+      # than what this binary can actually run.
+      APP_CATALOG_PATH: /app/catalog/apps.json
+      APP_CATALOG_URL: ""
+
+      # ------------------------------------------------- its own identity
+      #
+      # SSO_CLIENT_ISSUER is absent, deliberately: this deployment identifies
+      # people itself. SSO_ISSUER is its own origin, so it is a provider for
+      # whatever is installed on it, and the citizen's credential is eID
+      # Mongolia below.
+      SSO_ISSUER: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}
+      SSO_DEFAULT_CLIENT_SECRET: ${SSO_DEFAULT_CLIENT_SECRET:?SSO_DEFAULT_CLIENT_SECRET is required}
+      # Exact host names, comma separated — a subdomain is not inherited. Left
+      # empty the core's built-in default (nexus.gerege.mn) applies and every
+      # redirect this installation mints is refused.
+      OAUTH_REDIRECT_HOSTS: ${OAUTH_REDIRECT_HOSTS:-}
+
+      # ------------------------------------------------------ eID Mongolia
+      #
+      # This installation's relying-party registration. Empty and the eID card
+      # on the sign-in screen answers "session could not be started" — which on
+      # THIS deployment means nobody but a seeded admin can get in at all.
+      #
+      # The name and the display text are not decoration: the citizen reads
+      # exactly those words in their own app before approving. The core's
+      # default is "Gerege Nexus".
+      #
+      # The callback registered with eID must be exactly
+      # ${PUBLIC_ORIGIN}/auth/eid/callback.
+      EID_RP_UUID: ${EID_RP_UUID:-}
+      EID_RP_SECRET: ${EID_RP_SECRET:-}
+      EID_RP_NAME: ${EID_RP_NAME:-eID Gerege}
+      EID_DISPLAY_TEXT: ${EID_DISPLAY_TEXT:-eID Gerege-д нэвтрэх}
+      EID_BASE_URL: ${EID_BASE_URL:-https://eidmongolia.mn/v3}
+      EID_CERT_LEVEL: ${EID_CERT_LEVEL:-ADVANCED}
+      EID_MOCK_MODE: ${EID_MOCK_MODE:-false}
+
+      # Whether somebody eID vouches for who has no account here gets one.
+      # public: they do, in their own home. private: only people invited first.
+      PLATFORM_ACCESS_MODE: ${PLATFORM_ACCESS_MODE:-public}
+
+      # What this deployment calls itself. The shell below is given the same
+      # name: these are halves of one setting, and a stack that renames only
+      # one has a sign-in screen and an eID prompt disagreeing about which
+      # product somebody is standing in front of.
+      BRAND_NAME: ${BRAND_NAME:-}
+
+      # -------------------------------------------------- operator console
+      # Empty means this installation has no console at all: /api/platform/v1
+      # 404s and so does /cp. Naming: admin.<domain> — core docs/CONTROL_PLANE.md.
+      CONTROL_PLANE_HOST: ${CONTROL_PLANE_HOST:-}
+
+      # Gerege Core registry lookups. Without it the wizard and the
+      # organisation screens ask people to type what the register knows.
+      GEREGE_CORE_TOKEN: ${GEREGE_CORE_TOKEN:-}
+
+      # No demo data in production. The seeded account has a published password.
+      SEED_DEMO_DATA: "false"
+      DEMO_MODE: "false"
+    ports:
+      - "127.0.0.1:8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # The platform's own shell, unmodified — the core's published image rather
+  # than a build of our own.
+  #
+  # A distribution does not fork the frontend: the sidebar and every module
+  # screen are catalogue-driven, so the generic shell already renders whatever
+  # this instance installs. WEB_IMAGE pins the core commit; keep it on the
+  # image built from the same commit go.mod names.
+  web:
+    image: ${WEB_IMAGE:?WEB_IMAGE is required}
+    container_name: gerege_eid_nexus_web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Where the shell asks, server-side, what this deployment is. The browser
+      # never uses it: it asks its own origin (lib/apiBase.ts). A server has no
+      # origin, which is the whole reason this exists.
+      API_INTERNAL_URL: http://backend:8080/api/v1
+      # Read per request — see frontend/lib/brand.ts — so brand is a setting
+      # rather than a build.
+      BRAND_NAME: ${BRAND_NAME:-}
+      BRAND_SHORT_NAME: ${BRAND_SHORT_NAME:-}
+      BRAND_DESCRIPTION: ${BRAND_DESCRIPTION:-}
+      BRAND_LOGO_URL: ${BRAND_LOGO_URL:-}
+      BRAND_THEME_COLOR: ${BRAND_THEME_COLOR:-}
+      BRAND_ICON_URL: ${BRAND_ICON_URL:-}
+      BRAND_MASKABLE_ICON_URL: ${BRAND_MASKABLE_ICON_URL:-}
+    ports:
+      - "127.0.0.1:3008:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  gerege_eid_nexus_postgres_data:

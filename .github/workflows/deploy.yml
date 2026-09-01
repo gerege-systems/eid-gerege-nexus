@@ -1,0 +1,48 @@
+name: Deploy (eid.gerege.mn)
+
+# CI ногоон болсны дараа л ажиллана. Push дээр шууд ажиллуулбал тестийн
+# хажуугаар уралдаж, унасан commit сервер дээр очих эрсдэлтэй.
+#
+# Шаардлагатай secret-ууд:
+#   DEPLOY_SSH_KEY   зөвхөн энэ суулгацад зориулсан хувийн түлхүүр (ed25519)
+#   DEPLOY_HOST      анхдагч: 38.180.117.155
+#   DEPLOY_USER      анхдагч: deploy
+#
+# Сервер дээрх /opt/eid-nexus/.env энэ урсгалд ОРДОГГҮЙ: тэр нь суулгацын
+# өөрийнх нь нууц бөгөөд workflow түүнийг дарж бичих ёсгүй. Шинэ тохиргоо
+# нэмэх нь тэр файл дээрх гар ажил, дараа нь энэ workflow-г дуудна.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: eid-rollout
+  cancel-in-progress: false
+
+jobs:
+  rollout:
+    name: Сервер дээр гаргах
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      # Репо нээлттэй тул хост өөрөө татна — GitHub-ийн ямар ч токен хостод
+      # хэрэггүй. Яг тухайн commit дээр reset хийж байгаа нь санаатай: `git
+      # pull` нь энэ ажлыг өдөөсөн commit биш, тэр агшны main-ыг авчирдаг.
+      - name: Татаж, барьж, солих
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST || '38.180.117.155' }}
+          username: ${{ secrets.DEPLOY_USER || 'deploy' }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/eid-nexus/src
+            git fetch --quiet origin main
+            git reset --hard --quiet ${{ github.event.workflow_run.head_sha || github.sha }}
+            # deploy.sh өөрөө барьж, --force-recreate хийж, эрүүл мэнд, брэнд,
+            # ажиллаж буй образ гурвыг шалгана. Тэр шалгалтуудыг энд давхардуулах
+            # нь хоёр дахь худал ногоон өнгө үүсгэх зам.
+            ./deploy.sh

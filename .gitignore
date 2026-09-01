@@ -1,0 +1,6 @@
+deploy/.env
+.env
+.DS_Store
+
+# `go build` барьсан хоёртын файл — 54 МБ, репод байх зүйл биш.
+/eid-gerege-nexus
