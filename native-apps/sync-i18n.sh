@@ -12,9 +12,15 @@
 #
 #   native-apps/sync-i18n.sh ../open-gerege-nexus
 #
-# Дөрвөн хэлбэрийг бүгдийг нь бичнэ: generated-i18n/*.json, Android-ийн
-# res/values*/auth.xml, Windows-ийн Resources/Login*.resx, iOS-ийн
-# Login.xcstrings. Экспортлогч цөмийн repo дотор бичдэг тул энд хуулж авна.
+# Экспортлогч дөрвөн хэлбэрийг бичдэг ч энэ репод ГУРАВ нь л байна:
+# generated-i18n/*.json, Android-ийн res/values*/auth.xml, iOS-ийн
+# Login.xcstrings. Windows-ийн Login*.resx нь ХУУЧИН WPF бүрхүүлийнх байсан —
+# ширээний клиент нь одоо eID-ийн бүтэн апп бөгөөд өөрийн
+# Strings/<culture>/Resources.resw-тэй (`desktop/macos/scripts/gen_l10n.py` нь
+# macOS-ийн каталогийг ТЭДГЭЭРЭЭС үүсгэдэг). Тиймээс тэдгээр мөр «алгасав»
+# гэж гарах нь хэвийн, дутуу биш.
+#
+# Экспортлогч цөмийн repo дотор бичдэг тул энд хуулж авна.
 
 set -euo pipefail
 
@@ -61,7 +67,6 @@ echo "$n файл шинэчлэгдэв, брэнд: $BRAND"
 # BRAND_NAME задраагүй гэсэн үг — тэр нь яг энэ скрипт байхаас сэргийлдэг зүйл.
 if grep -rq "Gerege Nexus" "$HERE/generated-i18n" \
         "$HERE/mobile/android/app/src/main/res" \
-        "$HERE/desktop/windows/Resources" \
         "$HERE/mobile/ios/Sources/GeregeShellUI/Resources" 2>/dev/null; then
     echo "АЛДАА: экспортын дараа «Gerege Nexus» үлдлээ — BRAND_NAME задраагүй байна" >&2
     exit 1

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "eIDMongolia.Client (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "eIDMongolia.Client (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
