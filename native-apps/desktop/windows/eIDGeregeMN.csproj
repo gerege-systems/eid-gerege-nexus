@@ -31,6 +31,10 @@
   <ItemGroup>
     <ProjectReference Include="GeregeShell.Core\GeregeShell.Core.csproj" />
     <Compile Remove="NativeAuth.cs" />
+    <!-- ShellLog нь NativeAuth-тай хамт Core-д компайл хийгддэг (тэр логждог)
+         тул энд давхар орвол хоёр assembly-д ижил төрөл үүсч, дуудлага нь
+         тодорхойгүй болно. -->
+    <Compile Remove="ShellLog.cs" />
     <Compile Remove="GeregeShell.Core\**\*.cs" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2592.51" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />

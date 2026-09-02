@@ -25,6 +25,35 @@
             <SolidColorBrush x:Key="MenuBackground" Color="#111827" />
             <SolidColorBrush x:Key="MenuForeground" Color="#F3F4F6" />
 
+            <!--
+                Цэсний бичвэрийн өнгө нь хаана байгаагаас хамаарна.
+
+                Дээд мөр нь ХАРАНХУЙ туузан дээр суудаг тул цайвар бичигтэй;
+                харин задарч гарах цонх нь системийн ЦАЙВАР popup тул тэнд
+                ижил цайвар өнгө үлдвэл цагаан дээр цагаан болж уншигдахаа
+                больдог. Foreground нь удамшдаг учир дээд мөрөнд өгсөн өнгө
+                доошоо дамжиж, яг тэр алдаа гарч байв. Role-оор нь салгаж
+                өгснөөр хоёулаа зөв болно.
+            -->
+            <Style TargetType="MenuItem">
+                <Style.Triggers>
+                    <Trigger Property="Role" Value="TopLevelHeader">
+                        <Setter Property="Foreground" Value="{StaticResource MenuForeground}" />
+                        <Setter Property="Padding" Value="10,4" />
+                    </Trigger>
+                    <Trigger Property="Role" Value="TopLevelItem">
+                        <Setter Property="Foreground" Value="{StaticResource MenuForeground}" />
+                        <Setter Property="Padding" Value="10,4" />
+                    </Trigger>
+                    <Trigger Property="Role" Value="SubmenuHeader">
+                        <Setter Property="Foreground" Value="{StaticResource EidTextPrimary}" />
+                    </Trigger>
+                    <Trigger Property="Role" Value="SubmenuItem">
+                        <Setter Property="Foreground" Value="{StaticResource EidTextPrimary}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
             <!-- Their PrimaryButtonStyle: solid accent, white label, Radius.md,
                  and the strong accent while pressed. -->
             <Style x:Key="EidPrimaryButton" TargetType="Button">
@@ -51,6 +80,38 @@
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter TargetName="shell" Property="Opacity" Value="0.55" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--
+                Ribbon-ы товч: chrome дээр суудаг тул хүрээгүй, цайвар бичигтэй.
+                macOS-ийн ribbonButton — 12pt medium, цагаан 82%, hover дээр
+                бүрэн цагаан.
+            -->
+            <Style x:Key="EidChromeButton" TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Foreground" Value="#D1FFFFFF" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontWeight" Value="Medium" />
+                <Setter Property="Padding" Value="8,5" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="shell" Background="{TemplateBinding Background}"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="shell" Property="Background" Value="#1E293B" />
+                                    <Setter Property="Foreground" Value="White" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>

@@ -7,19 +7,23 @@
         MinHeight="680" MinWidth="1024"
         WindowStartupLocation="CenterScreen"
         Icon="Resources/app.ico"
+        SizeChanged="Window_SizeChanged"
         Background="#0F172A">
     <Grid>
         <Grid.RowDefinitions>
-            <!-- Row 0: Native Windows Top Menu Bar -->
+            <!-- Row 0: цонхны цэс -->
             <RowDefinition Height="Auto"/>
-            <!-- Row 1: Embedded WebView2 Container -->
+            <!-- Row 1: ribbon — брэнд, дахин ачаалах, түгжих, профайл -->
+            <RowDefinition Height="Auto"/>
+            <!-- Row 2: rail + солигддог дэлгэц -->
             <RowDefinition Height="*"/>
+            <!-- Row 3: footer -->
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Native Menu Bar -->
         <Menu Grid.Row="0" Background="#0F172A" Foreground="#F3F4F6" Height="30">
-            <MenuItem Header="eID Gerege" Foreground="#F3F4F6" Padding="10,4">
+            <MenuItem Header="eID Gerege">
                 <MenuItem Header="eID Gerege-ийн тухай" Click="MenuAbout_Click"/>
                 <Separator/>
                 <!-- "…цонх" гэсэн нэр байхаа больсон: эдгээр нь тусдаа цонх БИШ,
@@ -27,20 +31,73 @@
                 <MenuItem Header="Түгжих / дахин нэвтрэх" Click="MenuLogin_Click" InputGestureText="Ctrl+L"/>
                 <MenuItem Header="Тохиргоо" Click="MenuSettings_Click" InputGestureText="Ctrl+,"/>
                 <Separator/>
-                <MenuItem Header="Гарах" Click="MenuExit_Click" InputGestureText="Alt+F4"/>
+                <MenuItem Header="Гарах" Click="MenuLogout_Click"/>
+                <MenuItem Header="Аппыг хаах" Click="MenuExit_Click" InputGestureText="Alt+F4"/>
             </MenuItem>
 
-            <MenuItem Header="Удирдах" Foreground="#F3F4F6" Padding="10,4">
+            <MenuItem Header="Удирдах">
                 <MenuItem Header="Ажлын муж" Click="NavWork_Click" InputGestureText="Ctrl+0"/>
                 <MenuItem Header="Шугамын нүүр" Click="MenuLineHome_Click" InputGestureText="Ctrl+H"/>
                 <MenuItem Header="Апп дэлгүүр (/apps)" Click="MenuApps_Click" InputGestureText="Ctrl+1"/>
                 <MenuItem Header="Дахин ачаалах" Click="MenuReload_Click" InputGestureText="F5"/>
             </MenuItem>
 
-            <MenuItem Header="Харах" Foreground="#F3F4F6" Padding="10,4">
+            <MenuItem Header="Харах">
                 <MenuItem Header="Бүтэн дэлгэцээр харах" Click="MenuFullScreen_Click" InputGestureText="F11"/>
             </MenuItem>
         </Menu>
+
+        <!--
+            Ribbon — macOS бүрхүүлийн ижил мөр (56 өндөр, chrome өнгө).
+            Зүүн талд брэнд, баруун талд дахин ачаалах · түгжих · профайл.
+            Тохиргоо энд БАЙХГҮЙ: түүнийг зүүн талын rail эзэмшинэ, эс бөгөөс
+            нэг үйлдэл хоёр газар, хоёр өөр төлөвтэй болно.
+        -->
+        <Border Name="ribbon" Grid.Row="1" Height="56" Background="#0F172A"
+                BorderBrush="#1A1F2E" BorderThickness="0,0,0,1" Visibility="Collapsed">
+            <Grid Margin="20,0,14,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="GEREGE / NEXUS" VerticalAlignment="Center"
+                               FontSize="12" FontWeight="Bold" Foreground="#84A8FF"/>
+                    <!-- Шилжилтийн товчнууд. Ажлын муж бол вэб хуудас тул
+                         буцах/нүүр гэсэн хоёр зүйл хэрэгтэй — цэсэнд байсан ч
+                         гар доор байх ёстой. Буцах нь түүх байхгүй үед
+                         идэвхгүй. -->
+                    <Button Name="ribbonBack" Content="←   Буцах" Click="RibbonBack_Click"
+                            Style="{StaticResource EidChromeButton}" Margin="24,0,0,0" IsEnabled="False"/>
+                    <Button Name="ribbonHome" Content="⌂   Нүүр" Click="MenuLineHome_Click"
+                            Style="{StaticResource EidChromeButton}" Margin="6,0,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Name="ribbonReload" Content="↻   Дахин ачаалах" Click="MenuReload_Click"
+                            Style="{StaticResource EidChromeButton}"/>
+                    <Button Name="ribbonLock" Content="🔒   Түгжих" Click="MenuLogin_Click"
+                            Style="{StaticResource EidChromeButton}" Margin="10,0,0,0"/>
+                    <!-- Профайл: дарахад нэр, и-мэйл, Тохиргоо…, Гарах гэсэн цэс
+                         нээгдэнэ (macOS-ийн NSMenu-тэй ижил). -->
+                    <Button Name="profileButton" Content="◍   Хэрэглэгч" Click="ProfileButton_Click"
+                            Style="{StaticResource EidChromeButton}" Margin="10,0,0,0"
+                            Foreground="White" FontWeight="SemiBold">
+                        <Button.ContextMenu>
+                            <ContextMenu Name="profileMenu">
+                                <MenuItem Name="profileMenuName" Header="Хэрэглэгч" IsEnabled="False"/>
+                                <MenuItem Name="profileMenuEmail" Header="" IsEnabled="False" Visibility="Collapsed"/>
+                                <Separator/>
+                                <MenuItem Header="Тохиргоо…" Click="MenuSettings_Click"/>
+                                <MenuItem Header="Гарах" Click="MenuLogout_Click"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <!--
             Аппын биет: зүүн талд native rail, баруун талд солигддог дэлгэц.
@@ -49,7 +106,7 @@
             Энд зөвхөн бүрхүүлийн эзэмшдэг дэлгэцүүд байна, ингэснээр нэг цэс
             хоёр газар, хоёр өөр төлөвтэй болохгүй.
         -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -67,29 +124,56 @@
                 <ContentControl Name="settingsHost" Visibility="Collapsed"/>
             </Grid>
 
-            <!-- Нэвтрэлт нь мөн энэ хүрээний дэлгэц: rail-ыг оруулаад бүтнээр
-                 нь бүрхэнэ. Тусдаа нэвтрэх цонх нээгдэхгүй. -->
             <!--
                 Нэвтрэлт нь мөн энэ хүрээний дэлгэц: rail-ыг оруулаад бүтнээр
                 нь бүрхэнэ. Тусдаа нэвтрэх цонх нээгдэхгүй.
 
-                Зохиомж нь gerege-line/eid/eid-platform-mn-ийнх: зүүн талд харанхуй
-                диагональ талбар, баруун талд цайвар гадаргуу дээрх карт. Багана
-                нь 5*/6* — тэдний 5/11 хуваалт, ямар ч код шаардахгүйгээр.
-
-                Бүх x:Name хэвээр: code-behind тэдгээрээр л ажилладаг.
+                Зохиомж нь macOS клиентийнхтэй мөр мөрөөрөө ижил
+                (NativeLoginViewController): зүүн талд харанхуй диагональ талбар
+                дээр брэнд тэмдэг ба хоёр зөөлөн гэрлийн толбо, баруун талд
+                цайвар гадаргуу дээр 450 өргөнтэй карт. Багана нь 5*/6* —
+                тэдний 5/11 хуваалт. Цонх 820-аас нарийсвал зүүн талбар
+                нуугдаж, карт цонхыг бүтнээр эзэлнэ.
             -->
             <Grid Name="loginView" Grid.Column="0" Grid.ColumnSpan="2"
                   Background="{StaticResource EidSurfaceBrush}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="5*"/>
+                    <ColumnDefinition Name="heroColumn" Width="5*"/>
                     <ColumnDefinition Width="6*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Зүүн тал: диагональ градиент + брэнд. Үргэлж харанхуй. -->
-                <Grid Grid.Column="0" Background="{StaticResource EidHeroBrush}">
+                <Grid Name="heroPanel" Grid.Column="0" Background="{StaticResource EidHeroBrush}" ClipToBounds="True">
+                    <!-- Хоёр радиал толбо: баруун дээд Brand400 16%, зүүн доод
+                         #818CF8 13% — macOS-ийн HeroPanel.wash-тай ижил. -->
+                    <Ellipse Width="520" Height="520" HorizontalAlignment="Right" VerticalAlignment="Top"
+                             Margin="0,-220,-220,0" IsHitTestVisible="False">
+                        <Ellipse.Fill>
+                            <RadialGradientBrush>
+                                <GradientStop Color="#295B8AFF" Offset="0"/>
+                                <GradientStop Color="#005B8AFF" Offset="1"/>
+                            </RadialGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <Ellipse Width="400" Height="400" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                             Margin="-150,0,0,-150" IsHitTestVisible="False">
+                        <Ellipse.Fill>
+                            <RadialGradientBrush>
+                                <GradientStop Color="#21818CF8" Offset="0"/>
+                                <GradientStop Color="#00818CF8" Offset="1"/>
+                            </RadialGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
+
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Margin="36,0,36,80">
+                        <!-- Брэнд тэмдэг: 88×88, 22 радиустай (macOS-ийн mark). -->
+                        <Border Width="88" Height="88" CornerRadius="22" HorizontalAlignment="Center"
+                                Margin="0,0,0,22">
+                            <Border.Background>
+                                <ImageBrush ImageSource="Resources/brand.png" Stretch="UniformToFill"/>
+                            </Border.Background>
+                        </Border>
                         <TextBlock Text="eID Gerege" Foreground="White"
                                    FontSize="34" FontWeight="Bold"
                                    HorizontalAlignment="Center"/>
@@ -120,31 +204,65 @@
                                               Direction="270" Opacity="0.12" Color="Black"/>
                         </Border.Effect>
                         <StackPanel>
-                            <Image Source="Resources/brand.png" Width="56" Height="56"
-                                   HorizontalAlignment="Left" Margin="0,0,0,14"/>
                             <TextBlock Text="Нэвтрэх" Style="{StaticResource CardTitleTextBlock}"/>
                             <TextBlock Text="eID Mongolia апп-аар нэвтрэх"
                                        Style="{StaticResource LabelTextBlock}" Margin="0,4,0,16"/>
 
-                            <TextBlock Text="РД эсвэл иргэний бүртгэлийн дугаараа оруулна уу. Утсан дээрх eID Mongolia апп-д мэдэгдэл ирнэ."
-                                       Style="{StaticResource LabelTextBlock}"
-                                       TextAlignment="Center" Margin="0,0,0,12"/>
+                            <!-- Сегмент таб: РД | QR. macOS-ийн tabTrack. -->
+                            <Border Background="#1F6B7280" CornerRadius="{StaticResource RadiusLg}"
+                                    Padding="4" Margin="0,0,0,16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="4"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ToggleButton Name="idTab" Grid.Column="0" Content="РД / Иргэний бүртгэл"
+                                                  Style="{StaticResource EidTabButton}" IsChecked="True"
+                                                  Click="IdTab_Click"/>
+                                    <ToggleButton Name="qrTab" Grid.Column="2" Content="QR код"
+                                                  Style="{StaticResource EidTabButton}"
+                                                  Click="QrTab_Click"/>
+                                </Grid>
+                            </Border>
 
-                            <TextBlock Text="РД / Иргэний бүртгэлийн дугаар"
-                                       Style="{StaticResource LabelTextBlock}" Margin="0,0,0,6"/>
-                            <TextBox Name="nationalIdInput" Style="{StaticResource EidField}"
-                                     FontFamily="Cascadia Mono, Consolas, Courier New"
-                                     FontSize="18" HorizontalContentAlignment="Center"
-                                     ToolTip="Регистрийн дугаар"/>
-                            <Button Name="pushLoginButton" Content="Нэвтрэх"
-                                    Style="{StaticResource EidPrimaryButton}"
-                                    Margin="0,12,0,0" Click="PushLogin_Click"/>
-                            <Button Name="qrLoginButton" Content="eID QR харуулах"
-                                    Height="38" Margin="0,8,0,0" Click="QrLogin_Click"
-                                    Background="Transparent" BorderThickness="0"
-                                    Foreground="{StaticResource EidAccentBrush}" Cursor="Hand"/>
-                            <Image Name="qrImage" Width="190" Height="190"
-                                   Margin="0,12,0,0" Visibility="Collapsed"/>
+                            <!-- Алдааны мөр: улаан текст биш, macOS-ийн InlineBanner. -->
+                            <Border Name="loginBanner" Visibility="Collapsed" Margin="0,0,0,16"
+                                    Background="{StaticResource EidBannerErrorBackground}"
+                                    BorderBrush="{StaticResource EidBannerErrorStroke}"
+                                    BorderThickness="1" CornerRadius="{StaticResource RadiusMd}"
+                                    Padding="12,10">
+                                <TextBlock Name="loginBannerText" TextWrapping="Wrap" FontSize="12"
+                                           Foreground="{StaticResource EidBannerErrorText}"/>
+                            </Border>
+
+                            <!-- РД хэсэг -->
+                            <StackPanel Name="idSection">
+                                <TextBlock Text="РД эсвэл иргэний бүртгэлийн дугаараа оруулна уу. Утсан дээрх eID Mongolia апп-д мэдэгдэл ирнэ."
+                                           Style="{StaticResource LabelTextBlock}"
+                                           TextAlignment="Center" Margin="0,0,0,12"/>
+                                <TextBlock Text="РД / Иргэний бүртгэлийн дугаар"
+                                           Style="{StaticResource LabelTextBlock}" Margin="0,0,0,6"/>
+                                <TextBox Name="nationalIdInput" Style="{StaticResource EidField}"
+                                         FontFamily="Cascadia Mono, Consolas, Courier New"
+                                         FontSize="18" HorizontalContentAlignment="Center"
+                                         ToolTip="Регистрийн дугаар"/>
+                                <Button Name="pushLoginButton" Content="Нэвтрэх"
+                                        Style="{StaticResource EidPrimaryButton}"
+                                        Margin="0,12,0,0" Click="PushLogin_Click"/>
+                            </StackPanel>
+
+                            <!-- QR хэсэг -->
+                            <StackPanel Name="qrSection" Visibility="Collapsed">
+                                <Border Width="190" Height="190" Background="White"
+                                        CornerRadius="{StaticResource RadiusMd}"
+                                        HorizontalAlignment="Center" Padding="6">
+                                    <Image Name="qrImage"/>
+                                </Border>
+                                <TextBlock Text="eID Mongolia апп-аар QR кодыг уншуулна уу."
+                                           Style="{StaticResource LabelTextBlock}"
+                                           TextAlignment="Center" Margin="0,14,0,0"/>
+                            </StackPanel>
 
                             <TextBlock Name="loginStatus" Style="{StaticResource LabelTextBlock}"
                                        Margin="0,16,0,0"/>
@@ -157,18 +275,21 @@
                             <Separator Margin="0,18,0,14"
                                        Background="{StaticResource EidCardStroke}"/>
 
-                            <!-- Админ ба ээлжийн нэвтрэлт: гол зам биш, доор нь. -->
-                            <TextBlock Text="Системийн админ нэвтрэлт"
-                                       Foreground="{StaticResource EidAccentBrush}"
-                                       FontSize="12" HorizontalAlignment="Center"
-                                       Margin="0,0,0,10"/>
-                            <TextBox Name="emailInput" Style="{StaticResource EidField}"
-                                     Margin="0,0,0,8" ToolTip="И-мэйл"/>
-                            <PasswordBox Name="passwordInput" Style="{StaticResource EidField}"
-                                         Margin="0,0,0,10" ToolTip="Нууц үг"/>
-                            <Button Name="passwordLoginButton" Content="Админаар нэвтрэх"
-                                    Style="{StaticResource EidPrimaryButton}"
-                                    Click="PasswordLogin_Click"/>
+                            <!-- Админ нэвтрэлт: гол зам биш тул macOS-ийн адил
+                                 нээгддэг хэсгийн ард. -->
+                            <Button Name="adminToggle" Content="Системийн админ нэвтрэлт"
+                                    Click="AdminToggle_Click" Height="28"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Foreground="{StaticResource EidAccentBrush}" FontSize="12"/>
+                            <StackPanel Name="adminSection" Visibility="Collapsed" Margin="0,10,0,0">
+                                <TextBox Name="emailInput" Style="{StaticResource EidField}"
+                                         Margin="0,0,0,8" ToolTip="И-мэйл"/>
+                                <PasswordBox Name="passwordInput" Style="{StaticResource EidField}"
+                                             Margin="0,0,0,10" ToolTip="Нууц үг"/>
+                                <Button Name="passwordLoginButton" Content="Админаар нэвтрэх"
+                                        Style="{StaticResource EidPrimaryButton}"
+                                        Click="PasswordLogin_Click"/>
+                            </StackPanel>
 
                             <StackPanel Name="staffPinPanel" Visibility="Collapsed">
                                 <Separator Margin="0,18,0,14"
@@ -188,7 +309,7 @@
             </Grid>
         </Grid>
 
-        <Border Name="nativeFooter" Grid.Row="2" Height="30" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,1,0,0" Visibility="Collapsed">
+        <Border Name="nativeFooter" Grid.Row="3" Height="30" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,1,0,0" Visibility="Collapsed">
             <Grid Margin="12,0">
                 <!-- Тохиргооны товч энэ мөрөөс хасагдсан: түүнийг зүүн талын
                      rail эзэмшинэ. Нэг үйлдэл хоёр газар байвал аль нь идэвхтэй

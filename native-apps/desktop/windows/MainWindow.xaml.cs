@@ -1,5 +1,8 @@
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.Web.WebView2.Core;
 using QRCoder;
 using System.IO;
@@ -42,7 +45,40 @@ namespace GeregeNexusNativeWin
             emailInput.ToolTip=NativeStrings.Get("auth_field_email","И-мэйл");passwordInput.ToolTip=NativeStrings.Get("auth_field_password","Нууц үг");passwordLoginButton.Content=NativeStrings.Get("auth_action_admin_sign_in","Админаар нэвтрэх");nationalIdInput.ToolTip=NativeStrings.Get("auth_eid_reg_number","Регистрийн дугаар");pushLoginButton.Content=NativeStrings.Get("auth_eid_send_request","eID апп руу хүсэлт илгээх");cancelLoginButton.Content=NativeStrings.Get("auth_action_cancel","Цуцлах");staffPinButton.Content=NativeStrings.Get("auth_action_staff_sign_in","Ээлжийн ажилтнаар нэвтрэх");
             staffPinPanel.Visibility = ShellProfile.FormFactor == "pos" ? Visibility.Visible : Visibility.Collapsed;
             _auth.StatusChanged += status => Dispatcher.Invoke(() => RenderLogin(status));
+            BindShortcuts();
             InitializeWebViewAsync();
+        }
+
+        /// <summary>
+        /// Цэсэн дэх товчлолуудыг ЖИНХЭНЭ болгоно.
+        ///
+        /// XAML дахь <c>InputGestureText</c> нь зөвхөн бичээс — WPF түүнээс
+        /// товчлол үүсгэдэггүй. Тиймээс цэс нь Ctrl+L, Ctrl+, гэх мэтийг
+        /// амласан ч дарахад юу ч болдоггүй байв. macOS тал дээр эдгээр нь
+        /// цэсний keyEquivalent-ээр жинхэнэ ажилладаг.
+        /// </summary>
+        private void BindShortcuts()
+        {
+            void Bind(Key key, ModifierKeys modifiers, Action action) =>
+                InputBindings.Add(new KeyBinding(new ShellCommand(action), key, modifiers));
+
+            Bind(Key.L, ModifierKeys.Control, ShowNativeLogin);
+            Bind(Key.OemComma, ModifierKeys.Control, () => { if (navRail.Visibility == Visibility.Visible) ShowPane(Pane.Settings); });
+            Bind(Key.D0, ModifierKeys.Control, () => { if (navRail.Visibility == Visibility.Visible) ShowPane(Pane.Work); });
+            Bind(Key.H, ModifierKeys.Control, () => NavigatePath(ShellProfile.StartRoute));
+            Bind(Key.D1, ModifierKeys.Control, () => NavigatePath("/apps"));
+            Bind(Key.F5, ModifierKeys.None, () => webView?.Reload());
+            Bind(Key.F11, ModifierKeys.None, ToggleFullScreen);
+        }
+
+        /// <summary>Товчлолд зориулсан хамгийн бага ICommand.</summary>
+        private sealed class ShellCommand : ICommand
+        {
+            private readonly Action _action;
+            public ShellCommand(Action action) => _action = action;
+            public event EventHandler? CanExecuteChanged { add { } remove { } }
+            public bool CanExecute(object? parameter) => true;
+            public void Execute(object? parameter) => _action();
         }
 
         private async void InitializeWebViewAsync()
@@ -53,6 +89,11 @@ namespace GeregeNexusNativeWin
 
                 // Initialize Native C# IPC Bridge
                 _ipcBridge = new NativeIPCBridge(webView, this);
+
+                // Нэвтрэлтийн клиентийг ажлын мужтай ижил User-Agent дээр
+                // тавина — session нь клиентийн хүрээнд баригдсан тохиолдолд
+                // хуулсан cookie хүчингүй болохоос сэргийлнэ.
+                _auth.UseUserAgent(webView.CoreWebView2.Settings.UserAgent);
 
                 // Inject Native Bridge JS initializer into every document created
                 await webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(@"
@@ -78,6 +119,9 @@ namespace GeregeNexusNativeWin
                 };
 
                 webView.CoreWebView2.NavigationStarting += NavigationStarting;
+                // Буцах товч нь түүх байхгүй үед идэвхгүй байна.
+                webView.CoreWebView2.HistoryChanged += (_, _) =>
+                    ribbonBack.IsEnabled = webView.CoreWebView2.CanGoBack;
                 // target="_blank" болон window.open нь хүрээнээс тасарсан хоёр
                 // дахь webview цонх нээхийг хүсдэг. Handled=true нь тэр цонхыг
                 // үүсгэхгүй гэсэн үг — хаяг нь зөвшөөрөгдсөн scheme-тэй бол
@@ -88,7 +132,27 @@ namespace GeregeNexusNativeWin
                     if (Uri.TryCreate(e.Uri, UriKind.Absolute, out var target) && target.Scheme is "http" or "https" or "mailto" or "tel")
                         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(target.AbsoluteUri) { UseShellExecute = true });
                 };
-                webView.CoreWebView2.NavigationCompleted += (_, e) => { footerConnection.Text = e.IsSuccess ? $"●  Холбогдсон · {new Uri(webView.Source.ToString()).Host}" : "●  Холболт тасарсан"; footerConnection.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(e.IsSuccess ? "#62D9D4" : "#EF4444")); _ = webView.CoreWebView2.ExecuteScriptAsync("window.__geregeShellEmit&&window.__geregeShellEmit('shell:auth-changed',{reason:'navigation-session'})"); };
+                // Холбогдсон төлөвийн өнгө нь дизайн системийн chromeAccent
+                // (Brand300) — өмнөх #62D9D4 нь ramp-д байхгүй, macOS-оос
+                // зөрдөг өнгө байв.
+                webView.CoreWebView2.NavigationCompleted += async (_, e) =>
+                {
+                    footerConnection.Text = e.IsSuccess ? $"●  Холбогдсон · {new Uri(webView.Source.ToString()).Host}" : "●  Холболт тасарсан";
+                    footerConnection.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(e.IsSuccess ? "#84A8FF" : "#EF4444"));
+                    _ = webView.CoreWebView2.ExecuteScriptAsync("window.__geregeShellEmit&&window.__geregeShellEmit('shell:auth-changed',{reason:'navigation-session'})");
+                    ShellLog.Write($"nav: {webView.Source} success={e.IsSuccess}");
+                    try
+                    {
+                        // Ажлын мужид ямар cookie байгаа нь session дамжуулалт
+                        // бүтсэн эсэхийг хожим оношлоход хэрэгтэй.
+                        var jar = await webView.CoreWebView2.CookieManager.GetCookiesAsync(_baseUrl);
+                        ShellLog.Write($"nav: cookie {jar.Count}ш — " + string.Join(", ", jar.Select(c => $"{c.Name}(path={c.Path})")));
+                    }
+                    catch (System.Runtime.InteropServices.COMException error)
+                    {
+                        ShellLog.Write($"nav: cookie уншилт амжилтгүй — {error.Message}");
+                    }
+                };
                 var deviceToken = CredentialManagerTokenStore.Load();
                 if (!string.IsNullOrWhiteSpace(deviceToken))
                 {
@@ -129,7 +193,9 @@ namespace GeregeNexusNativeWin
             webView.Visibility = Visibility.Collapsed;
             settingsHost.Visibility = Visibility.Collapsed;
             navRail.Visibility = Visibility.Collapsed;
+            ribbon.Visibility = Visibility.Collapsed;
             nativeFooter.Visibility = Visibility.Collapsed;
+            ApplyHeroWidth();
         }
 
         /// <summary>Нэвтэрсний дараа bürхүүлийн chrome-ыг гаргаж, ажлын муж дээр
@@ -138,8 +204,68 @@ namespace GeregeNexusNativeWin
         {
             loginView.Visibility = Visibility.Collapsed;
             navRail.Visibility = Visibility.Visible;
+            ribbon.Visibility = Visibility.Visible;
             nativeFooter.Visibility = Visibility.Visible;
+            var profile = _auth.Profile ?? NativeUserProfile.EidUser;
+            var name = string.IsNullOrWhiteSpace(profile.Name) ? "Хэрэглэгч" : profile.Name;
+            profileButton.Content = "◍   " + name;
+            profileMenuName.Header = name;
+            profileMenuEmail.Header = profile.Email;
+            profileMenuEmail.Visibility = string.IsNullOrWhiteSpace(profile.Email)
+                ? Visibility.Collapsed : Visibility.Visible;
             ShowPane(Pane.Work);
+        }
+
+        /// <summary>
+        /// Профайлын цэс — нэр, и-мэйл, Тохиргоо…, Гарах (macOS-ийн NSMenu).
+        /// </summary>
+        private void ProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (profileButton.ContextMenu is not { } menu) return;
+            menu.PlacementTarget = profileButton;
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            menu.IsOpen = true;
+        }
+
+        /// <summary>
+        /// Session-ийг серверт хааж, cookie-г цэвэрлээд нэвтрэх дэлгэц рүү
+        /// буцна (macOS-ийн logout + clearSessionAndShowLogin).
+        /// </summary>
+        private async void MenuLogout_Click(object sender, RoutedEventArgs e)
+        {
+            await _auth.LogoutAsync();
+            if (webView.CoreWebView2 is { } core)
+            {
+                // session_token-ийг webview-ийн cookie сангаас ч устгана — эс
+                // бөгөөс ажлын муж дараагийн ачаалалт дээр нэвтэрсэн хэвээр
+                // сэргэнэ.
+                var cookies = await core.CookieManager.GetCookiesAsync(_baseUrl);
+                foreach (var cookie in cookies)
+                {
+                    if (cookie.Name == "session_token") core.CookieManager.DeleteCookie(cookie);
+                }
+            }
+            ShowNativeLogin();
+        }
+
+        /// <summary>Ажлын мужийн түүхээр нэг алхам буцна.</summary>
+        private void RibbonBack_Click(object sender, RoutedEventArgs e)
+        {
+            if (webView?.CoreWebView2 is { CanGoBack: true } core) core.GoBack();
+        }
+
+        /// <summary>
+        /// Цонх 820-аас нарийсвал зүүн талын брэнд талбар алга болж, карт
+        /// цонхыг бүтнээр эзэлнэ — macOS-ийн viewDidLayout дахь босго.
+        /// </summary>
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e) => ApplyHeroWidth();
+
+        private void ApplyHeroWidth()
+        {
+            if (heroPanel is null || heroColumn is null) return;
+            var wide = ActualWidth >= 820;
+            heroPanel.Visibility = wide ? Visibility.Visible : Visibility.Collapsed;
+            heroColumn.Width = wide ? new GridLength(5, GridUnitType.Star) : new GridLength(0);
         }
 
         /// <summary>Хүрээн доторх дэлгэцийг солино. Цонх нээхгүй, цонх хаахгүй.</summary>
@@ -163,8 +289,11 @@ namespace GeregeNexusNativeWin
             webView.Visibility = pane == Pane.Work ? Visibility.Visible : Visibility.Collapsed;
             settingsHost.Visibility = pane == Pane.Settings ? Visibility.Visible : Visibility.Collapsed;
 
-            var active = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x62, 0xD9, 0xD4));
-            var idle = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xB8, 0xC1, 0xCE));
+            // Rail-ын идэвхтэй/идэвхгүй өнгө нь дизайн системийн chromeAccent
+            // (Brand300) ба chromeMuted — өмнө нь ramp-д байхгүй ногоон-цэнхэр
+            // байсан нь macOS-оос зөрж байв.
+            var active = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x84, 0xA8, 0xFF));
+            var idle = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x94, 0xA3, 0xB8));
             navWorkButton.Foreground = pane == Pane.Work ? active : idle;
             navSettingsButton.Foreground = pane == Pane.Settings ? active : idle;
         }
@@ -198,7 +327,47 @@ namespace GeregeNexusNativeWin
         private async void PushLogin_Click(object sender, RoutedEventArgs e) =>
             await _auth.PushAsync(nationalIdInput.Text);
 
-        private async void QrLogin_Click(object sender, RoutedEventArgs e) => await _auth.QrAsync();
+        // ── Нэвтрэх дэлгэцийн таб (macOS-ийн select(_:)) ──────────────────
+        //
+        // РД таб нь оролтын талбарыг, QR таб нь кодыг харуулна. QR руу
+        // шилжихэд session шууд эхэлж, буцахад цуцлагдана.
+
+        private async void QrTab_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab(qr: true);
+            await _auth.QrAsync();
+        }
+
+        private void IdTab_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab(qr: false);
+            _auth.Cancel();
+        }
+
+        private void SelectTab(bool qr)
+        {
+            idTab.IsChecked = !qr;
+            qrTab.IsChecked = qr;
+            idSection.Visibility = qr ? Visibility.Collapsed : Visibility.Visible;
+            qrSection.Visibility = qr ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>Админаар нэвтрэх хэсгийг нээх/хаах — macOS-ийн toggleAdmin.</summary>
+        private void AdminToggle_Click(object sender, RoutedEventArgs e) =>
+            adminSection.Visibility = adminSection.Visibility == Visibility.Visible
+                ? Visibility.Collapsed : Visibility.Visible;
+
+        /// <summary>
+        /// Алдааг пастел мөрөнд харуулна (macOS-ийн InlineBanner). Өмнө нь
+        /// алдаа status мөрөнд түүхийгээрээ бичигддэг тул серверийн техникийн
+        /// текст шууд иргэнд харагддаг байв.
+        /// </summary>
+        private void ShowLoginError(string message)
+        {
+            loginStatus.Text = string.Empty;
+            loginBannerText.Text = message;
+            loginBanner.Visibility = Visibility.Visible;
+        }
 
         private async void StaffPin_Click(object sender, RoutedEventArgs e)
         {
@@ -212,22 +381,90 @@ namespace GeregeNexusNativeWin
         private void RenderLogin(LoginStatus status)
         {
             var pending = status.Phase is LoginPhase.Starting or LoginPhase.Waiting;
-            loginStatus.Text = status.Message;
+            loginBanner.Visibility = Visibility.Collapsed;
+            if (status.Phase is LoginPhase.Expired or LoginPhase.Refused or LoginPhase.Error)
+            {
+                ShowLoginError(status.Message);
+            }
+            else
+            {
+                loginStatus.Text = status.Message;
+            }
             passwordLoginButton.IsEnabled = !pending; pushLoginButton.IsEnabled = !pending;
-            qrLoginButton.IsEnabled = !pending;
-            if (pending && !string.IsNullOrWhiteSpace(_auth.LastDeviceLinkUrl)) { using var data = QRCodeGenerator.GenerateQrCode(_auth.LastDeviceLinkUrl, QRCodeGenerator.ECCLevel.Q); var bytes = new PngByteQRCode(data).GetGraphic(8); var bitmap = new BitmapImage(); using var stream = new MemoryStream(bytes); bitmap.BeginInit(); bitmap.CacheOption = BitmapCacheOption.OnLoad; bitmap.StreamSource = stream; bitmap.EndInit(); bitmap.Freeze(); qrImage.Source = bitmap; qrImage.Visibility = Visibility.Visible; }
-            else if (!pending) qrImage.Visibility = Visibility.Collapsed;
+            idTab.IsEnabled = !pending; qrTab.IsEnabled = !pending;
+            if (pending && !string.IsNullOrWhiteSpace(_auth.LastDeviceLinkUrl)) { using var data = QRCodeGenerator.GenerateQrCode(_auth.LastDeviceLinkUrl, QRCodeGenerator.ECCLevel.Q); var bytes = new PngByteQRCode(data).GetGraphic(8); var bitmap = new BitmapImage(); using var stream = new MemoryStream(bytes); bitmap.BeginInit(); bitmap.CacheOption = BitmapCacheOption.OnLoad; bitmap.StreamSource = stream; bitmap.EndInit(); bitmap.Freeze(); qrImage.Source = bitmap; }
+            else if (!pending) qrImage.Source = null;
             cancelLoginButton.Visibility = pending ? Visibility.Visible : Visibility.Collapsed;
             if (status.Phase != LoginPhase.Success || webView.CoreWebView2 == null) return;
-            foreach (System.Net.Cookie source in _auth.SessionCookies)
+            _ = HandOverSessionAsync();
+        }
+
+        /// <summary>
+        /// Нэвтрэлтийн session-ийг ажлын мужид дамжуулна.
+        ///
+        /// Гурван зүйлийг хамтад нь хийнэ:
+        ///   • cookie-г серверийн өгсөн замаар нь ба "/" замаар хуулна — зам нь
+        ///     <c>/api/v1</c> байвал хуудсыг өөрийг нь татах хүсэлт cookie-гүй
+        ///     явж, сервер нэвтрээгүй гэж үзнэ;
+        ///   • DevTools протоколоор сүлжээний давхарга руу шууд бичнэ —
+        ///     CookieManager-ын бичилт эхний хүсэлтэд амжихгүй байх
+        ///     магадлалыг хаана;
+        ///   • бичилтийн дараа нэг уншилт хийж дарааллыг батална.
+        /// </summary>
+        private async Task HandOverSessionAsync()
+        {
+            var manager = webView.CoreWebView2.CookieManager;
+            var host = new Uri(_baseUrl).Host;
+            var shellCookies = _auth.SessionCookies;
+            ShellLog.Write($"handover: бүрхүүлд {shellCookies.Count} cookie байна");
+            foreach (System.Net.Cookie source in shellCookies)
             {
-                var cookie = webView.CoreWebView2.CookieManager.CreateCookie(source.Name, source.Value, source.Domain, source.Path);
-                cookie.IsHttpOnly = source.HttpOnly; cookie.IsSecure = source.Secure;
-                if (source.Expires != DateTime.MinValue) cookie.Expires = source.Expires;
-                webView.CoreWebView2.CookieManager.AddOrUpdateCookie(cookie);
+                ShellLog.Write($"handover: {source.Name} domain={source.Domain} path={source.Path} secure={source.Secure} httpOnly={source.HttpOnly}");
+                var domain = string.IsNullOrWhiteSpace(source.Domain) ? host : source.Domain;
+                Copy(source, domain, source.Path);
+                if (source.Path != "/") Copy(source, domain, "/");
+                await SetViaDevToolsAsync(source, domain);
             }
+
+            try { _ = await manager.GetCookiesAsync(_baseUrl); }
+            catch (System.Runtime.InteropServices.COMException error)
+            {
+                ShellLog.Write($"handover: cookie уншилт амжилтгүй — {error.Message}");
+            }
+
             EnterShell();
             NavigatePath(ShellProfile.StartRoute);
+
+            async Task SetViaDevToolsAsync(System.Net.Cookie source, string domain)
+            {
+                try
+                {
+                    var parameters = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        name = source.Name,
+                        value = source.Value,
+                        domain,
+                        path = string.IsNullOrEmpty(source.Path) ? "/" : source.Path,
+                        secure = source.Secure,
+                        httpOnly = source.HttpOnly,
+                        sameSite = "Lax",
+                    });
+                    await webView.CoreWebView2.CallDevToolsProtocolMethodAsync("Network.setCookie", parameters);
+                }
+                catch (Exception error)
+                {
+                    ShellLog.Write($"handover: CDP setCookie амжилтгүй — {error.Message}");
+                }
+            }
+
+            void Copy(System.Net.Cookie source, string domain, string path)
+            {
+                var cookie = manager.CreateCookie(source.Name, source.Value, domain, path);
+                cookie.IsHttpOnly = source.HttpOnly;
+                cookie.IsSecure = source.Secure;
+                if (source.Expires != DateTime.MinValue) cookie.Expires = source.Expires;
+                manager.AddOrUpdateCookie(cookie);
+            }
         }
 
         private void NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
@@ -260,9 +497,14 @@ namespace GeregeNexusNativeWin
             if (navRail.Visibility == Visibility.Visible) ShowPane(Pane.Settings);
         }
 
+        /// <summary>
+        /// Шугамын нүүр — хатуу "/" биш <see cref="ShellProfile.StartRoute"/>.
+        /// "/" нь нийтийн танилцуулга хуудас байх боломжтой тул нэвтэрсэн
+        /// хэрэглэгчийг тэр рүү гаргах нь буруу.
+        /// </summary>
         private void MenuLineHome_Click(object sender, RoutedEventArgs e)
         {
-            NavigatePath("/");
+            NavigatePath(ShellProfile.StartRoute);
         }
 
         private void MenuApps_Click(object sender, RoutedEventArgs e)
@@ -275,7 +517,9 @@ namespace GeregeNexusNativeWin
             webView?.Reload();
         }
 
-        private void MenuFullScreen_Click(object sender, RoutedEventArgs e)
+        private void MenuFullScreen_Click(object sender, RoutedEventArgs e) => ToggleFullScreen();
+
+        private void ToggleFullScreen()
         {
             if (WindowState == WindowState.Maximized)
             {

@@ -30,7 +30,21 @@ public static class ShellProfile
     public static readonly string[] Capabilities = ["escpos", "scanner", "serial", "device.identity", "secure-store", "telemetry", "biometric", "shell.pane"];
 #else
     public const string FormFactor = "desktop";
-    public const string StartRoute = "/";
+    /// <summary>
+    /// Нэвтэрсний дараа нээгдэх зам.
+    ///
+    /// "/" болон "/platform" нь вэб апп-ын НИЙТИЙН зам
+    /// (<c>frontend/lib/publicRoutes.ts</c> — PUBLIC_ROUTES ба SECTION_PATHS).
+    /// Тэдгээр дээр <c>components/Layout.tsx</c> нь <c>getMe()</c>-г ОГТ
+    /// дууддаггүй тул session хүчинтэй байсан ч танилцуулга хуудас, "Нэвтрэх"
+    /// товчтойгоо гарч ирдэг — бүрхүүл нэвтэрч, cookie-гоо зөв дамжуулсан ч
+    /// (auth/me → 200) хэрэглэгч "нэвтрээгүй" дэлгэц харна.
+    ///
+    /// Вэб апп өөрөө нэвтэрсний дараа "/profile" руу явуулдаг
+    /// (<c>frontend/app/login/page.tsx</c> дахь <c>next</c>-ийн анхдагч утга),
+    /// тиймээс бүрхүүл ч мөн тэнд эхэлнэ.
+    /// </summary>
+    public const string StartRoute = "/profile";
     public const string LineOrigin = "https://desktop.eid.gerege.mn";
     public static readonly string[] Capabilities = ["external.open", "print.system", "secure-store", "device.identity", "telemetry", "biometric", "shell.pane"];
 #endif
