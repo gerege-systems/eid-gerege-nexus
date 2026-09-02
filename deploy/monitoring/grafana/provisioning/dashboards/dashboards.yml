@@ -1,0 +1,17 @@
+# Самбарууд файлаас ирнэ, гараар засагдахгүй.
+#
+# `allowUiUpdates: false` нь: самбар бол код. Хөтөч дээр хийсэн засвар нь
+# репод үлдэхгүй бөгөөд дараагийн rollout дээр алга болно — тэр нь хүнд
+# «Grafana миний ажлыг идлээ» гэж харагдана.
+apiVersion: 1
+providers:
+  - name: eid-gerege
+    orgId: 1
+    folder: "eID Gerege"
+    type: file
+    disableDeletion: false
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ажиглалт — eID Gerege</title>
+<meta name="description" content="eID Gerege-ийн ажиглалтын домэйн: Grafana самбарууд, хэмжүүр, эрүүл мэндийн байдал.">
+<meta name="theme-color" content="#1b3a6b">
+<style>
+/*
+ * eID Gerege-ийн туслах домэйнуудын нийтлэг хуудас.
+ *
+ * Гадны фонт, скрипт, зураг байхгүй — тэмдэг хүртэл SVG-ээр хуудсан дотор
+ * сууна. Нөөцлөлт, ажиглалтын тухай хуудас өөрийгөө үзүүлэхийн тулд
+ * гуравдагч этгээдээс хамаарах ёсгүй: тэр нь хуудасны агуулгатай шууд
+ * зөрчилдөнө.
+ *
+ * Өнгө нь BRAND_THEME_COLOR (#1b3a6b) — eid.gerege.mn-ээс энд ирсэн хүн
+ * өөр бүтээгдэхүүн рүү орсон мэт мэдрэхгүй.
+ */
+:root {
+  color-scheme: light;
+  --navy: #1b3a6b;
+  --navy-hi: #24518f;
+  --ink: #16233a;
+  --muted: #64748b;
+  --page: #f6f8fc;
+  --card: #fff;
+  --line: #dde4ee;
+  --panel: #eef3fb;
+  --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.6 var(--font); }
+.wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+header { background: var(--navy); color: #fff; padding: 18px 0; }
+header .wrap { display: flex; align-items: center; gap: 12px; }
+.mark { width: 34px; height: 34px; border-radius: 9px; }
+header b { font-size: 15px; letter-spacing: .01em; }
+header span { color: rgb(255 255 255 / 62%); font-size: 13px; }
+.hero { background: var(--navy); color: #fff; padding: 44px 0 56px; }
+.hero .kicker { font: 600 12px/1 var(--mono); letter-spacing: .12em; color: rgb(255 255 255 / 62%); }
+.hero h1 { margin: 14px 0 10px; font-size: 30px; line-height: 1.25; letter-spacing: -.02em; }
+.hero p { margin: 0; max-width: 62ch; color: rgb(255 255 255 / 78%); }
+main { padding: 34px 0 60px; }
+section { margin: 0 0 28px; }
+h2 { font-size: 13px; letter-spacing: .1em; color: var(--muted); margin: 0 0 12px; font-family: var(--mono); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; }
+.card + .card { margin-top: 12px; }
+.card h3 { margin: 0 0 6px; font-size: 17px; }
+.card p { margin: 0; color: var(--muted); }
+a.go { display: inline-block; margin-top: 14px; background: var(--navy); color: #fff;
+       text-decoration: none; font-weight: 700; padding: 10px 18px; border-radius: 9px; }
+a.go:hover { background: var(--navy-hi); }
+code { font: 13px var(--mono); background: var(--panel); padding: 2px 6px; border-radius: 5px; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 0; }
+dt { font: 13px var(--mono); color: var(--navy); }
+dd { margin: 0; color: var(--muted); }
+footer { border-top: 1px solid var(--line); padding: 22px 0 40px; color: var(--muted); font-size: 13px; }
+@media (max-width: 560px) { .hero h1 { font-size: 24px; } dl { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header><div class="wrap"><svg class="mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#fff"/><text x="32" y="34" text-anchor="middle" dominant-baseline="central" font-family="Inter,system-ui,sans-serif" font-size="22" font-weight="800" fill="#1b3a6b">eID</text></svg><b>eID Gerege</b><span>· Ажиглалт</span></div></header>
+
+<div class="hero"><div class="wrap">
+  <div class="kicker">АЖИГЛАЛТ · monitor.eid.gerege.mn</div>
+  <h1>Хэмжигдээгүй систем ажиллаж байгаа систем биш</h1>
+  <p>eID Gerege өөрийгөө 15 секунд тутамд хэмждэг, лог мөр бүрээ цуглуулж,
+     хүсэлтийн аравны нэгийг мөрддөг. Асуудал гарахад хаанаас хайхаа мэдэж
+     байх нь энэ домэйн байгаагийн шалтгаан.</p>
+</div></div>
+
+<main class="wrap">
+  <section>
+    <h2>01 · ХААНА ОРОХ</h2>
+    <div class="card">
+      <h3>Самбарууд — <code>/grafana/</code></h3>
+      <p>Долоон самбар, гурван эх сурвалж: хэмжүүр (Prometheus), лог (Loki),
+         trace (Tempo). Гурвуулаа хоорондоо холбогдсон — логийн мөрөн дээрх
+         trace id нь trace руу, trace нь тэр агшны лог ба хэмжүүр рүү хөтөлнө.</p>
+      <a class="go" href="/grafana/">Ажиглалт руу нэвтрэх</a>
+    </div>
+    <div class="card">
+      <h3>Асаж буй дохио — <code>/alertmanager/</code></h3>
+      <p>Юу яг одоо асаж байгаа, юу нам гүм болсон. Мессеж хүлээж авдаггүй хүн
+         ч эндээс уншина.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>02 · НЭВТРЭЛТ</h2>
+    <div class="card">
+      <h3>Платформын бүртгэлээр</h3>
+      <p>Grafana нь eID Gerege-ийн өөрийн OIDC provider-оос хэн болохыг асууна:
+         аль хэдийн байгаа бүртгэлээрээ ордог, шинэ нууц үг үүсэхгүй. Платформын
+         админ нь энд ч админ; бусад нь самбарыг уншина, юуг ч өөрчлөхгүй.
+         Тиймээс шинэ хүн нэмэх нь энд биш, платформ дээр хийгддэг ажил.</p>
+    </div>
+    <div class="card">
+      <h3>Grafana-гийн дотоод админ хэвээр</h3>
+      <p>Санаатай: унасан танигч нь нээгдэхгүй ажиглалтын стек болох ёсгүй —
+         тэр нь яг түүнийг хэрэгтэй болгодог цаг.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>03 · САМБАРУУД</h2>
+    <div class="card">
+      <h3>API тойм — «Хэрэглэгч юу мэдэрч байна вэ»</h3>
+      <p>Хүсэлтийн тоо, алдааны хувь, хариу хугацааны хуваарилалт, алдааны
+         төсвийн шаталт. «Удаашралтай байна» гэсэн гомдол эндээс эхэлнэ.</p>
+    </div>
+    <div class="card">
+      <h3>Инфраструктур — «Машин өөрөө юу гэж байна вэ»</h3>
+      <p>CPU, санах ой, диск, PostgreSQL-ийн холболт, контейнер бүрийн
+         нөөц. Дискний зай дуусах нь энд хамгийн эрт харагдана.</p>
+    </div>
+    <div class="card">
+      <h3>Логууд, Аюулгүй байдал, Тэсвэрлэлт, Гадаад системүүд</h3>
+      <p>Дөрвөн тусгай самбар: Loki дээрх лог хайлт; нэвтрэлтийн оролдлого ба
+         консолын хандалт; ачаалал таслалт ба дараалал; eID Mongolia, Gerege
+         Core зэрэг гадны системүүдийн хариу.</p>
+    </div>
+    <div class="card">
+      <h3>Мониторингийн эрүүл мэнд</h3>
+      <p>Стекийг ажигладаг стек. Идэвхгүй болсон Prometheus, бичилт татгалзаж
+         буй Loki, хүргэж чадахгүй байгаа Alertmanager — гуравуулаа өөр
+         хаанаас ч харагдахгүй, гуравуулаа бусад бүх дохиог үнэгүй болгоно.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>04 · ДОХИО</h2>
+    <div class="card">
+      <h3>Гучин долоон дүрэм, хоёр зэрэглэл</h3>
+      <p><code>page</code> нь тохируулсан суваг бүр рүү очиж, цаг тутам
+         давтагдана. <code>ticket</code> нь и-мэйлээр л явж, дөрвөн цаг тутам —
+         зэрэглэлийн салангид байдлын учир нь тэдний нэг нь өглөө хүртэл
+         хүлээж болно гэдэгт байгаа.</p>
+      <p style="margin-top:10px">Суваг тохируулаагүй бол дохио асаж, энд
+         харагдаж, хаашаа ч илгээгдэхгүй. Тэр нь эвдрэл биш: хагас бөглөсөн
+         суваг нь асахаас татгалзсан контейнер байх байсан.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>05 · ТООНУУД</h2>
+    <div class="card"><dl>
+      <dt>15 сек</dt><dd>хэмжилтийн давтамж</dd>
+      <dt>60 хоног</dt><dd>хэмжүүрийн түүх (эсвэл 20 ГБ, аль нь эрт дуусна)</dd>
+      <dt>31 хоног</dt><dd>логийн түүх</dd>
+      <dt>72 цаг</dt><dd>trace-ийн түүх — trace нь минут, цагийн дотор уншигддаг</dd>
+      <dt>10%</dt><dd>trace-ийн түүвэрлэлт</dd>
+    </dl></div>
+  </section>
+</main>
+
+<footer class="wrap">eID Gerege · <a href="https://eid.gerege.mn">eid.gerege.mn</a></footer>
+</body>
+</html>

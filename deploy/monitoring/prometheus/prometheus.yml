@@ -1,0 +1,94 @@
+# eID Gerege — Prometheus.
+#
+# Static targets, not service discovery. This is one server running Docker
+# Compose: the set of things to scrape is the set of services in two compose
+# files, it changes when a release changes it, and a discovery mechanism would
+# add a moving part to answer a question that has a fixed answer.
+#
+# Every target is reached by container name over the platform's own Docker
+# network — see the `networks` block in deploy/docker-compose.monitoring.yml.
+# Nothing here goes through the host's published ports, which are bound to
+# loopback and are for an operator with an SSH tunnel.
+#
+# `job_name: nexus_api` нь ЦӨМИЙНХӨӨР үлдэнэ, брэндлэгдэхгүй: самбар ба дүрэм
+# бүр `job="nexus_api"` гэж шүүдэг. Энэ байрлуулалтыг нэрлэдэг зүйл нь доорх
+# `deployment` шошго — тэр нь цуврал бүр дээр суудаг.
+
+global:
+  # 15s is the resolution every dashboard and every burn-rate rule in
+  # rules/ assumes. Raising it silently widens the shortest alert window.
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    # Named on every alert Alertmanager sends, so a person woken at 03:00 knows
+    # which deployment before opening anything.
+    deployment: "${DEPLOYMENT_NAME}"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["gerege_eid_nexus_alertmanager:9093"]
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+scrape_configs:
+  # The platform itself. This is the only target whose absence is an outage:
+  # everything else here describes the deployment, this one *is* it.
+  - job_name: nexus_api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["gerege_eid_nexus_backend:8080"]
+        labels:
+          service: api
+
+  # There is deliberately no separate job scraping /health. It answers JSON
+  # rather than the exposition format, so every scrape would log a parse error
+  # to say the endpoint is fine — and `up{job="nexus_api"}` already carries the
+  # same fact, from an endpoint served by the same process and the same
+  # listener.
+
+  # Хостын диск, санах ой, CPU. Нөөцлөлтийн болон TLS-ийн хугацааны скриптүүд
+  # өөрсдийн хэмжигдэхүүнийг энэ exporter-ийн textfile хавтас руу бичдэг тул
+  # `nexus_backup_*` ба `nexus_tls_not_after_*` цувралууд ч эндээс ирнэ.
+  - job_name: node
+    static_configs:
+      - targets: ["gerege_eid_nexus_node_exporter:9100"]
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["gerege_eid_nexus_cadvisor:8080"]
+
+  # `monitoring` role-оор — postgres superuser-ээр биш. Цөмийн 00044 миграц
+  # түүнийг үүсгэдэг (pg_monitor, өөр юу ч биш).
+  - job_name: postgres
+    static_configs:
+      - targets: ["gerege_eid_nexus_postgres_exporter:9187"]
+
+  # Redis энэ суулгацад байхгүй — цөм түүнгүйгээр ажилладаг. Байхгүй зорилтыг
+  # зарлавал `up == 0` нь тасралтгүй улаан болно.
+
+  # The stack watching the stack. A Prometheus that has stopped ingesting, a
+  # Loki that is rejecting writes and an Alertmanager that cannot deliver are
+  # all invisible from anywhere else — and all three make every other alert
+  # here worthless while they last.
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: alertmanager
+    static_configs:
+      - targets: ["gerege_eid_nexus_alertmanager:9093"]
+
+  - job_name: loki
+    static_configs:
+      - targets: ["gerege_eid_nexus_loki:3100"]
+
+  # Grafana is told to serve from /grafana (GF_SERVER_SERVE_FROM_SUB_PATH), so
+  # its own metrics move with everything else. Scraping /metrics gets a 302 to
+  # the public root URL, which Prometheus then cannot reach from inside the
+  # network — it looked like Grafana was down while it was serving fine.
+  - job_name: grafana
+    metrics_path: /grafana/metrics
+    static_configs:
+      - targets: ["gerege_eid_nexus_grafana:3000"]

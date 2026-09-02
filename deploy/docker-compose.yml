@@ -5,6 +5,21 @@
 # repository has no schema of its own yet — and no redis: the core runs without
 # one and nothing on this host needs a second thing to keep alive.
 #
+# The observability, error-tracking and off-site-backup stacks are NOT here.
+# They are separate compose projects joining this one's network:
+#
+#   deploy/docker-compose.monitoring.yml   Prometheus, Alertmanager, Loki,
+#                                          Tempo, Alloy, Grafana, exporters
+#   deploy/docker-compose.glitchtip.yml    error tracking (Sentry protocol)
+#   deploy/docker-compose.backups.yml      the off-site object store
+#   deploy/docker-compose.sites.yml        the static domains
+#
+# Separate deliberately, the way the core keeps them: if the whole monitoring
+# stack falls over, nothing here notices, and `down` on it is a safe thing to
+# do at any hour. Folded in here instead, `deploy.sh` would recreate fifteen
+# observability containers on every rollout of the platform — and a missing
+# GRAFANA_ADMIN_PASSWORD would stop the platform itself from starting.
+#
 # Required environment (deploy/.env, copied there by deploy.sh):
 #   EID_NEXUS_POSTGRES_PASSWORD  this stack's own database
 #   SSO_DEFAULT_CLIENT_SECRET    the platform refuses to start without it in
@@ -61,7 +76,16 @@ services:
       DATABASE_URL: postgres://postgres:${EID_NEXUS_POSTGRES_PASSWORD}@postgres:5432/platform_db?sslmode=disable
       ENVIRONMENT: production
       PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}
-      ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}
+      # Хөтчийн гарал, дээр нь төхөөрөмжийн шугамууд. Native клиент бүр
+      # өөрийн host дээр сууж, тэр host нь /api/v1-ийг ЭНЭ backend руу
+      # дамжуулдаг тул webview доторх дуудлага same-origin хэвээр байна —
+      # session cookie нь SameSite=Strict, CORS preflight үүсэхгүй. Энэ мөр
+      # нь шугамаас ГАДУУР ирэх дуудлагад (жишээ нь хөгжүүлэлтийн үед)
+      # зориулагдсан.
+      #
+      # Шугамын хаягийг DNS, nginx, TLS бэлэн БОЛОХООС ӨМНӨ клиент рүү
+      # бүү заа: апп «server could not be found» гэж унана.
+      ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-https://eid.gerege.mn},${DEVICE_LINE_ORIGINS:-https://desktop.eid.gerege.mn,https://mobile.eid.gerege.mn}
       # nginx terminates TLS in front of this, so the forwarded client address
       # can be trusted — and the login rate limiter counts on it being real.
       TRUST_PROXY_HEADERS: "true"
@@ -129,6 +153,20 @@ services:
       # organisation screens ask people to type what the register knows.
       GEREGE_CORE_TOKEN: ${GEREGE_CORE_TOKEN:-}
 
+      # ------------------------------------------------------- ажиглалт
+      #
+      # Хоёулаа хоосон бол ҮНЭХЭЭР унтраалттай: exporter байхгүй, batch
+      # боловсруулагч байхгүй, дэвсгэр goroutine байхгүй. Эдгээрийг заасан
+      # Tempo, GlitchTip хоёр нь docker-compose.monitoring.yml болон
+      # docker-compose.glitchtip.yml дотор, энэ стекийн сүлжээн дээр.
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_TRACES_SAMPLER_ARG: ${OTEL_TRACES_SAMPLER_ARG:-0.1}
+      # Panic-ийн мэдээлэл Sentry протоколоор. Үйл явдал нь хүсэлтийн дугаар,
+      # маршрут, тенантыг зөөнө — их бие, cookie, query string, хүний хаягийг
+      # ХЭЗЭЭ Ч биш.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      RELEASE_VERSION: ${RELEASE_VERSION:-latest}
+
       # No demo data in production. The seeded account has a published password.
       SEED_DEMO_DATA: "false"
       DEMO_MODE: "false"
@@ -179,6 +217,23 @@ services:
       BRAND_THEME_COLOR: ${BRAND_THEME_COLOR:-}
       BRAND_ICON_URL: ${BRAND_ICON_URL:-}
       BRAND_MASKABLE_ICON_URL: ${BRAND_MASKABLE_ICON_URL:-}
+      # Хажуугийн цэсний «Гарын авлага». Хоосон бол цөмийн номыг заана —
+      # хаашаа ч хүргэхгүй цэснээс ерөнхий ном нь дээр.
+      BRAND_DOCS_URL: ${BRAND_DOCS_URL:-}
+      # Нэр, лого биш, БИЧВЭР өөрчлөх цэг: brand/copy.json доторх
+      # түлхүүрүүд i18n-ийн харгалзах мөрийг дарж бичнэ. Хоосон файл нь
+      # хэвийн байдал — ихэнх суулгац нэр, логоороо л ялгагдана.
+      BRAND_COPY_FILE: ${BRAND_COPY_FILE:-}
+      # Рендерийн серверийн өөрийн алдааны мэдээлэл, ажиллах үед уншигдана.
+      # Браузарын тал нь NEXT_PUBLIC_SENTRY_DSN бөгөөд образ барих үед
+      # багцад шатдаг — тиймээс энд тавигдах боломжгүй.
+      SENTRY_DSN: ${FRONTEND_SENTRY_DSN:-}
+      ENVIRONMENT: production
+      RELEASE_VERSION: ${RELEASE_VERSION:-latest}
+    volumes:
+      # Зөвхөн уншина. BRAND_COPY_FILE=/brand/copy.json заасан үед л
+      # уншигдана; хоосон хавтас нь юуг ч өөрчлөхгүй.
+      - ../brand:/brand:ro
     ports:
       - "127.0.0.1:3008:3000"
     depends_on:

@@ -1,0 +1,120 @@
+/*
+ * Grafana-ийн нэвтрэх хуудсыг eID Gerege-ийн өнгөнд оруулна.
+ *
+ * Энэ файлыг nginx `sub_filter`-ээр Grafana-ийн HTML бүрийн `</head>`-д
+ * оруулдаг (`monitor.eid.gerege.mn.conf`). Grafana OSS-д загварын өөр орох
+ * цэг байхгүй — Enterprise-ийн white labeling нь энд байхгүй.
+ *
+ * Дүрэм бүр `.login-content-box`-оор хашигдана: тэр класс зөвхөн нэвтрэх
+ * хуудсанд байдаг бөгөөд emotion-ийн хэшлэгдсэн нэрнүүдээс ялгаатай нь
+ * Grafana-ийн хувилбар солигдоход өөрчлөгддөггүй. Самбарууд өөрсдөө
+ * хөндөгдөхгүй — тэнд Grafana-ийн өөрийн загвар л зөв.
+ *
+ * Хэш нэрэнд (css-1abc…) хэзээ ч бүү найд: тэдгээр нь build бүрт өөрчлөгдөнө.
+ * Оронд нь data-testid, name, href, эсвэл :has() бүтэц ашиглана.
+ */
+
+/* ─────────────────────────────────────────────────── дэвсгэр */
+
+/* Grafana-ийн өөрийн дэвсгэр зураг (`g8_login_dark.svg`) энэ элементийн
+   ::before дээр суудаг. Түүнийг устгахын оронд eID-ийн navy тор болгоно. */
+body:has(.login-content-box) { background: #1b3a6b !important; }
+
+div:has(> footer):has(.login-content-box)::before {
+  background:
+    linear-gradient(rgb(255 255 255 / 7%) 1px, transparent 1px) 0 0 / 44px 44px,
+    linear-gradient(90deg, rgb(255 255 255 / 7%) 1px, transparent 1px) 0 0 / 44px 44px,
+    #1b3a6b !important;
+  opacity: 1 !important;
+}
+
+/* Grafana-ийн баримт бичиг, лиценз, хувилбарын холбоосууд. Нэвтрэх хуудас
+   бол бүтээгдэхүүний нүүр — тэнд өөр компанийн цэс байх шаардлагагүй. */
+div:has(.login-content-box) > footer { display: none !important; }
+
+/* ──────────────────────────────────────────────────────── карт */
+.login-content-box {
+  background: #fff !important;
+  border: 1px solid #dde4ee !important;
+  border-radius: 18px !important;
+  box-shadow: 0 24px 60px rgb(6 20 44 / 30%) !important;
+  padding: 32px 32px 26px !important;
+  color: #15233b !important;
+}
+
+/* Лого — hosted файл солихгүйгээр (Grafana-ийн public/ нь контейнер дотор).
+   BRAND_LOGO_URL гарч ирэх өдөр энэ мөрийг тэр хаягаар солино; хүртэл нь
+   Grafana-ийн улбар шар мушгиа биш, энэ суулгацын тэмдэг харагдана. */
+img[alt="Grafana"] {
+  content: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%231b3a6b%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2734%27%20text-anchor%3D%27middle%27%20dominant-baseline%3D%27central%27%20font-family%3D%27Inter%2C-apple-system%2Csystem-ui%2Csans-serif%27%20font-size%3D%2722%27%20font-weight%3D%27800%27%20fill%3D%27%23ffffff%27%3EeID%3C%2Ftext%3E%3C%2Fsvg%3E");
+  border-radius: 6px;
+}
+.login-content-box img[alt="Grafana"] { width: 54px !important; height: 54px !important; border-radius: 12px; }
+
+/* Профайлын зураг — gravatar биш, нэрний эхний үсгүүд. Утгыг grafana-eid.js
+   тавьдаг; тавигдаагүй бол зураг хэвээрээ. */
+img[alt="User avatar"] {
+  content: var(--gg-avatar, none);
+  border-radius: 50%;
+}
+
+.login-content-box h1 { margin: 16px 0 0 !important; font-size: 21px !important; letter-spacing: -.02em; }
+
+/* ──────────────────────────────────────────────────────── талбар */
+.login-content-box label,
+.login-content-box label * { color: #15233b !important; font-weight: 600 !important; }
+
+.login-content-box [data-testid="input-wrapper"] { border: 0 !important; }
+.login-content-box [data-testid="input-wrapper"] > div {
+  background: #f6f8fc !important;
+  border: 1px solid #dde4ee !important;
+  border-radius: 9px !important;
+}
+.login-content-box input {
+  background: transparent !important;
+  color: #15233b !important;
+}
+.login-content-box input::placeholder { color: #97a4b8 !important; }
+
+/* Идэвхтэй талбарын хүрээ — Grafana-ийн өгөгдмөл загвар улбар шар өгдөг нь
+   цагаан карт дээр харь харагдана. */
+.login-content-box [data-testid="input-wrapper"] > div:focus-within {
+  border-color: #1b3a6b !important;
+  box-shadow: 0 0 0 3px rgb(27 58 107 / 16%) !important;
+}
+.login-content-box [data-testid="input-wrapper"] button { color: #64748b !important; }
+
+/* ──────────────────────────────────────────────────────── товч */
+.login-content-box button[type="submit"] {
+  background: #1b3a6b !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 8px 22px rgb(27 58 107 / 24%) !important;
+}
+.login-content-box button[type="submit"],
+.login-content-box button[type="submit"] span { color: #ffffff !important; }
+.login-content-box button[type="submit"]:hover { background: #24518f !important; }
+
+.login-content-box a[href="login/generic_oauth"] {
+  background: #fff !important;
+  border: 1px solid #1b3a6b !important;
+  border-radius: 9px !important;
+  font-weight: 700 !important;
+}
+.login-content-box a[href="login/generic_oauth"],
+.login-content-box a[href="login/generic_oauth"] span { color: #1b3a6b !important; }
+.login-content-box a[href="login/generic_oauth"] svg { fill: currentColor !important; }
+.login-content-box a[href="login/generic_oauth"]:hover { background: #eef3fb !important; }
+
+.login-content-box a[href*="password/send-reset-email"],
+.login-content-box a[href*="password/send-reset-email"] span { color: #64748b !important; }
+
+/* Буруу нууц үгийн мэдэгдэл — цагаан карт дээр харанхуй загварын өнгө
+   уншигдахгүй болно. */
+.login-content-box [role="alert"] {
+  background: #fff1f0 !important;
+  border: 1px solid #f3c9c4 !important;
+  color: #b42318 !important;
+}
+.login-content-box [role="alert"] * { color: #b42318 !important; }

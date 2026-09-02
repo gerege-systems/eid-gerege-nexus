@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Нөөцлөлт — eID Gerege</title>
+<meta name="description" content="eID Gerege-ийн нөөцлөлтийн журам: юу, хаана, хэр удаан, хэрхэн сэргээх.">
+<meta name="theme-color" content="#1b3a6b">
+<style>
+/*
+ * eID Gerege-ийн туслах домэйнуудын нийтлэг хуудас.
+ *
+ * Гадны фонт, скрипт, зураг байхгүй — тэмдэг хүртэл SVG-ээр хуудсан дотор
+ * сууна. Нөөцлөлт, ажиглалтын тухай хуудас өөрийгөө үзүүлэхийн тулд
+ * гуравдагч этгээдээс хамаарах ёсгүй: тэр нь хуудасны агуулгатай шууд
+ * зөрчилдөнө.
+ *
+ * Өнгө нь BRAND_THEME_COLOR (#1b3a6b) — eid.gerege.mn-ээс энд ирсэн хүн
+ * өөр бүтээгдэхүүн рүү орсон мэт мэдрэхгүй.
+ */
+:root {
+  color-scheme: light;
+  --navy: #1b3a6b;
+  --navy-hi: #24518f;
+  --ink: #16233a;
+  --muted: #64748b;
+  --page: #f6f8fc;
+  --card: #fff;
+  --line: #dde4ee;
+  --panel: #eef3fb;
+  --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.6 var(--font); }
+.wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+header { background: var(--navy); color: #fff; padding: 18px 0; }
+header .wrap { display: flex; align-items: center; gap: 12px; }
+.mark { width: 34px; height: 34px; border-radius: 9px; }
+header b { font-size: 15px; letter-spacing: .01em; }
+header span { color: rgb(255 255 255 / 62%); font-size: 13px; }
+.hero { background: var(--navy); color: #fff; padding: 44px 0 56px; }
+.hero .kicker { font: 600 12px/1 var(--mono); letter-spacing: .12em; color: rgb(255 255 255 / 62%); }
+.hero h1 { margin: 14px 0 10px; font-size: 30px; line-height: 1.25; letter-spacing: -.02em; }
+.hero p { margin: 0; max-width: 62ch; color: rgb(255 255 255 / 78%); }
+main { padding: 34px 0 60px; }
+section { margin: 0 0 28px; }
+h2 { font-size: 13px; letter-spacing: .1em; color: var(--muted); margin: 0 0 12px; font-family: var(--mono); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; }
+.card + .card { margin-top: 12px; }
+.card h3 { margin: 0 0 6px; font-size: 17px; }
+.card p { margin: 0; color: var(--muted); }
+a.go { display: inline-block; margin-top: 14px; background: var(--navy); color: #fff;
+       text-decoration: none; font-weight: 700; padding: 10px 18px; border-radius: 9px; }
+a.go:hover { background: var(--navy-hi); }
+code { font: 13px var(--mono); background: var(--panel); padding: 2px 6px; border-radius: 5px; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 0; }
+dt { font: 13px var(--mono); color: var(--navy); }
+dd { margin: 0; color: var(--muted); }
+footer { border-top: 1px solid var(--line); padding: 22px 0 40px; color: var(--muted); font-size: 13px; }
+@media (max-width: 560px) { .hero h1 { font-size: 24px; } dl { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header><div class="wrap"><svg class="mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#fff"/><text x="32" y="34" text-anchor="middle" dominant-baseline="central" font-family="Inter,system-ui,sans-serif" font-size="22" font-weight="800" fill="#1b3a6b">eID</text></svg><b>eID Gerege</b><span>· Нөөцлөлт</span></div></header>
+
+<div class="hero"><div class="wrap">
+  <div class="kicker">НӨӨЦЛӨЛТ · backups.eid.gerege.mn</div>
+  <h1>Шалгагдаагүй нөөцлөлт бол нөөцлөлт биш</h1>
+  <p>Энэ домэйн нь файл өгдөггүй — журмыг л хэлнэ: юу авдаг, хаана хэвтдэг,
+     хэр удаан үлддэг, ямар үед хэн мэддэг, хэрхэн сэргээдэг.</p>
+</div></div>
+
+<main class="wrap">
+  <section>
+    <h2>01 · ЮУ АВДАГ ВЭ</h2>
+    <div class="card">
+      <h3>Бүтэн pg_dump, өдөр бүр</h3>
+      <p><code>platform_db</code>-ийн бүтэн dump, gzip-ээр шахагдана. Иргэний
+         бүртгэл, байгууллага, эрх, сессийн түүх — бүгд нэг файлд.
+         <code>deploy/scripts/backup.sh</code> үүнийг cron дээрээс хийнэ.</p>
+      <dl>
+        <dt>Хаана</dt><dd><code>/var/backups/eid/</code> (хостын диск)</dd>
+        <dt>Хэр удаан</dt><dd>14 хоног (<code>BACKUP_KEEP_DAYS</code>)</dd>
+        <dt>Хэзээ</dt><dd>өдөр бүр 03:15, Asia/Ulaanbaatar</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section>
+    <h2>02 · ХЭН МЭДЭХ ВЭ</h2>
+    <div class="card">
+      <h3>Хоёр газар бүртгэгдэнэ</h3>
+      <p>Скрипт үр дүнгээ өгөгдлийн сангийн <code>platform_backups</code> хүснэгтэд
+         бичнэ — операторын консол түүнийг уншина. Мөн node_exporter-ийн
+         textfile хавтас руу <code>nexus_backup_last_success_timestamp_seconds</code>
+         гэх хэмжүүр бичнэ — Prometheus түүнийг уншина.</p>
+      <p style="margin-top:10px">Хоёулаа хэрэгтэй: эхнийх нь «хамгийн сүүлд хэзээ
+         болсон бэ» гэдэгт хариулна, хоёр дахь нь шөнө дунд хэн нэгэнд
+         сэрэмжлүүлэг илгээж чадах цорын ганц зам.</p>
+    </div>
+    <div class="card">
+      <h3>Амжилтгүй нь ч бүртгэгдэнэ</h3>
+      <p>Хоосон dump (10 КБ-аас бага) нь амжилтгүйд тооцогдоно: pg_dump алдаагүй
+         дуусаад юу ч бичээгүй байх нь амжилттай харагдах бүтэлгүйтлийн сонгодог
+         хэлбэр.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>03 · ӨӨР БАЙРШИЛ</h2>
+    <div class="card">
+      <h3>Шифрлээд, дараа нь илгээнэ</h3>
+      <p><code>BACKUP_AGE_RECIPIENT</code> ба <code>BACKUP_S3_*</code> тохируулагдсан
+         үед хуулбар нь age-ээр шифрлэгдээд объект санд очно. Хостод зөвхөн
+         НИЙТИЙН түлхүүр байна: эвдэрсэн платформ өөрийн илгээсэн зүйлээ уншиж
+         чадахгүй, санг барьсан хэн ч уншиж чадахгүй.</p>
+      <p style="margin-top:10px">Зорилт нь <b>өөр машин</b> дээрх сан
+         (<code>backups.nexus.gerege.mn</code>). Энэ хост дээр өөрийн сан
+         босгох нь нэг машин дээрх хоёр дахь хуулбар л болно — хүснэгт устгах,
+         буруу миграцаас хамгаална, хостоо алдахаас биш. Тиймээс энд сан
+         байхгүй.</p>
+      <p style="margin-top:10px">Энэ байрлуулалтын түлхүүр нь <b>нэмж чадна,
+         устгаж чадахгүй</b>: эзэмшигдсэн хост түүхийг арилгаж чадахгүй байх нь
+         ransomware-ийг даван гардаг шинж.</p>
+      <p style="margin-top:10px">Тохируулаагүй бол алхам бүхэлдээ алгасагдана
+         бөгөөд <code>nexus_backup_offsite_ok</code> нь 0 хэвээр байна — тэр нь
+         зөв: хуулбар өөр газар байхгүй гэдэг нь хэмжигдэх ёстой баримт.
+         <code>NexusBackupNotLeavingTheHost</code> дохио үүнийг хардаг.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>04 · СЭРГЭЭХ</h2>
+    <div class="card">
+      <h3>Гурван тушаал</h3>
+      <p>Нөөцлөлт нь сэргээж үзсэн өдрөө л нөөцлөлт болно. Журам нь:</p>
+      <p style="margin-top:10px"><code>gunzip -c /var/backups/eid/eid-&lt;stamp&gt;.sql.gz | docker exec -i gerege_eid_nexus_postgres psql -U postgres -d platform_db</code></p>
+      <p style="margin-top:10px">Dump нь <code>--clean --if-exists</code>-тэй тул
+         байгаа схемийн дээр буудаг. Үйлдвэрлэлийн сан руу шууд биш, эхлээд
+         хоосон сан руу сэргээж шалгана.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">eID Gerege · <a href="https://eid.gerege.mn">eid.gerege.mn</a></footer>
+</body>
+</html>

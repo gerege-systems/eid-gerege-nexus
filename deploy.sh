@@ -11,6 +11,8 @@ set -euo pipefail
 SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
 APP_DIR="$(dirname "$SRC_DIR")"
 COMPOSE="$SRC_DIR/deploy/docker-compose.yml"
+# Статик домэйнууд. Агуулга нь репод тул `git pull` бүрд шинэчлэгдэх ёстой.
+SITES="$SRC_DIR/deploy/docker-compose.sites.yml"
 
 [ -f "$APP_DIR/.env" ] || { echo "$APP_DIR/.env алга. .env.example-ээс хуулж, нууцуудыг нь бөглө." >&2; exit 1; }
 
@@ -24,6 +26,20 @@ docker compose -f "$COMPOSE" pull -q web || echo "анхааруулга: бүр
 # байгаа контейнерийг хэвээр үлдээж чадах бөгөөд тэгвэл эрүүл мэндийн шалгалт
 # ХУУЧИН хувилбар дээр ногоон өнгө өгнө.
 docker compose -f "$COMPOSE" up -d --force-recreate --remove-orphans
+
+# Статик домэйнууд (dwh, backups). Тусдаа төсөл тул платформын rollout-ыг
+# хойшлуулахгүй — унасан ч энэ скрипт үргэлжилнэ: хоёр тайлбар хуудас нь
+# байрлуулалт амжилттай болсон эсэхийг шийддэг зүйл биш.
+docker compose -f "$SITES" up -d --remove-orphans >/dev/null \
+  || echo "анхааруулга: статик домэйнуудыг шинэчилж чадсангүй" >&2
+
+# Ажиглалт, алдааны хөтлөлт нь ЗОРИУДААР энд байхгүй. Тэдгээр нь өөрсдийн
+# compose төсөлтэй бөгөөд платформын rollout тэднийг дахин асаах ёсгүй:
+# байрлуулалт бүрд арван таван ажиглалтын контейнер дахин үүсэх нь яг тэдний
+# ажиглах ёстой мөчид тэднийг сохлоно.
+#
+#   docker compose -f deploy/docker-compose.monitoring.yml --env-file ../.env up -d
+#   docker compose -f deploy/docker-compose.glitchtip.yml  --env-file ../.env up -d
 
 # Барьсан образ л ажиллаж байгаа эсэх. Дээрх мөрийн амлалтыг шалгаж байна.
 running="$(docker inspect -f '{{.Image}}' gerege_eid_nexus_backend)"

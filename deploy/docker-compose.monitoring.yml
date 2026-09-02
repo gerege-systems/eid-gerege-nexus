@@ -1,0 +1,366 @@
+# eID Gerege-ийн ажиглалтын стек.
+#
+# Тусдаа compose файл, тусдаа төсөл — санаатай: энэ стек бүхэлдээ унасан ч
+# платформ мэдэхгүй. `deploy/docker-compose.yml` доторх юу ч эндээс
+# хамаарахгүй, эндхийн ямар ч үйлчилгээ хүсэлтийн замд байхгүй, тиймээс
+# `docker compose -f deploy/docker-compose.monitoring.yml down` нь ямар ч
+# цагт хийхэд аюулгүй үйлдэл.
+#
+# Платформ руу түүний ӨӨРИЙН Docker сүлжээгээр хүрнэ (доорх `platform`
+# external network). Тэр нь Prometheus-ыг gerege_eid_nexus_backend:8080 руу,
+# exporter-ыг postgres руу хостын нийтэлсэн порт дундуур явуулахгүйгээр
+# хүргэдэг — тэдгээр портууд нь SSH tunnel-тэй оператортой ярихаар loopback
+# дээр уягдсан.
+#
+# Асаах:
+#   cd /opt/eid-nexus/src
+#   docker compose -f deploy/docker-compose.monitoring.yml --env-file ../.env up -d
+#
+# Заавал шаардлагатай: GRAFANA_ADMIN_PASSWORD, MONITORING_DB_PASSWORD. Бусад
+# бүгд анхдагчтай. Хоёрын хоёулаа санаатай заавал: admin/admin дээр сууж буй
+# Grafana бол өөр хүний дэд бүтцийн нээлттэй самбар, харин нууц үггүй
+# `monitoring` role нь postgres_exporter-ыг superuser болгох уруу таталт.
+#
+# `monitoring` role-ийн нууц үгийг нэг удаа өгнө (цөмийн 00044 миграц role-ыг
+# нууц үггүй үүсгэдэг — миграц бол репод хадгалагддаг файл):
+#
+#   docker exec -i gerege_eid_nexus_postgres psql -U postgres -d platform_db \
+#     -c "ALTER ROLE monitoring WITH PASSWORD '<generated>'"
+
+name: eid-nexus-monitoring
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: gerege_eid_nexus_prometheus
+    restart: unless-stopped
+    user: "65534:65534"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      # Хугацааны хязгаар нь асуултын урт, хэмжээний хязгаар нь дискний
+      # баталгаа: цуврал гэнэт олшрох нь зөвхөн хугацаагаар хязгаарлагдсан
+      # дискийг дүүргэдэг бөгөөд дүүрсэн диск Postgres-ыг хамт унагана.
+      - --storage.tsdb.retention.time=60d
+      - --storage.tsdb.retention.size=20GB
+      - --web.enable-lifecycle
+      # Tempo-гийн metrics generator span-ийн хэмжигдэхүүн ба үйлчилгээний
+      # графыг энд бичнэ. Энэ флаггүй бол Prometheus бичилтийг татгалзаж,
+      # Tempo-гийн хайлт эхлэх цэггүй болно.
+      - --web.enable-remote-write-receiver
+      # Exemplar: гистограмын нэг дээж дээр наалдсан trace id — хоцролтын
+      # графын удаан цэг нь түүнийг удаашруулсан trace руу хөтлөх холбоос
+      # болно. Энэ флаггүй бол Prometheus OpenMetrics хэлбэрийг гуйхгүй
+      # бөгөөд exemplar зөвхөн тэр хэлбэрээр аялдаг.
+      - --enable-feature=exemplar-storage
+      # external_labels доторх ${DEPLOYMENT_NAME}-ийг ЗӨВХӨН энэ флаг задалдаг
+      # — Prometheus өөр ямар ч тохиолдолд орчныг уншдаггүй.
+      - --enable-feature=expand-external-labels
+    environment:
+      DEPLOYMENT_NAME: ${DEPLOYMENT_NAME:-eid}
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus:ro
+      - gerege_eid_nexus_monitoring_prometheus:/prometheus
+    ports:
+      - "127.0.0.1:9091:9090"
+    networks:
+      - monitoring
+      - platform
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    container_name: gerege_eid_nexus_alertmanager
+    restart: unless-stopped
+    user: "65534:65534"
+    # Renderer нь бэлэн тохиргоог /tmp руу бичнэ: /etc/alertmanager нь зөвхөн
+    # уншигдахаар холбогдсон бөгөөд бэлэн тохиргоо нь SMTP-ийн нууц үг зөөнө.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        /etc/alertmanager/render-config.sh &&
+        exec /bin/alertmanager
+        --config.file=/tmp/alertmanager.yml
+        --storage.path=/alertmanager
+        --web.external-url=${MONITORING_PUBLIC_URL:-https://monitor.eid.gerege.mn}/alertmanager
+        --web.route-prefix=/
+    environment:
+      # Дохиог уншиж буй хүний цаг. Alertmanager нь StartsAt-ыг контейнерийн
+      # бүсээр үзүүлдэг бөгөөд 02:32 UTC гэж бичсэн мессежийг 10:32 харуулж
+      # буй утас барьсан хүнд өгөх нь хамгийн муу мөчид арифметик хийлгэж
+      # байгаа хэрэг.
+      TZ: ${ALERT_TIMEZONE:-Asia/Ulaanbaatar}
+      ALERT_EMAIL_TO: ${ALERT_EMAIL_TO:-}
+      ALERT_EMAIL_FROM: ${ALERT_EMAIL_FROM:-}
+      ALERT_SMTP_HOST: ${ALERT_SMTP_HOST:-}
+      ALERT_SMTP_USER: ${ALERT_SMTP_USER:-}
+      ALERT_SMTP_PASSWORD: ${ALERT_SMTP_PASSWORD:-}
+      ALERT_SMTP_REQUIRE_TLS: ${ALERT_SMTP_REQUIRE_TLS:-true}
+      ALERT_TELEGRAM_TOKEN: ${ALERT_TELEGRAM_TOKEN:-}
+      ALERT_TELEGRAM_CHAT_ID: ${ALERT_TELEGRAM_CHAT_ID:-}
+    volumes:
+      - ./monitoring/alertmanager:/etc/alertmanager:ro
+      - gerege_eid_nexus_monitoring_alertmanager:/alertmanager
+    ports:
+      - "127.0.0.1:9093:9093"
+    networks:
+      - monitoring
+      # Мөн платформын сүлжээнд: операторын консол нүүр хуудсандаа асаж буй
+      # дохиог уншина. Чиглэл нь энэ хэрэгцээг үүсгэнэ — Prometheus нь API-г
+      # СКРЭЙП хийхээр `platform`-д нэгдсэн бол энэ нь API Alertmanager-ыг
+      # уншиж байна. Шинээр нийтлэгдэх порт байхгүй.
+      - platform
+
+  # Trace-ууд. Backend нь OTEL_EXPORTER_OTLP_ENDPOINT-ээр үүн рүү заагаагүй
+  # л бол огт юу ч хийхгүй — тэр нь байрлуулалтын шийдвэр, энэ файлынх биш.
+  tempo:
+    image: grafana/tempo:2.7.1
+    container_name: gerege_eid_nexus_tempo
+    restart: unless-stopped
+    user: "10001:10001"
+    command: ["-config.file=/etc/tempo/tempo-config.yml"]
+    volumes:
+      - ./monitoring/tempo/tempo-config.yml:/etc/tempo/tempo-config.yml:ro
+      - gerege_eid_nexus_monitoring_tempo:/var/tempo
+    ports:
+      # 3200 нь Tempo-гийн өөрийн API (Grafana асуудаг), 4318 нь платформ
+      # span илгээдэг цэг — platform сүлжээн дээр тул backend контейнер
+      # түүнийг нэрээр нь дуудна.
+      - "127.0.0.1:3200:3200"
+      - "127.0.0.1:4318:4318"
+    networks:
+      - monitoring
+      - platform
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3200/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  loki:
+    image: grafana/loki:3.4.2
+    container_name: gerege_eid_nexus_loki
+    restart: unless-stopped
+    user: "10001:10001"
+    command: ["-config.file=/etc/loki/loki-config.yml"]
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - gerege_eid_nexus_monitoring_loki:/loki
+    ports:
+      - "127.0.0.1:3100:3100"
+    networks:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      # Loki нь ingester нь өөрийн ring-д нэгдэх эхний арван таван секундэд
+      # өөрийгөө бэлэн биш гэж хэлдэг. Хүлээх хугацаагүй бол compose түүнийг
+      # хүйтэн асаалт дээр эрүүл бус гэж тэмдэглэж, alloy хэвийн контейнер
+      # хүлээж суух болно.
+      start_period: 60s
+
+  # Логийн цуглуулагч. Docker-ийн socket-ыг ЗӨВХӨН УНШИХААР авна: ямар
+  # контейнер байгааг мэдэх, тэдний гаралтыг дагах хэрэгтэй бөгөөд өөр юу ч
+  # хэрэггүй — бичихээр холбогдсон socket нь өөр нэрээр хэлбэл хостын root.
+  alloy:
+    image: grafana/alloy:v1.7.1
+    container_name: gerege_eid_nexus_alloy
+    restart: unless-stopped
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    environment:
+      DEPLOYMENT_NAME: ${DEPLOYMENT_NAME:-eid}
+    volumes:
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - gerege_eid_nexus_monitoring_alloy:/var/lib/alloy/data
+    ports:
+      - "127.0.0.1:12345:12345"
+    networks:
+      - monitoring
+    depends_on:
+      loki:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:13.2.0
+    container_name: gerege_eid_nexus_grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+      GF_SERVER_ROOT_URL: ${MONITORING_PUBLIC_URL:-https://monitor.eid.gerege.mn}/grafana
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      # Ажиглалтын самбарт хэн ч бүртгүүлэхгүй.
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_DEFAULT_THEME: ${GRAFANA_DEFAULT_THEME:-light}
+      # Хэл. `sv-SE` нь Монгол хэлний үүр: Grafana-д `mn` locale байхгүй тул
+      # deploy/scripts/setup_monitor_branding.sh тэр chunk-ийг монгол
+      # орчуулгаар nginx дээр орлуулдаг. Скриптийг ажиллуулаагүй хостод энэ
+      # утгыг битгий sv-SE болго — швед хэл гарч ирнэ.
+      GF_USERS_DEFAULT_LANGUAGE: ${GRAFANA_DEFAULT_LANGUAGE:-en-US}
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      # Дохионы дэлгэц нь Prometheus-ийн дүрэм ба Alertmanager-ийн төлөвийг
+      # уншина. Grafana-гийн өөрийн дохионы хөдөлгүүр унтраалттай: хоёр
+      # систем хоёр багц дүрэм бодох нь «ямар нэг зүйл буруу байна уу» гэсэн
+      # асуултад хоёр хариулт өгнө.
+      GF_UNIFIED_ALERTING_ENABLED: "false"
+      GF_ALERTING_ENABLED: "false"
+
+      # ---------------------------------------------- платформоор нэвтрэх
+      #
+      # Grafana энэ суулгацын өөрийн OIDC provider-оос хэн болохыг асууна:
+      # операторууд аль хэдийн байгаа бүртгэлээрээ ордог, платформын админ нь
+      # Grafana-ийн сервер админ болно.
+      #
+      # Дээрх GF_SECURITY_ADMIN_PASSWORD хэвээр байна — энэ нь буцаж орох зам.
+      # Унасан танигч нь нээгдэхгүй ажиглалтын стек болох ёсгүй: тэр нь яг
+      # түүнийг хэрэгтэй болгодог цаг.
+      GF_AUTH_GENERIC_OAUTH_ENABLED: ${GRAFANA_OAUTH_ENABLED:-false}
+      GF_AUTH_GENERIC_OAUTH_NAME: ${GRAFANA_OAUTH_NAME:-eID Gerege}
+      GF_AUTH_GENERIC_OAUTH_CLIENT_ID: ${GRAFANA_OAUTH_CLIENT_ID:-}
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: ${GRAFANA_OAUTH_CLIENT_SECRET:-}
+      GF_AUTH_GENERIC_OAUTH_SCOPES: "openid profile email roles"
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}/oauth2/auth
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}/oauth2/token
+      GF_AUTH_GENERIC_OAUTH_API_URL: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}/oauth2/userinfo
+      GF_AUTH_GENERIC_OAUTH_EMAIL_ATTRIBUTE_PATH: email
+      GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH: email
+      GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH: name
+      # Claim дээрх JMESPath. Платформын админ биш хэн ч самбарыг уншиж
+      # чадах ч юуг ч өөрчилж чадахгүй.
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "platform_admin && 'GrafanaAdmin' || 'Viewer'"
+      # Дээрх зам сервер админы эрх өгөхийн өмнө заавал хэрэгтэй; үүнгүйгээр
+      # GrafanaAdmin нь чимээгүйхэн зүгээр Admin болно.
+      GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN: "true"
+      # Юу ч олдохгүй зам нь хүнийг гаднаа үлдээх ёсгүй — тэр нь эрхгүй
+      # бүртгэлийн байх ёстой зүйл болох Viewer болно.
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_STRICT: "false"
+      GF_AUTH_GENERIC_OAUTH_USE_PKCE: "true"
+      GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: "true"
+      # Grafana-аас гарахад браузар платформоос ч гарна. `client_id` нь
+      # заавал: logout цэг клиентийг түүгээр тодорхойлж, буцах хаягийг ТЭР
+      # клиентийн бүртгэлтэй жагсаалттай тулгадаг.
+      GF_AUTH_SIGNOUT_REDIRECT_URL: ${PUBLIC_ORIGIN:-https://eid.gerege.mn}/oauth2/logout?client_id=${GRAFANA_OAUTH_CLIENT_ID:-}&post_logout_redirect_uri=${MONITORING_PUBLIC_URL:-https://monitor.eid.gerege.mn}/grafana/login
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - gerege_eid_nexus_monitoring_grafana:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3009:3000"
+    networks:
+      - monitoring
+      # Платформын сүлжээ: Grafana нь OIDC-ийн token болон userinfo цэгүүдийг
+      # сервер талаас дууддаг. Хэрэв зөвхөн monitoring сүлжээнд байвал тэр
+      # дуудлагууд нийтийн домэйн дундуур гарч, DNS ба TLS-ээс хамаарна.
+      - platform
+    depends_on:
+      - prometheus
+
+  # Хостын диск, санах ой, CPU. Нөөцлөлт ба TLS-ийн скриптүүд өөрсдийн
+  # хэмжигдэхүүнийг доорх textfile хавтас руу бичдэг — тэр хавтас хоосон
+  # байхад ч зам нь тодорхойлогдсон байх ёстой, эс бөгөөс эхний бичилт
+  # хэмжигдэхгүй өнгөрнө.
+  node-exporter:
+    image: prom/node-exporter:v1.9.0
+    container_name: gerege_eid_nexus_node_exporter
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+      - --collector.textfile.directory=/var/lib/node_exporter
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+      - /var/lib/node_exporter:/var/lib/node_exporter:ro
+    ports:
+      - "127.0.0.1:9100:9100"
+    networks:
+      - monitoring
+
+  # Контейнер тус бүрийн CPU, санах ой, дахин асалт. `NexusContainerRestarting`
+  # дохио эндээс ирнэ.
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: gerege_eid_nexus_cadvisor
+    restart: unless-stopped
+    privileged: true
+    command:
+      - --housekeeping_interval=30s
+      - --docker_only=true
+      # containerd-ийн handler. `moby` нь Docker өөрийн контейнеруудыг
+      # ажиллуулдаг нэрийн зай.
+      - --containerd=/run/containerd/containerd.sock
+      - --containerd-namespace=moby
+    pid: host
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+      - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
+    devices:
+      - /dev/kmsg
+    ports:
+      - "127.0.0.1:8085:8080"
+    networks:
+      - monitoring
+
+  # pg_stat_* харагдацуудыг `monitoring` role-оор уншина — цөмийн 00044 миграц
+  # түүнийг үүсгэдэг бөгөөд pg_monitor-оос өөр юу ч агуулаагүй. postgres
+  # superuser-ээр биш: superuser-ээр ажиллаж байгаад эвдрэлд орсон exporter
+  # нь бүхэл өгөгдлийн сан юм.
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    container_name: gerege_eid_nexus_postgres_exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: >-
+        postgresql://monitoring:${MONITORING_DB_PASSWORD:?MONITORING_DB_PASSWORD is required}@gerege_eid_nexus_postgres:5432/platform_db?sslmode=disable
+      PG_EXPORTER_EXCLUDE_DATABASES: template0,template1
+    ports:
+      - "127.0.0.1:9187:9187"
+    networks:
+      - monitoring
+      - platform
+
+networks:
+  # Энэ стекийн хэсгүүдийн хооронд.
+  monitoring:
+    driver: bridge
+
+  # Платформын өөрийн сүлжээ — үүсгэхгүй, нэгдэнэ. Нэр нь платформын compose
+  # төслийн анхдагч сүлжээ (`name: eid-nexus` + `_default`). Өөр бол
+  # NEXUS_NETWORK-оор дарна; `docker network ls` аль нь болохыг хэлнэ.
+  platform:
+    external: true
+    name: ${NEXUS_NETWORK:-eid-nexus_default}
+
+volumes:
+  # Нэрийг ил бичсэн нь: эс бөгөөс compose нь төслийн хавтаснаас гаргадаг тул
+  # стекийг зөөх нь Prometheus-ыг хоосон өгөгдлийн хавтас дээр чимээгүйхэн
+  # асаана — эрүүл контейнер, түүхгүй, юу ч алдагдсаныг хэлэх тэмдэггүй.
+  gerege_eid_nexus_monitoring_prometheus:
+    name: gerege_eid_nexus_monitoring_prometheus
+  gerege_eid_nexus_monitoring_alertmanager:
+    name: gerege_eid_nexus_monitoring_alertmanager
+  gerege_eid_nexus_monitoring_tempo:
+    name: gerege_eid_nexus_monitoring_tempo
+  gerege_eid_nexus_monitoring_loki:
+    name: gerege_eid_nexus_monitoring_loki
+  gerege_eid_nexus_monitoring_alloy:
+    name: gerege_eid_nexus_monitoring_alloy
+  gerege_eid_nexus_monitoring_grafana:
+    name: gerege_eid_nexus_monitoring_grafana

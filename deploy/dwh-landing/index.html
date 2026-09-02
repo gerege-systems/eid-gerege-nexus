@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Дата агуулах — eID Gerege</title>
+<meta name="description" content="eID Gerege-ийн дата агуулах, BI ба AI давхаргын зураглал.">
+<meta name="theme-color" content="#1b3a6b">
+<style>
+/*
+ * eID Gerege-ийн туслах домэйнуудын нийтлэг хуудас.
+ *
+ * Гадны фонт, скрипт, зураг байхгүй — тэмдэг хүртэл SVG-ээр хуудсан дотор
+ * сууна. Нөөцлөлт, ажиглалтын тухай хуудас өөрийгөө үзүүлэхийн тулд
+ * гуравдагч этгээдээс хамаарах ёсгүй: тэр нь хуудасны агуулгатай шууд
+ * зөрчилдөнө.
+ *
+ * Өнгө нь BRAND_THEME_COLOR (#1b3a6b) — eid.gerege.mn-ээс энд ирсэн хүн
+ * өөр бүтээгдэхүүн рүү орсон мэт мэдрэхгүй.
+ */
+:root {
+  color-scheme: light;
+  --navy: #1b3a6b;
+  --navy-hi: #24518f;
+  --ink: #16233a;
+  --muted: #64748b;
+  --page: #f6f8fc;
+  --card: #fff;
+  --line: #dde4ee;
+  --panel: #eef3fb;
+  --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.6 var(--font); }
+.wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+header { background: var(--navy); color: #fff; padding: 18px 0; }
+header .wrap { display: flex; align-items: center; gap: 12px; }
+.mark { width: 34px; height: 34px; border-radius: 9px; }
+header b { font-size: 15px; letter-spacing: .01em; }
+header span { color: rgb(255 255 255 / 62%); font-size: 13px; }
+.hero { background: var(--navy); color: #fff; padding: 44px 0 56px; }
+.hero .kicker { font: 600 12px/1 var(--mono); letter-spacing: .12em; color: rgb(255 255 255 / 62%); }
+.hero h1 { margin: 14px 0 10px; font-size: 30px; line-height: 1.25; letter-spacing: -.02em; }
+.hero p { margin: 0; max-width: 62ch; color: rgb(255 255 255 / 78%); }
+main { padding: 34px 0 60px; }
+section { margin: 0 0 28px; }
+h2 { font-size: 13px; letter-spacing: .1em; color: var(--muted); margin: 0 0 12px; font-family: var(--mono); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; }
+.card + .card { margin-top: 12px; }
+.card h3 { margin: 0 0 6px; font-size: 17px; }
+.card p { margin: 0; color: var(--muted); }
+a.go { display: inline-block; margin-top: 14px; background: var(--navy); color: #fff;
+       text-decoration: none; font-weight: 700; padding: 10px 18px; border-radius: 9px; }
+a.go:hover { background: var(--navy-hi); }
+code { font: 13px var(--mono); background: var(--panel); padding: 2px 6px; border-radius: 5px; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 0; }
+dt { font: 13px var(--mono); color: var(--navy); }
+dd { margin: 0; color: var(--muted); }
+footer { border-top: 1px solid var(--line); padding: 22px 0 40px; color: var(--muted); font-size: 13px; }
+@media (max-width: 560px) { .hero h1 { font-size: 24px; } dl { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header><div class="wrap"><svg class="mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#fff"/><text x="32" y="34" text-anchor="middle" dominant-baseline="central" font-family="Inter,system-ui,sans-serif" font-size="22" font-weight="800" fill="#1b3a6b">eID</text></svg><b>eID Gerege</b><span>· Дата агуулах</span></div></header>
+
+<div class="hero"><div class="wrap">
+  <div class="kicker">ДАТА АГУУЛАХ · dwh.eid.gerege.mn</div>
+  <h1>Энэ домэйн нь амлалт биш, зураглал</h1>
+  <p>Өнөөдөр энд статик хуудас байна. Тэр нь дутуу байдал биш, санаатай:
+     хаяг нь эхэлж, агуулга нь дараа нь ирнэ. Ирэх зүйл юу болохыг доор бичсэн.</p>
+</div></div>
+
+<main class="wrap">
+  <section>
+    <h2>01 · ОДОО ЮУ БАЙНА</h2>
+    <div class="card">
+      <h3>Гүйлгээний сан, өөрөө</h3>
+      <p>eID Gerege-ийн бүх өгөгдөл нэг PostgreSQL дотор
+         (<code>platform_db</code>). Тайлан нь платформын дотроос гардаг,
+         тусдаа агуулах хараахан байхгүй.</p>
+    </div>
+    <div class="card">
+      <h3>Хэмжүүр — тусдаа</h3>
+      <p>Систем өөрийгөө хэмждэг тоонууд нь Prometheus дотор,
+         <a href="https://monitor.eid.gerege.mn">monitor.eid.gerege.mn</a> дээр.
+         Тэдгээр нь бизнесийн өгөгдөл биш бөгөөд энэ агуулахад орохгүй.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>02 · ЮУ ИРЭХ ВЭ</h2>
+    <div class="card">
+      <h3>Уншихад зориулсан хуулбар</h3>
+      <p>Эхний алхам нь агуулах биш, тусгаарлалт: хүнд асуулга гүйлгээний
+         санг удаашруулах ёсгүй. Уншигч хуулбар нь нэг контейнер, нэг
+         replication slot.</p>
+    </div>
+    <div class="card">
+      <h3>BI давхарга</h3>
+      <p>Metabase эсвэл Cube — самбарыг SQL мэддэггүй хүн барьж чаддаг байх нь
+         шалгуур. Аль нь болохыг эхний бодит асуулт шийднэ, урьдчилж биш.</p>
+    </div>
+    <div class="card">
+      <h3>AI давхарга</h3>
+      <p>Асуултыг байгалийн хэлээр асууж, хариуг нь тоогоор авах. Энэ нь BI
+         давхаргын ДЭЭР сууна, оронд нь биш: баталгаажуулах боломжгүй хариулт
+         нь тайлан биш.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>03 · ЯАГААД ХООСОН ХАЯГ ВЭ</h2>
+    <div class="card">
+      <h3>Хаяг эхэлж, стек дараа нь</h3>
+      <p>Энэ хуудас нь өөрийн контейнерт сууж байгаа нь санаатай (цөмийн
+         <code>docker-compose.dwh.yml</code>-тэй ижил): Metabase, Cube,
+         уншигч сан нэмэгдэх өдөр тэдгээр нь энэ хуудасны хажууд орно —
+         compose файлд мөр нэмэх ажил болохоос нүүлгэн шилжүүлэлт биш.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">eID Gerege · <a href="https://eid.gerege.mn">eid.gerege.mn</a></footer>
+</body>
+</html>

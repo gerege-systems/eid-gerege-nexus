@@ -1,0 +1,55 @@
+# Статик домэйнууд — dwh.eid.gerege.mn ба backups.eid.gerege.mn.
+#
+# Хостын nginx-ээс шууд файл өгч ч болох байсан. Контейнерт байгаа шалтгаан нь
+# цөмийн dwh стекийнхтэй ижил: агуулга нь репод, зам нь compose-д, тиймээс
+# шинэчлэх нь `git pull && docker compose -f … restart` — хостын файлын систем
+# рүү гараар хуулах алхам байхгүй. Мөн энэ хоёр хаяг нь дараа нь стек болж
+# ургана (Metabase, MinIO-гийн харагдац) бөгөөд тэр өдөр энэ файлд мөр нэмэх
+# ажил болно, нүүлгэн шилжүүлэлт биш.
+#
+# monitor.eid.gerege.mn-ийн landing хуудас энд БАЙХГҮЙ: түүнийг
+# deploy/scripts/setup_monitor_branding.sh /var/www/monitor руу суулгаж,
+# nginx шууд өгдөг — Grafana-гийн брэндлэлтийн файлуудтай нэг дор байх нь
+# тэднийг нэг скрипт удирдахын үндэс.
+#
+# Асаах:
+#   docker compose -f deploy/docker-compose.sites.yml up -d
+
+name: eid-nexus-sites
+
+services:
+  dwh: &static-site
+    image: nginx:1.29-alpine
+    container_name: gerege_eid_nexus_dwh
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3018:80"
+    volumes:
+      - ./dwh-landing:/usr/share/nginx/html:ro
+    # Гадаад хамаарал байхгүй, бичих зүйл байхгүй. Түр файлын хоёр зам л
+    # хэрэгтэй, тэднийг tmpfs-ээр өгөөд файлын системийг бүхэлд нь хаана.
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backups:
+    <<: *static-site
+    container_name: gerege_eid_nexus_backups
+    ports:
+      - "127.0.0.1:3019:80"
+    volumes:
+      - ./backups-landing:/usr/share/nginx/html:ro

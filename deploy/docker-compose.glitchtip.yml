@@ -1,0 +1,125 @@
+# GlitchTip — алдааны хөтлөлт, өөрийн стек болгож.
+#
+# docker-compose.monitoring.yml дотор profile болгож биш, тусад нь байгаа нь
+# хоёр шалтгаантай. Энэ нь дөрвөн нэмэлт контейнер ба хоёр дахь Postgres
+# бөгөөд байрлуулалт түүнээс флаг уншилгүйгээр татгалзаж чадах ёстой; мөн
+# compose нь файл доторх `${VAR:?}` бүрийг profile идэвхтэй эсэхээс үл хамаарч
+# задалдаг тул тэр файлд заавал шаардлагатай GLITCHTIP_SECRET_KEY байх нь
+# алдааны хөтлөлт хүсээгүй байрлуулалт дээр хэмжүүрийн стекийг ч асаахгүй
+# болгох байв.
+#
+# Sentry протоколоор ярина. Backend-ийн SENTRY_DSN, бүрхүүлийн
+# FRONTEND_SENTRY_DSN хоёр яг түүнтэй ярьдаг бөгөөд аль ч тал нь
+# GlitchTip-д тусгайлан бичигдээгүй — hosted Sentry-ийн DSN нь энэ файлыг
+# бүхэлд нь кодын өөрчлөлтгүйгээр орлоно.
+#
+# Асаах:
+#   docker compose -f deploy/docker-compose.glitchtip.yml --env-file ../.env up -d
+#
+# Дараа нь эхний хэрэглэгчийг үүсгэнэ (нээлттэй бүртгэл байхгүй):
+#   docker exec -it gerege_eid_nexus_glitchtip_web ./manage.py createsuperuser
+#
+# Заавал: GLITCHTIP_DB_PASSWORD, GLITCHTIP_SECRET_KEY.
+
+name: eid-nexus-glitchtip
+
+services:
+  # Өөрийн сан, платформынх ЗОРИУДААР биш. Алдаа хөтлөгч нь ажиглаж буй
+  # үйлчилгээнийхээ stack trace, үйл явдлын агуулгыг хадгалдаг; түүнийг
+  # иргэдийн өгөгдөлтэй нэг кластерт тавих нь тэр сан руу холболт барьж буй
+  # бас нэг зүйл, мөн өөр хүний миграцаар удирдагдах схем нэмэх хэрэг.
+  postgres:
+    image: postgres:16-alpine
+    container_name: gerege_eid_nexus_glitchtip_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: glitchtip
+      POSTGRES_USER: glitchtip
+      POSTGRES_PASSWORD: ${GLITCHTIP_DB_PASSWORD:?GLITCHTIP_DB_PASSWORD is required}
+      TZ: ${TZ:-Asia/Ulaanbaatar}
+    volumes:
+      - gerege_eid_nexus_glitchtip_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glitchtip -d glitchtip"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: gerege_eid_nexus_glitchtip_redis
+    restart: unless-stopped
+    # Celery-гийн дараалал. Дахин асалт дээр алдагдах нь хамгийн ихдээ бичигдэж
+    # амжаагүй үйл явдлууд — тиймээс тогтвортой хадгалалт ч, volume ч байхгүй.
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    image: glitchtip/glitchtip:v4.2.4
+    container_name: gerege_eid_nexus_glitchtip_migrate
+    command: ["./manage.py", "migrate"]
+    environment: &glitchtip_env
+      DATABASE_URL: postgres://glitchtip:${GLITCHTIP_DB_PASSWORD}@postgres:5432/glitchtip
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:?GLITCHTIP_SECRET_KEY is required}
+      GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-https://errors.eid.gerege.mn}
+      # Дотоод алдаа хөтлөгчид хэн ч өөрөө бүртгүүлэхгүй. Эхний хэрэглэгчийг
+      # `manage.py createsuperuser`-ээр үүсгэнэ; үүнийг асаалттай орхивол энэ
+      # хаана ил гарснаас үл хамааран бүртгэлийн маягт тавина.
+      ENABLE_OPEN_USER_REGISTRATION: "false"
+      DEFAULT_FROM_EMAIL: ${ALERT_EMAIL_FROM:-glitchtip@localhost}
+      # consolemail:// нь урилга, дохиог илгээхийн оронд контейнерийн лог руу
+      # бичнэ. `docker logs`-оос урилгын холбоосыг уншихад хангалттай; жинхэнэ
+      # URL тавибал хүргэгдэнэ.
+      EMAIL_URL: ${GLITCHTIP_EMAIL_URL:-consolemail://}
+      CELERY_WORKER_AUTOSCALE: "1,3"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    image: glitchtip/glitchtip:v4.2.4
+    container_name: gerege_eid_nexus_glitchtip_web
+    restart: unless-stopped
+    environment: *glitchtip_env
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    networks:
+      - default
+      # Мөн платформын сүлжээнд, ингэснээр backend үйл явдлыг хостын порт
+      # дундуур биш контейнерийн нэрээр илгээнэ.
+      - platform
+
+  worker:
+    image: glitchtip/glitchtip:v4.2.4
+    container_name: gerege_eid_nexus_glitchtip_worker
+    restart: unless-stopped
+    command: ["./bin/run-celery-with-beat.sh"]
+    environment: *glitchtip_env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+networks:
+  # Энэ стекийн өөрийнх — сан ба дараалал. Зөвхөн `web` түүнээс гадагш хүрнэ.
+  default:
+    driver: bridge
+
+  platform:
+    external: true
+    name: ${NEXUS_NETWORK:-eid-nexus_default}
+
+volumes:
+  gerege_eid_nexus_glitchtip_db:
+    name: gerege_eid_nexus_glitchtip_db
