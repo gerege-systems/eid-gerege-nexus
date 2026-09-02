@@ -1,0 +1,60 @@
+# Энэ репогийн native клиентүүд компайл хийгдэж байгаа эсэх.
+#
+# Цөмийн `native-clients.yml`-ийн хуулбар: тэр workflow нь `workflow_call`
+# гаргаж өгдөггүй тул дуудах боломжгүй. Хуулбар нь хийсэн агшнаасаа салбарлаж
+# эхэлдэг — цөмд `workflow_call` нэмэгдмэгц энэ файлыг `uses:` болгож хураана.
+#
+# pull_request дээр path шүүлтгүй ажиллаж байгаа нь санаатай. Шаардлагатай
+# шалгалт (required check) нь path-аар шүүгдсэн бол шүүлтэд таараагүй PR дээр
+# ХЭЗЭЭ Ч мэдээлдэггүй, тэгээд backend-ийн PR бүр хэзээ ч ажиллахгүй job-ыг
+# хүлээнэ. Цөмд яг тэр болж, main нь Android дээр эвдэрсэн хэвээр үлдсэн.
+name: Native clients
+
+on:
+  push:
+    branches: [main]
+    paths: ["native-apps/**", ".github/workflows/native-clients.yml"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: ./build.sh
+        working-directory: native-apps/desktop/macos
+      - run: swift test
+        working-directory: native-apps/mobile/ios
+      - run: xcodebuild -quiet -project eIDGeregeMN.xcodeproj -scheme eIDGeregeMN -destination 'generic/platform=iOS Simulator' build CODE_SIGNING_ALLOWED=NO
+        working-directory: native-apps/mobile/ios
+  windows:
+    # Kiosk ба POS нь шугамгүй хэвээр (shared/device_lines.json → provisioned:
+    # false) ч энд компайл хийгдэнэ: түгээхгүй код ч эвдэрсэн байх ёсгүй.
+    strategy:
+      matrix:
+        form_factor: [Desktop, Kiosk, POS]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet build eIDGeregeMN.csproj --configuration Release -p:FormFactor=${{ matrix.form_factor }}
+        working-directory: native-apps/desktop/windows
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: android-actions/setup-android@v4
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - run: ./gradlew :core:test :app:compileMobileDebugKotlin :app:compileTabletDebugKotlin :app:compileKioskDebugKotlin :app:compilePosDebugKotlin
+        working-directory: native-apps/mobile/android

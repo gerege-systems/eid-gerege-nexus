@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="auth_message_platform_private" xml:space="preserve"><value>Энэ платформ хаалттай горимд байна: зөвхөн урьдчилан бүртгэгдсэн хүн нэвтэрнэ. eID, ДАН, Google-ээр баталгаажсан ч бүртгэлгүй бол данс үүсэхгүй — байгууллагынхаа админаас урилга хүсэн үү.</value></data>
+  <data name="auth_view_set_password_invite" xml:space="preserve"><value>Нууц үгээ тохируулах</value></data>
+  <data name="auth_view_set_password_reset" xml:space="preserve"><value>Нууц үгээ шинэчлэх</value></data>
+  <data name="auth_field_new_password" xml:space="preserve"><value>Шинэ нууц үг</value></data>
+  <data name="auth_field_repeat_password" xml:space="preserve"><value>Дахин бичих</value></data>
+  <data name="auth_action_save_password" xml:space="preserve"><value>Хадгалах</value></data>
+  <data name="auth_hint_password_length" xml:space="preserve"><value>Дор хаяж 10 тэмдэгт. Урт нь нарийн төвөгтэйгээс илүү чухал.</value></data>
+  <data name="auth_message_password_mismatch" xml:space="preserve"><value>Хоёр нууц үг тохирохгүй байна.</value></data>
+  <data name="auth_message_password_failed" xml:space="preserve"><value>Хадгалж чадсангүй.</value></data>
+  <data name="auth_message_password_saved" xml:space="preserve"><value>Хадгаллаа. Нэвтрэх дэлгэц рүү шилжиж байна…</value></data>
+  <data name="auth_message_link_dead" xml:space="preserve"><value>Энэ холбоос хэрэглэгдсэн эсвэл хугацаа нь дууссан байна. Шинийг хүсэлт гаргана уу.</value></data>
+  <data name="auth_message_impersonation_starting" xml:space="preserve"><value>Байгууллага руу орж байна…</value></data>
+  <data name="auth_view_eyebrow" xml:space="preserve"><value>ҮНДЭСНИЙ ЦАХИМ ТАНИЛТ</value></data>
+  <data name="auth_view_title_lead" xml:space="preserve"><value>Баталгаатай identity.</value></data>
+  <data name="auth_view_title_highlight" xml:space="preserve"><value>Нэг удаагийн</value></data>
+  <data name="auth_view_title_tail" xml:space="preserve"><value>нэвтрэлт.</value></data>
+  <data name="auth_view_lede" xml:space="preserve"><value>eID Mongolia апп дээр хүсэлтийг зөвшөөрөхөд eID Gerege болон холбогдсон SSO аппууд таны баталгаажсан session-ийг ашиглана.</value></data>
+  <data name="auth_view_point_push" xml:space="preserve"><value>Регистрийн дугаараар push хүсэлт</value></data>
+  <data name="auth_view_point_qr" xml:space="preserve"><value>QR болон mobile App2App</value></data>
+  <data name="auth_view_point_rbac" xml:space="preserve"><value>Tenant RBAC ба audit хамгаалалт</value></data>
+  <data name="auth_view_platform_name" xml:space="preserve"><value>eID Gerege</value></data>
+  <data name="auth_signin_asker_note" xml:space="preserve"><value>eID Gerege — нэгдсэн нэвтрэлтээр нэвтрэх гэж байна</value></data>
+  <data name="auth_signin_title" xml:space="preserve"><value>Нэвтрэх</value></data>
+  <data name="auth_signin_lede" xml:space="preserve"><value>eID Mongolia App-аар нэвтрэх</value></data>
+  <data name="auth_signin_or" xml:space="preserve"><value>эсвэл</value></data>
+  <data name="auth_signin_google" xml:space="preserve"><value>Google-ээр нэвтрэх</value></data>
+  <data name="auth_signin_google_soon" xml:space="preserve"><value>Google нэвтрэлт удахгүй</value></data>
+  <data name="auth_signin_help" xml:space="preserve"><value>Тусламж хэрэгтэй юу?</value></data>
+  <data name="auth_eid_title" xml:space="preserve"><value>eID Mongolia</value></data>
+  <data name="auth_eid_instruction" xml:space="preserve"><value>РД эсвэл иргэний бүртгэлийн дугаараа оруулна уу. Утсан дээрх eID Mongolia App-д мэдэгдэл ирнэ.</value></data>
+  <data name="auth_eid_subtitle" xml:space="preserve"><value>Үндэсний цахим үнэмлэхээр баталгаажна</value></data>
+  <data name="auth_eid_tab_id" xml:space="preserve"><value>Регистрийн дугаар</value></data>
+  <data name="auth_eid_tab_qr" xml:space="preserve"><value>QR код</value></data>
+  <data name="auth_eid_reg_number" xml:space="preserve"><value>Регистрийн дугаар</value></data>
+  <data name="auth_eid_reg_number_placeholder" xml:space="preserve"><value>АА00112233</value></data>
+  <data name="auth_eid_send_request" xml:space="preserve"><value>eID апп руу хүсэлт илгээх</value></data>
+  <data name="auth_eid_verification_code" xml:space="preserve"><value>Баталгаажуулах код</value></data>
+  <data name="auth_eid_confirm_hint" xml:space="preserve"><value>Апп дээрх кодтой тулгаад зөвшөөрнө үү</value></data>
+  <data name="auth_eid_footer" xml:space="preserve"><value>Нууц үг дамжуулахгүй · Баталгаажуулалт eID апп дотор хийгдэнэ</value></data>
+  <data name="auth_action_retry" xml:space="preserve"><value>Дахин оролдох</value></data>
+  <data name="auth_action_cancel" xml:space="preserve"><value>Цуцлах</value></data>
+  <data name="auth_action_admin_disclosure" xml:space="preserve"><value>Системийн админ нэвтрэлт</value></data>
+  <data name="auth_action_admin_sign_in" xml:space="preserve"><value>Админаар нэвтрэх</value></data>
+  <data name="auth_field_email" xml:space="preserve"><value>И-мэйл</value></data>
+  <data name="auth_field_password" xml:space="preserve"><value>Нууц үг</value></data>
+  <data name="auth_field_staff_pin" xml:space="preserve"><value>Ажилтны PIN</value></data>
+  <data name="auth_action_app_to_app" xml:space="preserve"><value>eID апп-аар шууд нэвтрэх</value></data>
+  <data name="auth_action_staff_sign_in" xml:space="preserve"><value>Ээлжийн ажилтнаар нэвтрэх</value></data>
+  <data name="auth_message_starting" xml:space="preserve"><value>Хүсэлт үүсгэж байна…</value></data>
+  <data name="auth_message_scan_qr" xml:space="preserve"><value>eID Mongolia апп-аар QR кодыг уншуулна уу.</value></data>
+  <data name="auth_message_sent_push" xml:space="preserve"><value>Таны eID Mongolia апп руу хүсэлт илгээлээ.</value></data>
+  <data name="auth_message_expires_in" xml:space="preserve"><value>Хүсэлтийн хугацаа: {time}</value></data>
+  <data name="auth_message_expired" xml:space="preserve"><value>Хүсэлтийн хугацаа дууслаа.</value></data>
+  <data name="auth_message_refused" xml:space="preserve"><value>Та нэвтрэх хүсэлтийг татгалзлаа.</value></data>
+  <data name="auth_message_success" xml:space="preserve"><value>Амжилттай. Систем рүү шилжиж байна…</value></data>
+  <data name="auth_message_error_link" xml:space="preserve"><value>eID баталгаажуулалтыг eID Gerege хэрэглэгчтэй холбож чадсангүй</value></data>
+  <data name="auth_message_error_service" xml:space="preserve"><value>eID Mongolia үйлчилгээтэй холбогдож чадсангүй</value></data>
+  <data name="auth_message_error_password" xml:space="preserve"><value>Нэвтрэх боломжгүй байна</value></data>
+  <data name="auth_sso_checking" xml:space="preserve"><value>Нэвтрэх аргыг тодруулж байна…</value></data>
+  <data name="auth_sso_redirecting" xml:space="preserve"><value>{provider} рүү шилжиж байна…</value></data>
+  <data name="auth_sso_lede" xml:space="preserve"><value>Энэ суулгац хэн болохыг тань {provider} дээр баталгаажуулна. Тэнд нэвтэрсэн бол дахин асуухгүй.</value></data>
+  <data name="auth_sso_card_title" xml:space="preserve"><value>{provider}-ээр нэвтэрнэ</value></data>
+  <data name="auth_sso_card_body" xml:space="preserve"><value>Нууц үг энд оруулахгүй. {provider} таныг баталгаажуулаад буцаана.</value></data>
+  <data name="auth_sso_sign_in" xml:space="preserve"><value>{provider}-ээр үргэлжлүүлэх</value></data>
+  <data name="auth_sso_error_generic" xml:space="preserve"><value>Нэвтрэлт дуусгаж чадсангүй. Дахин оролдоно уу.</value></data>
+  <data name="auth_sso_error_stale" xml:space="preserve"><value>Нэвтрэх хүсэлтийн хугацаа дууссан байна. Дахин эхлүүлнэ үү.</value></data>
+  <data name="auth_sso_error_unreachable" xml:space="preserve"><value>Нэвтрэлтийн провайдертай холбогдож чадсангүй.</value></data>
+  <data name="auth_sso_error_denied" xml:space="preserve"><value>Нэвтрэх хүсэлт зөвшөөрөгдсөнгүй.</value></data>
+  <data name="auth_sso_error_email_unverified" xml:space="preserve"><value>Google таны и-мэйл хаягийг баталгаажуулаагүй байна.</value></data>
+  <data name="auth_sso_error_domain_not_allowed" xml:space="preserve"><value>Энэ и-мэйлийн домэйнд нэвтрэх эрх нээгээгүй байна.</value></data>
+  <data name="auth_sso_error_binding" xml:space="preserve"><value>Баталгаажуулалтыг эхлүүлж чадсангүй. Түр хүлээгээд дахин оролдоно уу.</value></data>
+  <data name="profile_loading" xml:space="preserve"><value>Ачаалж байна…</value></data>
+  <data name="profile_link_eid" xml:space="preserve"><value>eID-ээ холбох</value></data>
+  <data name="profile_link_eid_note" xml:space="preserve"><value>eID холбосноор Гэрэгэ дугаар тань энэ дансанд бүртгэгдэнэ. Байгууллагууд таны хүсэлтийн хариуг тэр дугаараар тань олж мэдэгддэг тул үүнгүйгээр хариу ирэхгүй.</value></data>
+  <data name="profile_message_no_organisations" xml:space="preserve"><value>Та ямар нэг байгууллагад харьяалагдаагүй байна.</value></data>
+  <data name="me_view_requests_title" xml:space="preserve"><value>Миний хүсэлтүүд</value></data>
+  <data name="me_view_requests_subtitle" xml:space="preserve"><value>Та байгууллагуудад гаргасан хүсэлтүүдийнхээ төлөвийг эндээс харна. Баримт, нотолгоо нь тухайн байгууллагад үлдэнэ.</value></data>
+  <data name="me_message_no_requests" xml:space="preserve"><value>Одоогоор хүсэлт алга. Байгууллагад хүсэлт гаргахад тэр нь энд гарч ирнэ.</value></data>
+  <data name="me_field_code" xml:space="preserve"><value>Үйлчилгээ</value></data>
+  <data name="me_field_provider" xml:space="preserve"><value>Хаана</value></data>
+  <data name="me_field_status" xml:space="preserve"><value>Төлөв</value></data>
+  <data name="me_field_answer" xml:space="preserve"><value>Хариу</value></data>
+  <data name="me_field_updated" xml:space="preserve"><value>Шинэчлэгдсэн</value></data>
+  <data name="me_view_ask_title" xml:space="preserve"><value>Байгууллагад нэгдэх</value></data>
+  <data name="me_message_joined" xml:space="preserve"><value>{name}-д нэгдлээ.</value></data>
+  <data name="me_action_open_workspace" xml:space="preserve"><value>Тийш нь орох</value></data>
+  <data name="me_view_ask_subtitle" xml:space="preserve"><value>Байгууллагын нэрийг (хаяган дахь богино нэр) бичээд хүсэлт илгээнэ. Тэдний админ хариулна.</value></data>
+  <data name="me_field_slug_placeholder" xml:space="preserve"><value>байгууллагын богино нэр</value></data>
+  <data name="me_field_message_placeholder" xml:space="preserve"><value>Хэн болохоо танилцуулна уу (заавал биш)</value></data>
+  <data name="me_action_ask" xml:space="preserve"><value>Хүсэлт илгээх</value></data>
+  <data name="me_view_lookup_hint" xml:space="preserve"><value>Хэнд хандахаа мэдэхгүй бол үйлчилгээгээрээ хайна уу.</value></data>
+  <data name="me_field_lookup_placeholder" xml:space="preserve"><value>үйлчилгээний нэр эсвэл код</value></data>
+  <data name="me_action_lookup" xml:space="preserve"><value>Хайх</value></data>
+  <data name="me_action_choose" xml:space="preserve"><value>Сонгох</value></data>
+  <data name="me_message_no_providers" xml:space="preserve"><value>Ийм үйлчилгээг нийтэлсэн байгууллага алга.</value></data>
+  <data name="profile_stat_organisations" xml:space="preserve"><value>Байгууллага</value></data>
+  <data name="profile_stat_identities" xml:space="preserve"><value>Таних тэмдэг</value></data>
+  <data name="profile_stat_sessions" xml:space="preserve"><value>Нээлттэй session</value></data>
+  <data name="profile_stat_since" xml:space="preserve"><value>Бүртгүүлсэн</value></data>
+  <data name="profile_title" xml:space="preserve"><value>Миний профайл</value></data>
+  <data name="profile_identities" xml:space="preserve"><value>Таны таних тэмдгүүд</value></data>
+  <data name="profile_identities_lede" xml:space="preserve"><value>Эдгээрээр та энэ платформд нэвтэрдэг. Провайдер бүрийн юу хэлснийг доор нь харж болно.</value></data>
+  <data name="profile_linked_provider" xml:space="preserve"><value>Холбогдсон {provider}</value></data>
+  <data name="profile_verified" xml:space="preserve"><value>Баталгаажсан</value></data>
+  <data name="profile_link_error_session_expired" xml:space="preserve"><value>Нэвтрэлт дуусжээ. Дахин нэвтэрч байж холбоно уу.</value></data>
+  <data name="profile_link_error_already_linked_elsewhere" xml:space="preserve"><value>Энэ Google хаяг өөр бүртгэлд холбогдсон байна. Тэндээс нь салгаж байж энд холбоно.</value></data>
+  <data name="profile_link_error_google_not_configured" xml:space="preserve"><value>Энэ платформ дээр Google-ээр нэвтрэх тохируулаагүй байна.</value></data>
+  <data name="profile_link_error_sso_required" xml:space="preserve"><value>Энэ платформ нь өөрийн SSO провайдераар нэвтэрдэг тул Google холбох боломжгүй.</value></data>
+  <data name="profile_link_error_provider_unreachable" xml:space="preserve"><value>Google-тэй холбогдож чадсангүй. Дараа дахин оролдоно уу.</value></data>
+  <data name="profile_link_error_email_unverified" xml:space="preserve"><value>Google тэр хаягийг баталгаажуулаагүй байна.</value></data>
+  <data name="profile_link_error_domain_not_allowed" xml:space="preserve"><value>Тэр хаягийн домэйныг энэ платформ зөвшөөрдөггүй.</value></data>
+  <data name="profile_link_error_unknown" xml:space="preserve"><value>Холбож чадсангүй ({code}).</value></data>
+  <data name="profile_link_google" xml:space="preserve"><value>Google хаягаа холбох</value></data>
+  <data name="profile_link_google_note" xml:space="preserve"><value>Та хэн болохоо аль хэдийн баталсан тул зөвхөн Google дээрээ зөвшөөрөл өгнө. Дараа нь Google-ээр шууд нэвтэрч болно.</value></data>
+  <data name="profile_unlink" xml:space="preserve"><value>Салгах</value></data>
+  <data name="profile_unlinking" xml:space="preserve"><value>Салгаж байна…</value></data>
+  <data name="profile_unlink_confirm" xml:space="preserve"><value>{provider}-ийг салгах уу? Дараа нь түүгээр нэвтрэхэд эхнийх шигээ eID-ээр баталгаажуулна.</value></data>
+  <data name="profile_linked_at" xml:space="preserve"><value>Холбогдсон</value></data>
+  <data name="profile_last_seen" xml:space="preserve"><value>Сүүлд</value></data>
+  <data name="profile_show_claims" xml:space="preserve"><value>{count} мэдээллийг харах</value></data>
+  <data name="profile_hide_claims" xml:space="preserve"><value>Нуух</value></data>
+  <data name="profile_no_identities" xml:space="preserve"><value>Холбогдсон таних тэмдэг алга.</value></data>
+  <data name="profile_organisations" xml:space="preserve"><value>Харьяалагдах байгууллага</value></data>
+  <data name="auth_bind_title" xml:space="preserve"><value>Бүртгэл үүсгэх</value></data>
+  <data name="auth_bind_subtitle" xml:space="preserve"><value>{provider}-ээр таныг баталгаажууллаа. Үлдсэн нэг алхам.</value></data>
+  <data name="auth_bind_from_provider" xml:space="preserve"><value>{provider}-ээс ирсэн</value></data>
+  <data name="auth_bind_from_eid" xml:space="preserve"><value>eID Mongolia-гаас авах</value></data>
+  <data name="auth_bind_consent_body" xml:space="preserve"><value>Эдгээр мэдээллийг eID Gerege-д хадгалж, таны профайл дээр харуулна. Хэн болохыг тань eID баталгаажуулна — энэ нь зөвхөн нэг удаа.</value></data>
+  <data name="auth_bind_agree" xml:space="preserve"><value>Зөвшөөрч, үргэлжлүүлэх</value></data>
+  <data name="auth_bind_verify_title" xml:space="preserve"><value>eID-ээр баталгаажуулах</value></data>
+  <data name="auth_bind_verify_lede" xml:space="preserve"><value>Регистрийн дугаараа оруулах эсвэл QR уншуулна уу. Дараагийн удаад шууд нэвтэрнэ.</value></data>
+  <data name="auth_bind_expired" xml:space="preserve"><value>Энэ хүсэлтийн хугацаа дууссан байна. Дахин нэвтэрнэ үү.</value></data>
+  <data name="auth_sso_error_no_account" xml:space="preserve"><value>Таныг баталгаажууллаа, гэхдээ энэ систем дээр танд бүртгэл алга. Байгууллагынхаа админд хандана уу.</value></data>
+</root>

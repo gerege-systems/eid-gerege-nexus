@@ -1,0 +1,112 @@
+{
+  "$comment": [
+    "Төхөөрөмжийн domain шугамуудын цорын ганц эх сурвалж.",
+    "",
+    "Дүрэм: backend ЦОР ГАНЦ. Шугам бүр өөрийн host-той ч /api/v1 нь бүгд",
+    "нэг ижил API upstream руу очно (nginx/device-lines.eid.gerege.mn.conf).",
+    "Тиймээс webview доторх дуудлага үргэлж SAME-ORIGIN — session cookie нь",
+    "SameSite=Strict хэвээр ажиллаж, CORS preflight огт үүсэхгүй.",
+    "",
+    "ХАЯГ НЬ FORM FACTOR-ЫГ НЭРЛЭНЭ, ПЛАТФОРМЫГ БИШ. Ширээн дээрх Mac ба",
+    "ширээн дээрх Windows хоёр нэг шугам: хүн тэр хоёртой ижил байдлаар",
+    "харьцдаг. Бүрхүүл өөрийгөө юу гэж хэлж байгаа нь тусдаа зүйл бөгөөд",
+    "window.GeregeShell.platform дээр хэвээр байна.",
+    "",
+    "kiosk ба pos нь desktop/mobile дотор ОРООГҮЙ: нэг Windows машин дээр",
+    "ажлын ширээний клиент ба киоск зэрэг ажиллаж болох тул тэдний хооронд",
+    "host-only cookie-гийн тусгаарлалт хэрэгтэй хэвээр. macOS ба Windows хоёр",
+    "нэг машин дээр хэзээ ч зэрэг ажиллахгүй тул тэдэнд хэрэггүй.",
+    "",
+    "Хөтчийн шугам (browserLine) хэвээр үлдэнэ — тэнд web app өөрөө бүрэн апп.",
+    "Төхөөрөмжийн шугам дээр web нь зөвхөн native хүрээн доторх ажлын муж.",
+    "",
+    "Энэ файл нь eID Gerege байрлуулалтынх. Код нь цөмийн бүрхүүл (Gerege",
+    "Nexus) боловч шугам, багц ID, харагдах нэр нь энэ бүтээгдэхүүнийх."
+  ],
+  "$provisioning": [
+    "АСААЛТТАЙ: desktop, mobile. АСААГҮЙ: kiosk, pos — код нь энд байгаа ч",
+    "хаяг нь байхгүй тул тэр хоёр build-ийг ТҮГЭЭХГҮЙ. `provisioned` талбар",
+    "нь тэдгээрийн цорын ганц үнэн.",
+    "",
+    "Асаалттай хоёрын ард (хост 38.180.117.155):",
+    "  1. DNS   desktop.eid.gerege.mn, mobile.eid.gerege.mn → 38.180.117.155",
+    "  2. nginx nginx/device-lines.eid.gerege.mn.conf",
+    "  3. TLS   certbot --nginx -d desktop.eid.gerege.mn -d mobile.eid.gerege.mn",
+    "  4. API   .env-ийн DEVICE_LINE_ORIGINS → ALLOWED_ORIGINS",
+    "",
+    "ШИНЭ шугам нэмэх дараалал (нэг шугамд):",
+    "  DNS → nginx server_name → certbot → DEVICE_LINE_ORIGINS",
+    "  → хамгийн СҮҮЛД клиентийн 'client' талбарт заасан мөр.",
+    "Эсрэг дараалал нь аппыг байхгүй host руу чиглүүлж унагаана: цөмийн репод",
+    "нэг удаа яг тэр болж, хэн ч нэвтэрч чадахгүй болсон."
+  ],
+  "browserLine": {
+    "platform": "browser",
+    "prodOrigin": "https://eid.gerege.mn",
+    "devOrigin": "http://localhost:3000"
+  },
+  "deviceLines": {
+    "desktop": {
+      "line": "https://desktop.eid.gerege.mn",
+      "platforms": [
+        "macos",
+        "windows"
+      ],
+      "provisioned": true,
+      "devOrigin": "http://localhost:3000",
+      "startRoute": "/",
+      "client": [
+        "native-apps/desktop/macos/NativeSettings.swift → lineOrigin",
+        "native-apps/desktop/windows/ShellProfile.cs → Desktop.LineOrigin"
+      ],
+      "home": "/line/desktop"
+    },
+    "mobile": {
+      "line": "https://mobile.eid.gerege.mn",
+      "platforms": [
+        "ios",
+        "android"
+      ],
+      "provisioned": true,
+      "devOrigin": "http://localhost:3000 (Android эмулятор дээр http://10.0.2.2:3000)",
+      "startRoute": "/",
+      "client": [
+        "native-apps/mobile/ios/Sources/GeregeShellKit/DeviceLine.swift → origin",
+        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin"
+      ],
+      "home": "/line/mobile"
+    },
+    "kiosk": {
+      "line": "https://kiosk.eid.gerege.mn",
+      "platforms": [
+        "windows",
+        "android"
+      ],
+      "provisioned": false,
+      "devOrigin": "http://localhost:3000",
+      "startRoute": "/",
+      "client": [
+        "native-apps/desktop/windows/ShellProfile.cs → Kiosk.LineOrigin",
+        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin (kiosk flavor)"
+      ],
+      "home": "/line/kiosk",
+      "$note": "Хаяг нь АСААГҮЙ. Код нь цөмөөс ирсэн хэвээр байгаа ч DNS/nginx/TLS/ALLOWED_ORIGINS дөрвийг хийхээс өмнө энэ build-ийг түгээвэл апп байхгүй host руу чиглэж унана."
+    },
+    "pos": {
+      "line": "https://pos.eid.gerege.mn",
+      "platforms": [
+        "windows",
+        "android"
+      ],
+      "provisioned": false,
+      "devOrigin": "http://localhost:3000",
+      "startRoute": "/",
+      "client": [
+        "native-apps/desktop/windows/ShellProfile.cs → Pos.LineOrigin",
+        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin (pos flavor)"
+      ],
+      "home": "/line/pos",
+      "$note": "Хаяг нь АСААГҮЙ. Код нь цөмөөс ирсэн хэвээр байгаа ч DNS/nginx/TLS/ALLOWED_ORIGINS дөрвийг хийхээс өмнө энэ build-ийг түгээвэл апп байхгүй host руу чиглэж унана."
+    }
+  }
+}

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="auth_message_platform_private" xml:space="preserve"><value>This platform is private: only people who have already been registered can sign in. Proving who you are with eID, ДАН or Google will not create an account — ask your organisation\'s administrator for an invitation.</value></data>
+  <data name="auth_view_set_password_invite" xml:space="preserve"><value>Choose your password</value></data>
+  <data name="auth_view_set_password_reset" xml:space="preserve"><value>Set a new password</value></data>
+  <data name="auth_field_new_password" xml:space="preserve"><value>New password</value></data>
+  <data name="auth_field_repeat_password" xml:space="preserve"><value>Repeat it</value></data>
+  <data name="auth_action_save_password" xml:space="preserve"><value>Save</value></data>
+  <data name="auth_hint_password_length" xml:space="preserve"><value>At least 10 characters. Length matters more than punctuation.</value></data>
+  <data name="auth_message_password_mismatch" xml:space="preserve"><value>The two passwords are not the same.</value></data>
+  <data name="auth_message_password_failed" xml:space="preserve"><value>That could not be saved.</value></data>
+  <data name="auth_message_password_saved" xml:space="preserve"><value>Saved. Taking you to the sign-in screen…</value></data>
+  <data name="auth_message_link_dead" xml:space="preserve"><value>That link has already been used or has expired. Ask for a new one.</value></data>
+  <data name="auth_message_impersonation_starting" xml:space="preserve"><value>Stepping into the organisation…</value></data>
+  <data name="auth_view_eyebrow" xml:space="preserve"><value>الهوية الرقمية الوطنية</value></data>
+  <data name="auth_view_title_lead" xml:space="preserve"><value>هوية موثقة.</value></data>
+  <data name="auth_view_title_highlight" xml:space="preserve"><value>تسجيل الدخول</value></data>
+  <data name="auth_view_title_tail" xml:space="preserve"><value>مرة واحدة.</value></data>
+  <data name="auth_view_lede" xml:space="preserve"><value>وافق على الطلب في تطبيق eID Mongolia وسيستخدم eID Gerege — جنبًا إلى جنب مع كل تطبيق SSO متصل — هذه الجلسة الموثقة.</value></data>
+  <data name="auth_view_point_push" xml:space="preserve"><value>طلب دفع برقم التسجيل</value></data>
+  <data name="auth_view_point_qr" xml:space="preserve"><value>QR وتطبيق App2App للجوال</value></data>
+  <data name="auth_view_point_rbac" xml:space="preserve"><value>حماية RBAC و audit للـ tenant</value></data>
+  <data name="auth_view_platform_name" xml:space="preserve"><value>eID Gerege</value></data>
+  <data name="auth_signin_asker_note" xml:space="preserve"><value>eID Gerege — signing you in through the unified login</value></data>
+  <data name="auth_signin_title" xml:space="preserve"><value>Sign in</value></data>
+  <data name="auth_signin_lede" xml:space="preserve"><value>Sign in with the eID Mongolia app</value></data>
+  <data name="auth_signin_or" xml:space="preserve"><value>or</value></data>
+  <data name="auth_signin_google" xml:space="preserve"><value>Sign in with Google</value></data>
+  <data name="auth_signin_google_soon" xml:space="preserve"><value>Google sign-in is coming soon</value></data>
+  <data name="auth_signin_help" xml:space="preserve"><value>Need help?</value></data>
+  <data name="auth_eid_title" xml:space="preserve"><value>eID Mongolia</value></data>
+  <data name="auth_eid_instruction" xml:space="preserve"><value>Enter your registration or civil ID number. A notification arrives in the eID Mongolia app on your phone.</value></data>
+  <data name="auth_eid_subtitle" xml:space="preserve"><value>موثق بواسطة الهوية الرقمية الوطنية</value></data>
+  <data name="auth_eid_tab_id" xml:space="preserve"><value>رقم التسجيل</value></data>
+  <data name="auth_eid_tab_qr" xml:space="preserve"><value>رمز QR</value></data>
+  <data name="auth_eid_reg_number" xml:space="preserve"><value>رقم التسجيل</value></data>
+  <data name="auth_eid_reg_number_placeholder" xml:space="preserve"><value>AA00112233</value></data>
+  <data name="auth_eid_send_request" xml:space="preserve"><value>إرسال طلب إلى تطبيق eID</value></data>
+  <data name="auth_eid_verification_code" xml:space="preserve"><value>رمز التحقق</value></data>
+  <data name="auth_eid_confirm_hint" xml:space="preserve"><value>طابق الرمز المعروض في التطبيق ثم وافق</value></data>
+  <data name="auth_eid_footer" xml:space="preserve"><value>لا يتم إرسال كلمة مرور · يتم التحقق داخل تطبيق eID</value></data>
+  <data name="auth_action_retry" xml:space="preserve"><value>أعد المحاولة</value></data>
+  <data name="auth_action_cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="auth_action_admin_disclosure" xml:space="preserve"><value>تسجيل دخول مسؤول النظام</value></data>
+  <data name="auth_action_admin_sign_in" xml:space="preserve"><value>تسجيل الدخول كمسؤول</value></data>
+  <data name="auth_field_email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="auth_field_password" xml:space="preserve"><value>كلمة المرور</value></data>
+  <data name="auth_field_staff_pin" xml:space="preserve"><value>رمز الموظف</value></data>
+  <data name="auth_action_app_to_app" xml:space="preserve"><value>افتح تطبيق eID</value></data>
+  <data name="auth_action_staff_sign_in" xml:space="preserve"><value>تسجيل الدخول كموظف مناوب</value></data>
+  <data name="auth_message_starting" xml:space="preserve"><value>جاري إنشاء الطلب...</value></data>
+  <data name="auth_message_scan_qr" xml:space="preserve"><value>امسح رمز QR باستخدام تطبيق eID Mongolia.</value></data>
+  <data name="auth_message_sent_push" xml:space="preserve"><value>تم إرسال طلب إلى تطبيق eID Mongolia الخاص بك.</value></data>
+  <data name="auth_message_expires_in" xml:space="preserve"><value>ينتهي الطلب في: {time}</value></data>
+  <data name="auth_message_expired" xml:space="preserve"><value>انتهت صلاحية الطلب.</value></data>
+  <data name="auth_message_refused" xml:space="preserve"><value>لقد رفضت طلب تسجيل الدخول.</value></data>
+  <data name="auth_message_success" xml:space="preserve"><value>تم تسجيل الدخول بنجاح. جاري نقلك إلى المنصة...</value></data>
+  <data name="auth_message_error_link" xml:space="preserve"><value>تعذر ربط التحقق من eID بمستخدم eID Gerege</value></data>
+  <data name="auth_message_error_service" xml:space="preserve"><value>تعذر الوصول إلى خدمة eID Mongolia</value></data>
+  <data name="auth_message_error_password" xml:space="preserve"><value>تعذر تسجيل الدخول</value></data>
+  <data name="auth_sso_checking" xml:space="preserve"><value>Working out how to sign you in…</value></data>
+  <data name="auth_sso_redirecting" xml:space="preserve"><value>Taking you to {provider}…</value></data>
+  <data name="auth_sso_lede" xml:space="preserve"><value>This deployment confirms who you are at {provider}. If you are already signed in there, you will not be asked again.</value></data>
+  <data name="auth_sso_card_title" xml:space="preserve"><value>Sign in through {provider}</value></data>
+  <data name="auth_sso_card_body" xml:space="preserve"><value>No password is entered here. {provider} confirms you and sends you back.</value></data>
+  <data name="auth_sso_sign_in" xml:space="preserve"><value>Continue with {provider}</value></data>
+  <data name="auth_sso_error_generic" xml:space="preserve"><value>The sign-in could not be completed. Please try again.</value></data>
+  <data name="auth_sso_error_stale" xml:space="preserve"><value>That sign-in attempt has expired. Please start again.</value></data>
+  <data name="auth_sso_error_unreachable" xml:space="preserve"><value>The sign-in provider could not be reached.</value></data>
+  <data name="auth_sso_error_denied" xml:space="preserve"><value>The sign-in request was not approved.</value></data>
+  <data name="auth_sso_error_email_unverified" xml:space="preserve"><value>Google has not verified that email address.</value></data>
+  <data name="auth_sso_error_domain_not_allowed" xml:space="preserve"><value>Sign-in is not open to that email domain.</value></data>
+  <data name="auth_sso_error_binding" xml:space="preserve"><value>The verification step could not be started. Please try again in a moment.</value></data>
+  <data name="profile_loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="profile_link_eid" xml:space="preserve"><value>Link your eID</value></data>
+  <data name="profile_link_eid_note" xml:space="preserve"><value>Linking your eID records your Gerege number on this account. Organisations answer a request by that number, so without it their answer has nowhere to arrive.</value></data>
+  <data name="profile_message_no_organisations" xml:space="preserve"><value>You do not belong to any organisation.</value></data>
+  <data name="me_view_requests_title" xml:space="preserve"><value>My requests</value></data>
+  <data name="me_view_requests_subtitle" xml:space="preserve"><value>Where the requests you have made to organisations have got to. The documents and evidence stay with the organisation doing the work.</value></data>
+  <data name="me_message_no_requests" xml:space="preserve"><value>No requests yet. Anything you ask an organisation for will appear here.</value></data>
+  <data name="me_field_code" xml:space="preserve"><value>Service</value></data>
+  <data name="me_field_provider" xml:space="preserve"><value>With</value></data>
+  <data name="me_field_status" xml:space="preserve"><value>Status</value></data>
+  <data name="me_field_answer" xml:space="preserve"><value>Answer</value></data>
+  <data name="me_field_updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="me_view_ask_title" xml:space="preserve"><value>Join an organisation</value></data>
+  <data name="me_message_joined" xml:space="preserve"><value>You are now a member of {name}.</value></data>
+  <data name="me_action_open_workspace" xml:space="preserve"><value>Go there</value></data>
+  <data name="me_view_ask_subtitle" xml:space="preserve"><value>Give the organisation\'s short name — the one in its address — and ask. Their administrator answers.</value></data>
+  <data name="me_field_slug_placeholder" xml:space="preserve"><value>organisation short name</value></data>
+  <data name="me_field_message_placeholder" xml:space="preserve"><value>Say who you are (optional)</value></data>
+  <data name="me_action_ask" xml:space="preserve"><value>Ask</value></data>
+  <data name="me_view_lookup_hint" xml:space="preserve"><value>If you do not know who to ask, look the service up.</value></data>
+  <data name="me_field_lookup_placeholder" xml:space="preserve"><value>service name or code</value></data>
+  <data name="me_action_lookup" xml:space="preserve"><value>Look up</value></data>
+  <data name="me_action_choose" xml:space="preserve"><value>Choose</value></data>
+  <data name="me_message_no_providers" xml:space="preserve"><value>No organisation has published that service.</value></data>
+  <data name="profile_stat_organisations" xml:space="preserve"><value>Organisations</value></data>
+  <data name="profile_stat_identities" xml:space="preserve"><value>Identities</value></data>
+  <data name="profile_stat_sessions" xml:space="preserve"><value>Open sessions</value></data>
+  <data name="profile_stat_since" xml:space="preserve"><value>Member since</value></data>
+  <data name="profile_title" xml:space="preserve"><value>My profile</value></data>
+  <data name="profile_identities" xml:space="preserve"><value>Your identities</value></data>
+  <data name="profile_identities_lede" xml:space="preserve"><value>These are how you sign in here. What each provider said is below it.</value></data>
+  <data name="profile_linked_provider" xml:space="preserve"><value>{provider}, connected</value></data>
+  <data name="profile_verified" xml:space="preserve"><value>Verified</value></data>
+  <data name="profile_link_error_session_expired" xml:space="preserve"><value>Your session ended. Sign in again, then connect.</value></data>
+  <data name="profile_link_error_already_linked_elsewhere" xml:space="preserve"><value>That Google account belongs to another record here. Unlink it there first.</value></data>
+  <data name="profile_link_error_google_not_configured" xml:space="preserve"><value>Google sign-in is not configured on this deployment.</value></data>
+  <data name="profile_link_error_sso_required" xml:space="preserve"><value>This deployment signs in through its SSO provider, so Google cannot be connected.</value></data>
+  <data name="profile_link_error_provider_unreachable" xml:space="preserve"><value>Could not reach Google. Try again shortly.</value></data>
+  <data name="profile_link_error_email_unverified" xml:space="preserve"><value>Google has not verified that address.</value></data>
+  <data name="profile_link_error_domain_not_allowed" xml:space="preserve"><value>That address\'s domain is not allowed here.</value></data>
+  <data name="profile_link_error_unknown" xml:space="preserve"><value>Could not connect ({code}).</value></data>
+  <data name="profile_link_google" xml:space="preserve"><value>Connect your Google account</value></data>
+  <data name="profile_link_google_note" xml:space="preserve"><value>You have already proved who you are, so this only asks Google. Afterwards you can sign in with Google directly.</value></data>
+  <data name="profile_unlink" xml:space="preserve"><value>Unlink</value></data>
+  <data name="profile_unlinking" xml:space="preserve"><value>Unlinking…</value></data>
+  <data name="profile_unlink_confirm" xml:space="preserve"><value>Unlink {provider}? Signing in with it again will ask for eID, as the first time did.</value></data>
+  <data name="profile_linked_at" xml:space="preserve"><value>Linked</value></data>
+  <data name="profile_last_seen" xml:space="preserve"><value>Last used</value></data>
+  <data name="profile_show_claims" xml:space="preserve"><value>Show {count} fields</value></data>
+  <data name="profile_hide_claims" xml:space="preserve"><value>Hide</value></data>
+  <data name="profile_no_identities" xml:space="preserve"><value>No identities are linked yet.</value></data>
+  <data name="profile_organisations" xml:space="preserve"><value>Your organisations</value></data>
+  <data name="auth_bind_title" xml:space="preserve"><value>Set up your account</value></data>
+  <data name="auth_bind_subtitle" xml:space="preserve"><value>{provider} has confirmed you. One step remains.</value></data>
+  <data name="auth_bind_from_provider" xml:space="preserve"><value>From {provider}</value></data>
+  <data name="auth_bind_from_eid" xml:space="preserve"><value>From eID Mongolia</value></data>
+  <data name="auth_bind_consent_body" xml:space="preserve"><value>This is stored in eID Gerege and shown on your profile. eID confirms who you are — once only.</value></data>
+  <data name="auth_bind_agree" xml:space="preserve"><value>Agree and continue</value></data>
+  <data name="auth_bind_verify_title" xml:space="preserve"><value>Confirm with eID</value></data>
+  <data name="auth_bind_verify_lede" xml:space="preserve"><value>Enter your registration number or scan the QR. Next time you will go straight in.</value></data>
+  <data name="auth_bind_expired" xml:space="preserve"><value>That attempt has expired. Please sign in again.</value></data>
+  <data name="auth_sso_error_no_account" xml:space="preserve"><value>You are verified, but this deployment has no account for you. Ask your administrator.</value></data>
+</root>

@@ -4,3 +4,16 @@ deploy/.env
 
 # `go build` барьсан хоёртын файл — 54 МБ, репод байх зүйл биш.
 /eid-gerege-nexus
+
+# Native клиентүүдийн build гаралт — репод байх зүйл биш.
+xcuserdata/
+*.xcuserstate
+native-apps/desktop/macos/build/
+native-apps/desktop/macos/eIDGeregeMN
+native-apps/desktop/windows/**/bin/
+native-apps/desktop/windows/**/obj/
+native-apps/mobile/ios/.build/
+native-apps/mobile/ios/.swiftpm/
+native-apps/mobile/android/**/build/
+native-apps/mobile/android/.gradle/
+native-apps/mobile/android/local.properties

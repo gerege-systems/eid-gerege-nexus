@@ -1,0 +1,73 @@
+name: eIDGeregeMN
+options:
+  bundleIdPrefix: mn.gerege.eid
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  GeregeShellKit:
+    path: .
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  eIDGeregeMN:
+    type: application
+    platform: iOS
+    sources:
+      - path: Examples
+      - path: Assets.xcassets
+    dependencies:
+      - package: GeregeShellKit
+        product: GeregeShellKit
+      - package: GeregeShellKit
+        product: GeregeShellUI
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        PRODUCT_BUNDLE_IDENTIFIER: mn.gerege.eid.ios
+        PRODUCT_NAME: eID Gerege
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: CQTHTD6YJQ
+        CODE_SIGN_ENTITLEMENTS: eIDGeregeMN.entitlements
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: false
+        INFOPLIST_KEY_CFBundleDisplayName: eID Gerege
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.business
+        INFOPLIST_KEY_NSFaceIDUsageDescription: eID Gerege session-ийг аюулгүй нээхийн тулд Face ID ашиглана.
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: true
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+    info:
+      path: eIDGeregeMN-Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLName: mn.gerege.eid.ios
+            CFBundleURLSchemes:
+              - gerege-eid
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+
+schemes:
+  eIDGeregeMN:
+    build:
+      targets:
+        eIDGeregeMN: all
+    run:
+      config: Debug
+    archive:
+      config: Release
