@@ -41,12 +41,30 @@ namespace GeregeNexusNativeWin
             _baseUrl = _settings.WebEndpoint.TrimEnd('/');
             _auth = new NativeAuth(_settings.ApiEndpoint);
             InitializeComponent();
-            footerPlatform.Text = $"Windows · {ShellProfile.FormFactor}  |  Shell v1.4  |  {new Uri(_baseUrl).Host}";
+            footerHost.Text = new Uri(_baseUrl).Host;
+            footerVersion.Text = ShellVersion();
             emailInput.ToolTip=NativeStrings.Get("auth_field_email","И-мэйл");passwordInput.ToolTip=NativeStrings.Get("auth_field_password","Нууц үг");passwordLoginButton.Content=NativeStrings.Get("auth_action_admin_sign_in","Админаар нэвтрэх");nationalIdInput.ToolTip=NativeStrings.Get("auth_eid_reg_number","Регистрийн дугаар");pushLoginButton.Content=NativeStrings.Get("auth_eid_send_request","eID апп руу хүсэлт илгээх");cancelLoginButton.Content=NativeStrings.Get("auth_action_cancel","Цуцлах");staffPinButton.Content=NativeStrings.Get("auth_action_staff_sign_in","Ээлжийн ажилтнаар нэвтрэх");
             staffPinPanel.Visibility = ShellProfile.FormFactor == "pos" ? Visibility.Visible : Visibility.Collapsed;
             _auth.StatusChanged += status => Dispatcher.Invoke(() => RenderLogin(status));
             BindShortcuts();
             InitializeWebViewAsync();
+        }
+
+        /// <summary>
+        /// Footer-т харагдах хувилбар — "v1.0.9 (10)" хэлбэрээр, macOS-ийнхтэй
+        /// ижил: маркетингийн хувилбар ба build дугаар. Эхнийх нь csproj-ийн
+        /// Version, хоёр дахь нь AssemblyVersion-ий 4 дэх орон.
+        /// </summary>
+        private static string ShellVersion()
+        {
+            var assembly = System.Reflection.Assembly.GetEntryAssembly();
+            var informational = System.Reflection.CustomAttributeExtensions
+                .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(assembly!)?
+                .InformationalVersion ?? "1.0.0";
+            // "1.0.9+<commit>" хэлбэртэй ирж болзошгүй.
+            var marketing = informational.Split('+')[0];
+            var build = assembly?.GetName().Version?.Revision ?? 0;
+            return $"v{marketing} ({build})";
         }
 
         /// <summary>
@@ -137,8 +155,12 @@ namespace GeregeNexusNativeWin
                 // зөрдөг өнгө байв.
                 webView.CoreWebView2.NavigationCompleted += async (_, e) =>
                 {
-                    footerConnection.Text = e.IsSuccess ? $"●  Холбогдсон · {new Uri(webView.Source.ToString()).Host}" : "●  Холболт тасарсан";
-                    footerConnection.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(e.IsSuccess ? "#84A8FF" : "#EF4444"));
+                    footerHost.Text = new Uri(webView.Source.ToString()).Host;
+                    // Холболт тасрахад host-ийн хажууд шалтгаан гарна; амжилттай
+                    // үед мэдэгдэл алга болно.
+                    footerNotice.Text = e.IsSuccess ? string.Empty : "Холболт тасарсан";
+                    footerNotice.Foreground = (System.Windows.Media.Brush)FindResource("EidDangerBrush");
+                    footerNotice.Visibility = e.IsSuccess ? Visibility.Collapsed : Visibility.Visible;
                     _ = webView.CoreWebView2.ExecuteScriptAsync("window.__geregeShellEmit&&window.__geregeShellEmit('shell:auth-changed',{reason:'navigation-session'})");
                     ShellLog.Write($"nav: {webView.Source} success={e.IsSuccess}");
                     try
@@ -281,8 +303,9 @@ namespace GeregeNexusNativeWin
                 // Тиймээс хэрэглэгчид үнэнийг нь хэлнэ.
                 _settingsPane.EndpointsChanged += () =>
                 {
-                    footerConnection.Text = "●  Шинэ хаяг аппыг дахин эхлүүлсний дараа хэрэгжинэ";
-                    footerConnection.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF5, 0xA5, 0x24));
+                    footerNotice.Text = "Шинэ хаяг аппыг дахин эхлүүлсний дараа хэрэгжинэ";
+                    footerNotice.Foreground = (System.Windows.Media.Brush)FindResource("EidWarningBrush");
+                    footerNotice.Visibility = Visibility.Visible;
                 };
                 settingsHost.Content = _settingsPane;
             }

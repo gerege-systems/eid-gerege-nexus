@@ -13,6 +13,12 @@
          цэс гурав дээр гардаг нэр. -->
     <Product>eID Gerege</Product>
     <AssemblyTitle>eID Gerege</AssemblyTitle>
+    <!-- Footer-т "v1.0.9 (10)" гэж харагдана: Version нь маркетингийн
+         хувилбар, AssemblyVersion-ий 4 дэх орон нь build дугаар. macOS
+         клиентийн хувилбартай нэг мөрөөр явна. -->
+    <Version>1.0.9</Version>
+    <AssemblyVersion>1.0.9.10</AssemblyVersion>
+    <FileVersion>1.0.9.10</FileVersion>
     <RootNamespace>GeregeNexusNativeWin</RootNamespace>
     <FormFactor Condition="'$(FormFactor)' == ''">Desktop</FormFactor>
     <OutputPath>bin\$(Configuration)\$(FormFactor)\</OutputPath>
