@@ -38,9 +38,10 @@ native клиентүүд (`native-apps/`) бөгөөд репо нь
 
 Native клиентүүд нь цөмийн бүрхүүлийн код: шугам (`*.eid.gerege.mn`), багц ID
 (`mn.gerege.eid.*`), харагдах нэр (**eID Gerege**) гурав нь энэ
-бүтээгдэхүүнийх, эх код нь платформынх. `kiosk`/`pos` build нь компайл
-хийгддэг ч тэдний хаяг АСААГҮЙ тул түгээхгүй — дэлгэрэнгүйг
-`native-apps/README.md`.
+бүтээгдэхүүнийх, эх код нь платформынх. Клиентүүд бүгд компайл хийгддэг ч
+ЯМАР Ч ШУГАМ ОДООГООР ХАРИУЛДАГГҮЙ: nginx дээр зөвхөн `eid.` ба `admin.`
+суусан тул `desktop.`/`mobile.` нь vhost, гэрчилгээгүй. Түгээхээсээ өмнө
+`native-apps/shared/device_lines.json` → `$provisioning`-ийг гүйцээнэ.
 
 Frontend-ийг **барихгүй**: бүрхүүл нь каталогоор ажилладаг тул цөмийн
 нийтэлсэн образ яг таарна. `WEB_IMAGE` нь `go.mod`-ийн цөмийн хувилбарын
@@ -228,13 +229,17 @@ native-apps/sync-i18n.sh ../open-gerege-nexus
 Windows resx, iOS xcstrings) бүгдийг нь бичээд цөмийн анхдагч нэр үлдсэн
 эсэхийг шалгана.
 
-**Үлдсэн ганц цоорхой — тэмдэг.** `brand.png`, `AppIcon`, `ic_launcher` бүгд
-платформын тэмдэг хэвээр; вэб талд ч `BRAND_LOGO_URL`, `BRAND_ICON_URL`
-хоосон. Нэрийг код удирдаж чадна, тэмдгийг чадахгүй — солих ёстой файлуудын
-жагсаалт [`native-apps/README.md`](native-apps/README.md)-д.
+**Тэмдэг ч брэндчлэгдсэн.** Эх сурвалж нь eID-ийн desktop клиентийн репо
+(`gitlab.gerege.mn/products/gerege-line/eid/eid-desktop-mn`). Ил тод тэмдэг нь
+нэвтрэх дэлгэц, туслах домэйнуудын толгой, Grafana-гийн цагаан карт дээр; хөх
+дөрвөлжин нь launcher ба tab icon дээр — тэдгээр нь ганцаараа зогсдог тул
+өөрийн газартай байх ёстой.
 
-CI: `.github/workflows/native-clients.yml` дөрвүүлэн компайл хийгдэж байгааг
-push, PR бүрд шалгана.
+Вэб талын `BRAND_LOGO_URL` / `BRAND_ICON_URL` / `BRAND_MASKABLE_ICON_URL` гурав
+нь `/brand/*`: агуулга нь `deploy/brand-assets/`, үйлчилгээ нь
+`docker-compose.sites.yml`-ийн `brand` контейнер, чиглүүлэлт нь nginx (үндсэн
+болон консолын хоёр vhost дээр). Хостын файлын систем рүү гараар хуулах алхам
+байхгүй — `git pull && ./deploy.sh`.
 
 ## Лиценз
 

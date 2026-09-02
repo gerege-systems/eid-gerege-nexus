@@ -39,8 +39,8 @@ and no CORS preflight is ever issued.
 | Client | Line | Status |
 | --- | --- | --- |
 | Browser / PWA | `eid.gerege.mn` | ✅ live |
-| macOS, Windows Desktop | `desktop.eid.gerege.mn` | ✅ live |
-| iOS / iPadOS, Android mobile / tablet | `mobile.eid.gerege.mn` | ✅ live |
+| macOS, Windows Desktop | `desktop.eid.gerege.mn` | ⏳ DNS бэлэн, nginx/TLS үлдсэн |
+| iOS / iPadOS, Android mobile / tablet | `mobile.eid.gerege.mn` | ⏳ DNS бэлэн, nginx/TLS үлдсэн |
 | Kiosk (Windows, Android) | `kiosk.eid.gerege.mn` | ⛔ not provisioned |
 | POS (Windows, Android) | `pos.eid.gerege.mn` | ⛔ not provisioned |
 
@@ -53,10 +53,12 @@ client is running is a separate question, answered by `window.GeregeShell`.
 and share one Let's Encrypt certificate — there is no wildcard here, so a line
 this deployment has not asked for does not quietly resolve.
 
-**The kiosk and POS code came along; their lines did not.** Do not ship
-`-p:FormFactor=Kiosk`, `-p:FormFactor=POS` or the `kiosk`/`pos` Android flavors
-until the four provisioning steps below are done for those hosts. They compile,
-which is exactly why the rule below matters.
+**No device line answers yet — do not ship any client.** `desktop.` and
+`mobile.` resolve to the host but nginx has only `eid.` and `admin.` enabled, so
+neither line has a vhost or a certificate; `kiosk.` and `pos.` have nothing at
+all. Every client compiles, which is exactly why the rule below matters. The
+order and the remaining steps are in
+[`shared/device_lines.json`](shared/device_lines.json) under `$provisioning`.
 
 **When adding a NEW line, do not point a client at it before it resolves.** The
 app fails with `A server with the specified hostname could not be found` and
@@ -213,8 +215,22 @@ native-apps/sync-i18n.sh ../open-gerege-nexus
 Долоон хэл дээрх `generated-i18n/`, Android `res/values*/auth.xml`, Windows
 `Resources/Login*.resx`, iOS `Login.xcstrings` дөрвүүлэн шинэчлэгдэнэ.
 
-Тэмдэг (`brand.png`, `logo.jpg`, `AppIcon`) нь ХАРИН платформынх хэвээр — энэ
-бүтээгдэхүүн өөрийн зургаа өгөх хүртэл Gerege Nexus-ийн тэмдэг харагдана.
+Тэмдэг нь ч энэ бүтээгдэхүүнийх. Эх сурвалж нь eID-ийн desktop клиентийн репо
+([`eid-desktop-mn`](https://gitlab.gerege.mn/products/gerege-line/eid/eid-desktop-mn)):
+`windows-app/.../Assets/logo.png` (ил тод) ба
+`macos-app/.../Logo.imageset/Logo.png` (хөх дөрвөлжин).
+
+Хоёр өөр зураг, хоёр өөр ажил — эндүүрвэл нэг нь нөгөөгийнхөө байранд муу
+харагдана:
+
+| Хаана | Аль зураг | Яагаад |
+|---|---|---|
+| `brand.png` — нэвтрэх дэлгэц, толгой | ил тод хөх тэмдэг | хуудасны өөрийн дэвсгэр дээр сууна |
+| `ic_launcher`, `AppIcon`, `app.ico`, `logo.jpg` | хөх дөрвөлжин | нүүр дэлгэц дээр ГАНЦААРАА зогсоно — өөрийн газартай байх ёстой |
+
+iOS-ийн App Store icon нь alpha-гүй байх ёстой тул хавтгайруулж RGB болгосон.
+Android-д adaptive icon байхгүй (`mipmap-anydpi-v26` алга) тул PNG-үүд нь
+шууд launcher icon.
 
 ## Deployment ба update суваг
 

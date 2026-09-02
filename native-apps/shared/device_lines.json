@@ -24,21 +24,23 @@
     "Nexus) боловч шугам, багц ID, харагдах нэр нь энэ бүтээгдэхүүнийх."
   ],
   "$provisioning": [
-    "АСААЛТТАЙ: desktop, mobile. АСААГҮЙ: kiosk, pos — код нь энд байгаа ч",
-    "хаяг нь байхгүй тул тэр хоёр build-ийг ТҮГЭЭХГҮЙ. `provisioned` талбар",
-    "нь тэдгээрийн цорын ганц үнэн.",
+    "АСААЛТТАЙ шугам ОДООГООР БАЙХГҮЙ. `provisioned` талбар бүр false: DNS нь",
+    "дөрвүүлээ 38.180.117.155 рүү заадаг ч nginx дээр vhost суугаагүй, гэрчилгээ",
+    "аваагүй тул `https://desktop.eid.gerege.mn` нь одоогоор хариулдаггүй.",
     "",
-    "Асаалттай хоёрын ард (хост 38.180.117.155):",
-    "  1. DNS   desktop.eid.gerege.mn, mobile.eid.gerege.mn → 38.180.117.155",
-    "  2. nginx nginx/device-lines.eid.gerege.mn.conf",
+    "Тиймээс энэ клиентүүдийг ХЭН НЭГЭНД ТҮГЭЭХГҮЙ. Түгээвэл апп «A server with",
+    "the specified hostname could not be found» гэж унаж, хэн ч нэвтэрч чадахгүй.",
+    "",
+    "Асаах дараалал (шугам тутамд, ЯГ ЭНЭ ДАРААЛЛААР):",
+    "  1. DNS   <шугам>.eid.gerege.mn → 38.180.117.155  (desktop, mobile нь БЭЛЭН)",
+    "  2. nginx cp nginx/device-lines.eid.gerege.mn.conf /etc/nginx/sites-available/",
+    "           ln -s ../sites-available/... /etc/nginx/sites-enabled/ && nginx -t",
     "  3. TLS   certbot --nginx -d desktop.eid.gerege.mn -d mobile.eid.gerege.mn",
-    "  4. API   .env-ийн DEVICE_LINE_ORIGINS → ALLOWED_ORIGINS",
+    "  4. API   .env-ийн DEVICE_LINE_ORIGINS → ALLOWED_ORIGINS (аль хэдийн бичигдсэн)",
+    "  5. ЭЦЭСТ нь энэ файлын `provisioned`-ыг true болгож, клиентээ түгээнэ.",
     "",
-    "ШИНЭ шугам нэмэх дараалал (нэг шугамд):",
-    "  DNS → nginx server_name → certbot → DEVICE_LINE_ORIGINS",
-    "  → хамгийн СҮҮЛД клиентийн 'client' талбарт заасан мөр.",
-    "Эсрэг дараалал нь аппыг байхгүй host руу чиглүүлж унагаана: цөмийн репод",
-    "нэг удаа яг тэр болж, хэн ч нэвтэрч чадахгүй болсон."
+    "Эсрэг дараалал нь аппыг байхгүй host руу чиглүүлнэ — цөмийн репод нэг удаа",
+    "яг тэр болсон."
   ],
   "browserLine": {
     "platform": "browser",
@@ -52,14 +54,15 @@
         "macos",
         "windows"
       ],
-      "provisioned": true,
+      "provisioned": false,
       "devOrigin": "http://localhost:3000",
       "startRoute": "/",
       "client": [
         "native-apps/desktop/macos/NativeSettings.swift → lineOrigin",
         "native-apps/desktop/windows/ShellProfile.cs → Desktop.LineOrigin"
       ],
-      "home": "/line/desktop"
+      "home": "/line/desktop",
+      "$note": "DNS бэлэн, nginx vhost ба TLS үлдсэн."
     },
     "mobile": {
       "line": "https://mobile.eid.gerege.mn",
@@ -67,14 +70,15 @@
         "ios",
         "android"
       ],
-      "provisioned": true,
+      "provisioned": false,
       "devOrigin": "http://localhost:3000 (Android эмулятор дээр http://10.0.2.2:3000)",
       "startRoute": "/",
       "client": [
         "native-apps/mobile/ios/Sources/GeregeShellKit/DeviceLine.swift → origin",
         "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin"
       ],
-      "home": "/line/mobile"
+      "home": "/line/mobile",
+      "$note": "DNS бэлэн, nginx vhost ба TLS үлдсэн."
     },
     "kiosk": {
       "line": "https://kiosk.eid.gerege.mn",
@@ -90,7 +94,7 @@
         "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin (kiosk flavor)"
       ],
       "home": "/line/kiosk",
-      "$note": "Хаяг нь АСААГҮЙ. Код нь цөмөөс ирсэн хэвээр байгаа ч DNS/nginx/TLS/ALLOWED_ORIGINS дөрвийг хийхээс өмнө энэ build-ийг түгээвэл апп байхгүй host руу чиглэж унана."
+      "$note": "Хаяг огт байхгүй: DNS-ээс эхлээд дөрвүүлэн хийнэ."
     },
     "pos": {
       "line": "https://pos.eid.gerege.mn",
@@ -106,7 +110,7 @@
         "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin (pos flavor)"
       ],
       "home": "/line/pos",
-      "$note": "Хаяг нь АСААГҮЙ. Код нь цөмөөс ирсэн хэвээр байгаа ч DNS/nginx/TLS/ALLOWED_ORIGINS дөрвийг хийхээс өмнө энэ build-ийг түгээвэл апп байхгүй host руу чиглэж унана."
+      "$note": "Хаяг огт байхгүй: DNS-ээс эхлээд дөрвүүлэн хийнэ."
     }
   }
 }
