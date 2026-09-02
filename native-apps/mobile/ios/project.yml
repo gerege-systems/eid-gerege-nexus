@@ -1,3 +1,15 @@
+# eID Gerege — iOS/iPadOS клиент.
+#
+# Код нь ширээний аппын БОДИТ ФАЙЛУУДЫГ хуваалцана (`../../desktop/macos/...`):
+# сүлжээ, Keychain, төлөв, локализаци, дизайны токенууд хоёр дээр НЭГ эх сурвалж.
+# Хуулбарлавал хоёр апп өөр өөр endpoint, өөр өнгө, өөр орчуулгатай болж
+# салбарлана — тэр нь мэдэгддэггүй, дараа нь засахад хамгийн үнэтэй нь.
+#
+# ponytail: SPM багц болгож тусгаарлаагүй — тэр нь бүх төрлийг `public` болгох
+# ~3k мөрийн засвар шаардана. Хил хамгаалах шаардлага гарвал тэр үед нүүлгэнэ.
+#
+# Ширээний-ОНЦЛОГ хэсгүүд энд ОРОХГҮЙ: Core/Token (PKCS#11/APDU), Core/Esign
+# (ws://127.0.0.1 гүүр), MenuBar, Sparkle, login item, SecurityGuard.
 name: eIDGeregeMN
 options:
   bundleIdPrefix: mn.gerege.eid
@@ -6,28 +18,33 @@ options:
   xcodeVersion: "16.0"
   createIntermediateGroups: true
 
-packages:
-  GeregeShellKit:
-    path: .
-
 settings:
   base:
-    SWIFT_VERSION: "6.0"
+    SWIFT_VERSION: "5.10"
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
 
 targets:
   eIDGeregeMN:
     type: application
     platform: iOS
     sources:
-      - path: Examples
+      # Энэ аппын өөрийн дэлгэцүүд.
+      - path: App
+      - path: Features
       - path: Assets.xcassets
-    dependencies:
-      - package: GeregeShellKit
-        product: GeregeShellKit
-      - package: GeregeShellKit
-        product: GeregeShellUI
+      # Ширээний аппаас ХУВААЛЦСАН давхаргууд.
+      - path: ../../desktop/macos/App/AppState.swift
+      - path: ../../desktop/macos/Core/Network
+      - path: ../../desktop/macos/Core/Keychain
+      - path: ../../desktop/macos/Design
+      - path: ../../desktop/macos/Domain
+      - path: ../../desktop/macos/Presentation
+      - path: ../../desktop/macos/Infrastructure/Security/Pinning
+      # SPKI pin-үүд XOR-оор далдлагдсан тул pinning нь энэ файлыг дуудна.
+      # Хажуугийн `SecurityGuard.swift` нь ЗӨВХӨН macOS (anti-debug) тул орохгүй.
+      - path: ../../desktop/macos/Infrastructure/Security/Integrity/Obfuscated.swift
     settings:
       base:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -51,6 +68,12 @@ targets:
             CFBundleURLName: mn.gerege.eid.ios
             CFBundleURLSchemes:
               - gerege-eid
+        # eID Mongolia апп руу app-to-app үсрэхийн ӨМНӨ суусан эсэхийг асуухад
+        # эдгээр схем ЗААВАЛ энд бүртгэгдсэн байх ёстой — эс бөгөөс
+        # `canOpenURL` үргэлж false буцааж, апп «суугаагүй» гэж худал хэлнэ.
+        LSApplicationQueriesSchemes:
+          - eidmongolia
+          - geregesmartid
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

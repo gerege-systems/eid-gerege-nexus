@@ -4,4 +4,4 @@ dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
 }
 rootProject.name = "eIDGeregeMN"
-include(":core", ":app")
+include(":app")

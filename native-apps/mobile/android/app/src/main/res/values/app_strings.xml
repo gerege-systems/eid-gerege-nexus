@@ -1,0 +1,24 @@
+<!-- Аппын өөрийн мөрүүд (ҮҮСГЭГДДЭГГҮЙ) — ширээний каталогт байхгүй,
+     зөвхөн гар дээрх урсгалд хэрэгтэй болсон мөрүүд. -->
+<resources>
+    <string name="App_Name">eID Gerege</string>
+    <string name="Login_AppToApp">eID аппаар нэвтрэх</string>
+    <string name="Login_Push">Регистрээр мэдэгдэл илгээх</string>
+    <string name="Login_OtherDevice">Өөр төхөөрөмж дээрээ зөвшөөрөх</string>
+    <string name="Login_Error_Failed">Баталгаажуулалт амжилтгүй.</string>
+    <string name="Login_Error_AppMissing">eID Mongolia апп олдсонгүй. Регистрийн дугаараар мэдэгдэл илгээж, өөр төхөөрөмж дээрээ зөвшөөрнө үү.</string>
+    <string name="Read_Only_Hint">Зөвхөн харуулна — өөрчлөлтийг eID Mongolia апп дотроос (PIN2) хийнэ.</string>
+    <string name="Settings_Server">Сервер</string>
+    <string name="Settings_About">Тухай</string>
+    <string name="App_VersionLabel">Хувилбар</string>
+    <string name="Settings_Host">Холбогдож буй хост</string>
+    <string name="Logs_Subtitle">Энэ төхөөрөмж дээрх нэвтрэлтийн бүртгэл</string>
+    <string name="Id_Subtitle">Танай иргэний цахим үнэмлэхний нэгдсэн профайл</string>
+    <string name="Id_RegNumber">Регистрийн дугаар</string>
+    <string name="Id_CivilId">Иргэний бүртгэлийн дугаар</string>
+    <string name="Id_DocNumber">Баримтын дугаар</string>
+    <string name="Id_Level">Түвшин</string>
+    <string name="Common_Active">Идэвхтэй</string>
+    <string name="Common_Registered">Бүртгэлтэй</string>
+    <string name="Common_Pending">Хүлээгдэж буй</string>
+</resources>

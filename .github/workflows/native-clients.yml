@@ -1,8 +1,11 @@
 # Энэ репогийн native клиентүүд компайл хийгдэж байгаа эсэх.
 #
-# Цөмийн `native-clients.yml`-ийн хуулбар: тэр workflow нь `workflow_call`
-# гаргаж өгдөггүй тул дуудах боломжгүй. Хуулбар нь хийсэн агшнаасаа салбарлаж
-# эхэлдэг — цөмд `workflow_call` нэмэгдмэгц энэ файлыг `uses:` болгож хураана.
+# Гурван клиент, нэг гэр бүл: macOS (SwiftUI), iOS/iPadOS (мак-тай эх кодоо
+# ХУВААЛЦДАГ), Android (Compose, өнгө/орчуулгаа мак-аас ҮҮСГЭДЭГ). Тиймээс
+# ширээний нэг файл эвдэрвэл утасны build ч улаан болно — тэр нь зөв дохио.
+#
+# Цөмийн `native-clients.yml`-ийн хуулбар байсан; клиентүүд өөр болсон тул
+# одоо энэ репогийнх. Цөмд `workflow_call` нэмэгдвэл ч буцааж дуудахгүй.
 #
 # pull_request дээр path шүүлтгүй ажиллаж байгаа нь санаатай. Шаардлагатай
 # шалгалт (required check) нь path-аар шүүгдсэн бол шүүлтэд таараагүй PR дээр
@@ -21,30 +24,21 @@ permissions:
   contents: read
 
 jobs:
-  macos:
+  apple:
+    name: macOS + iOS
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
+      - run: brew install xcodegen
+      # Ширээний бүрхүүл ба түүний токен сан.
+      - run: swift test
+        working-directory: native-apps/desktop/gerege-token-kit
       - run: ./build.sh
         working-directory: native-apps/desktop/macos
-      - run: swift test
+      # Утасны клиент — ижил эх файлуудыг iOS дээр компайл хийж байгааг шалгана.
+      - run: ./build.sh
         working-directory: native-apps/mobile/ios
-      - run: xcodebuild -quiet -project eIDGeregeMN.xcodeproj -scheme eIDGeregeMN -destination 'generic/platform=iOS Simulator' build CODE_SIGNING_ALLOWED=NO
-        working-directory: native-apps/mobile/ios
-  windows:
-    # Kiosk ба POS нь шугамгүй хэвээр (shared/device_lines.json → provisioned:
-    # false) ч энд компайл хийгдэнэ: түгээхгүй код ч эвдэрсэн байх ёсгүй.
-    strategy:
-      matrix:
-        form_factor: [Desktop, Kiosk, POS]
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: 8.0.x
-      - run: dotnet build eIDGeregeMN.csproj --configuration Release -p:FormFactor=${{ matrix.form_factor }}
-        working-directory: native-apps/desktop/windows
+
   android:
     runs-on: ubuntu-latest
     steps:
@@ -56,5 +50,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - uses: android-actions/setup-android@v4
       - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
-      - run: ./gradlew :core:test :app:compileMobileDebugKotlin :app:compileTabletDebugKotlin :app:compileKioskDebugKotlin :app:compilePosDebugKotlin
+      # Үүсгэсэн өнгө/орчуулга нь эх сурвалжтайгаа ТААРЧ байгаа эсэх: скриптийг
+      # дахин ажиллуулаад ялгаа гарвал хэн нэгэн гаралтыг гараар зассан эсвэл
+      # ширээний токен өөрчлөгдөөд энд дагаагүй гэсэн үг.
+      - run: python3 scripts/gen_from_swift.py
+        working-directory: native-apps/mobile/android
+      - run: git diff --exit-code -- native-apps/mobile/android
+      - run: ./gradlew test assembleDebug
         working-directory: native-apps/mobile/android

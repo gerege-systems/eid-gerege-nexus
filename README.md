@@ -200,46 +200,26 @@ docker exec -it gerege_eid_nexus_glitchtip_web ./manage.py createsuperuser
 
 ### Native клиентүүд
 
-Клиентийн код **энд байна**: `native-apps/` — macOS, Windows (WPF/WebView2),
-iOS/iPadOS, Android. Цөмийн бүрхүүлээс хуулж авсан бөгөөд энэ бүтээгдэхүүнийх
-болсон нь гурван зүйл: шугам (`desktop.`/`mobile.eid.gerege.mn`), багц ID
-(`mn.gerege.eid.*`, Windows дээр `GeregeEID.*`), харагдах нэр (**eID Gerege**).
-Эх кодын package нэр (`mn.gerege.nexus`, `GeregeNexusNativeWin`) цөмийнх хэвээр:
-бүрхүүл нь Gerege Nexus-ийн бүрхүүл мөн бөгөөд package нэр солих нь хүн ч,
-дэлгүүр ч харахгүй зүйлийг л хөдөлгөнө.
+Гурван клиент энд байна: **macOS**, **iOS/iPadOS**, **Android**
+(`native-apps/`). Гурвуулаа нэг зарчимтай — клиентэд secret байхгүй, бүх
+дуудлага нийтийн `/api/…` route-уудаар, identity нь Keychain/Keystore дэх
+snapshot. iOS нь macOS-тай эх кодоо ШУУД хуваалцдаг; Android нь өнгө,
+орчуулгаа тэр эх сурвалжаас үүсгэдэг (`scripts/gen_from_swift.py`).
+
+Нэвтрэлт нь платформоороо ялгаатай: мак дээр QR/РД push (хөрш утас
+зөвшөөрнө), утсан дээр app-to-app — eID Mongolia апп руу үсэрч зөвшөөрөөд
+буцна. Session нь ижил тул шинэ backend endpoint нэмээгүй.
 
 Байрлуулалтын тал нь `nginx/device-lines.eid.gerege.mn.conf` ба
-`DEVICE_LINE_ORIGINS`. Шугам бүр өөрийн host дээр сууж, тэр host нь `/api/v1`-ийг
-энэ backend руу дамжуулдаг тул webview доторх дуудлага same-origin хэвээр байна.
+`DEVICE_LINE_ORIGINS`. Шугам бүр өөрийн host дээр сууж, тэр host нь `/api/`-г
+энэ платформ руу дамжуулна.
 
 Дараалал: DNS → nginx → certbot → **хамгийн сүүлд** клиентийн доторх хаяг.
-Эсрэгээр явбал апп байхгүй host руу чиглэж унана. `kiosk`/`pos` build нь
-кодын хувьд бэлэн ч тэр хоёр хаяг АСААГҮЙ тул түгээхгүй
-(`native-apps/shared/device_lines.json` → `provisioned: false`).
+Эсрэгээр явбал апп байхгүй host руу чиглэж унана
+(`native-apps/shared/device_lines.json` → `$provisioning`).
 
-Нэвтрэх дэлгэцийн **бичвэр** долоон хэл дээрээ eID Gerege гэж хэлнэ.
-Орчуулга нь цөмийн `i18n:export-native`-ийн гаралт бөгөөд `{brand}` тэмдэг нь
-экспортын мөчид задардаг — тиймээс гараар бүү зас, гараар бүү экспортол:
-
-```
-native-apps/sync-i18n.sh ../open-gerege-nexus
-```
-
-Скрипт нь цөмийн ажлын модыг хөндөхгүй, дөрвөн хэлбэрийг (JSON, Android XML,
-Windows resx, iOS xcstrings) бүгдийг нь бичээд цөмийн анхдагч нэр үлдсэн
-эсэхийг шалгана.
-
-**Тэмдэг ч брэндчлэгдсэн.** Эх сурвалж нь eID-ийн desktop клиентийн репо
-(`gitlab.gerege.mn/products/gerege-line/eid/eid-desktop-mn`). Ил тод тэмдэг нь
-нэвтрэх дэлгэц, туслах домэйнуудын толгой, Grafana-гийн цагаан карт дээр; хөх
-дөрвөлжин нь launcher ба tab icon дээр — тэдгээр нь ганцаараа зогсдог тул
-өөрийн газартай байх ёстой.
-
-Вэб талын `BRAND_LOGO_URL` / `BRAND_ICON_URL` / `BRAND_MASKABLE_ICON_URL` гурав
-нь `/brand/*`: агуулга нь `deploy/brand-assets/`, үйлчилгээ нь
-`docker-compose.sites.yml`-ийн `brand` контейнер, чиглүүлэлт нь nginx (үндсэн
-болон консолын хоёр vhost дээр). Хостын файлын систем рүү гараар хуулах алхам
-байхгүй — `git pull && ./deploy.sh`.
+CI: `.github/workflows/native-clients.yml` гурвууланг компайл хийж, Android-ийн
+үүсгэсэн файлууд эх сурвалжтайгаа таарч байгааг шалгана.
 
 ## Лиценз
 

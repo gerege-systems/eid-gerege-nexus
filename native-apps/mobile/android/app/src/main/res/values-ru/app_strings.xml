@@ -1,0 +1,23 @@
+<!-- Аппын өөрийн мөрүүд (ҮҮСГЭГДДЭГГҮЙ) — ширээний каталогт байхгүй,
+     зөвхөн гар дээрх урсгалд хэрэгтэй болсон мөрүүд. -->
+<resources>
+    <string name="Login_AppToApp">Войти через приложение eID</string>
+    <string name="Login_Push">Отправить push по регистрационному номеру</string>
+    <string name="Login_OtherDevice">Подтвердить на другом устройстве</string>
+    <string name="Login_Error_Failed">Проверка не удалась.</string>
+    <string name="Login_Error_AppMissing">Приложение eID Mongolia не найдено. Отправьте push по регистрационному номеру.</string>
+    <string name="Read_Only_Hint">Только просмотр — изменения в приложении eID Mongolia (PIN2).</string>
+    <string name="Settings_Server">Сервер</string>
+    <string name="Settings_About">О приложении</string>
+    <string name="App_VersionLabel">Версия</string>
+    <string name="Settings_Host">Подключённый хост</string>
+    <string name="Logs_Subtitle">Входы на этом устройстве</string>
+    <string name="Id_Subtitle">Ваш единый профиль e-ID</string>
+    <string name="Id_RegNumber">Регистрационный номер</string>
+    <string name="Id_CivilId">Гражданский ID</string>
+    <string name="Id_DocNumber">Номер документа</string>
+    <string name="Id_Level">Уровень</string>
+    <string name="Common_Active">Активен</string>
+    <string name="Common_Registered">Зарегистрирован</string>
+    <string name="Common_Pending">Ожидает</string>
+</resources>

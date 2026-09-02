@@ -1,0 +1,47 @@
+package mn.gerege.eid
+
+import android.content.Context
+import android.content.SharedPreferences
+
+/**
+ * Ширээний `Core/Network/AppConfig.swift`-ийн Android дүйцэл.
+ *
+ * Зарчим нь ижил: клиентэд RP secret БАЙХГҮЙ. Бүх дуудлага өөрийн web
+ * backend-ийн нийтийн `/api/…` route-уудаар явна (хөтөчтэй яг ижил зам), RP-ийн
+ * нууцыг зөвхөн web сервер барина.
+ */
+object AppConfig {
+    const val BRAND_NAME = "eID Gerege"
+    private const val PREFS = "eid.settings"
+    const val BASE_URL_KEY = "API_BASE_URL_OVERRIDE"
+
+    /**
+     * App2App буцах хаяг. Manifest-ийн intent-filter-тэй (`gerege-eid://auth`)
+     * ЯГ таарах ёстой, мөн RP-ийн `callback_hosts` allowlist-д бүртгэгдсэн байх
+     * ёстой — эс бөгөөс сервер түүнийг хаяж, буцалт ажиллахгүй.
+     */
+    const val APP_TO_APP_CALLBACK = "gerege-eid://auth"
+
+    /** Гарын шугам — iOS-тэй ИЖИЛ хост (`shared/device_lines.json` → mobile). */
+    const val DEFAULT_BASE_URL = "https://mobile.eid.gerege.mn"
+
+    private lateinit var prefs: SharedPreferences
+
+    fun init(context: Context) {
+        prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+    }
+
+    var baseUrl: String
+        get() = prefs.getString(BASE_URL_KEY, null)?.trim()?.trimEnd('/')
+            ?.takeIf { it.isNotEmpty() } ?: DEFAULT_BASE_URL
+        set(value) {
+            val normalized = value.trim().trimEnd('/')
+            prefs.edit().apply {
+                if (normalized.isEmpty()) remove(BASE_URL_KEY) else putString(BASE_URL_KEY, normalized)
+            }.apply()
+        }
+
+    val host: String get() = baseUrl.removePrefix("https://").removePrefix("http://").substringBefore('/')
+
+    fun prefs(): SharedPreferences = prefs
+}
