@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Нөөцлөлт — eID Gerege</title>
 <meta name="description" content="eID Gerege-ийн нөөцлөлтийн журам: юу, хаана, хэр удаан, хэрхэн сэргээх.">
-<meta name="theme-color" content="#1b3a6b">
+<meta name="theme-color" content="#3A6DFF">
 <style>
 /*
  * eID Gerege-ийн туслах домэйнуудын нийтлэг хуудас.
@@ -16,13 +16,13 @@
  * гуравдагч этгээдээс хамаарах ёсгүй: тэр нь хуудасны агуулгатай шууд
  * зөрчилдөнө.
  *
- * Өнгө нь BRAND_THEME_COLOR (#1b3a6b) — eid.gerege.mn-ээс энд ирсэн хүн
+ * Өнгө нь BRAND_THEME_COLOR (#3A6DFF, eID Brand500) — eid.gerege.mn-ээс энд ирсэн хүн
  * өөр бүтээгдэхүүн рүү орсон мэт мэдрэхгүй.
  */
 :root {
   color-scheme: light;
-  --navy: #1b3a6b;
-  --navy-hi: #24518f;
+  --brand: #3A6DFF;   /* eID Brand500 */
+  --brand-hi: #2A5BD7; /* Brand600 */
   --ink: #16233a;
   --muted: #64748b;
   --page: #f6f8fc;
@@ -35,12 +35,12 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.6 var(--font); }
 .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
-header { background: var(--navy); color: #fff; padding: 18px 0; }
+header { background: var(--brand); color: #fff; padding: 18px 0; }
 header .wrap { display: flex; align-items: center; gap: 12px; }
 .mark { width: 34px; height: 34px; border-radius: 9px; }
 header b { font-size: 15px; letter-spacing: .01em; }
 header span { color: rgb(255 255 255 / 62%); font-size: 13px; }
-.hero { background: var(--navy); color: #fff; padding: 44px 0 56px; }
+.hero { background: var(--brand); color: #fff; padding: 44px 0 56px; }
 .hero .kicker { font: 600 12px/1 var(--mono); letter-spacing: .12em; color: rgb(255 255 255 / 62%); }
 .hero h1 { margin: 14px 0 10px; font-size: 30px; line-height: 1.25; letter-spacing: -.02em; }
 .hero p { margin: 0; max-width: 62ch; color: rgb(255 255 255 / 78%); }
@@ -51,19 +51,19 @@ h2 { font-size: 13px; letter-spacing: .1em; color: var(--muted); margin: 0 0 12p
 .card + .card { margin-top: 12px; }
 .card h3 { margin: 0 0 6px; font-size: 17px; }
 .card p { margin: 0; color: var(--muted); }
-a.go { display: inline-block; margin-top: 14px; background: var(--navy); color: #fff;
+a.go { display: inline-block; margin-top: 14px; background: var(--brand); color: #fff;
        text-decoration: none; font-weight: 700; padding: 10px 18px; border-radius: 9px; }
-a.go:hover { background: var(--navy-hi); }
+a.go:hover { background: var(--brand-hi); }
 code { font: 13px var(--mono); background: var(--panel); padding: 2px 6px; border-radius: 5px; }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 0; }
-dt { font: 13px var(--mono); color: var(--navy); }
+dt { font: 13px var(--mono); color: var(--brand); }
 dd { margin: 0; color: var(--muted); }
 footer { border-top: 1px solid var(--line); padding: 22px 0 40px; color: var(--muted); font-size: 13px; }
 @media (max-width: 560px) { .hero h1 { font-size: 24px; } dl { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-<header><div class="wrap"><svg class="mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#fff"/><text x="32" y="34" text-anchor="middle" dominant-baseline="central" font-family="Inter,system-ui,sans-serif" font-size="22" font-weight="800" fill="#1b3a6b">eID</text></svg><b>eID Gerege</b><span>· Нөөцлөлт</span></div></header>
+<header><div class="wrap"><img class="mark" alt="" src="data:image/png;base64,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"><b>eID Gerege</b><span>· Нөөцлөлт</span></div></header>
 
 <div class="hero"><div class="wrap">
   <div class="kicker">НӨӨЦЛӨЛТ · backups.eid.gerege.mn</div>

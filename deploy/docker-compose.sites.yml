@@ -53,3 +53,19 @@ services:
       - "127.0.0.1:3019:80"
     volumes:
       - ./backups-landing:/usr/share/nginx/html:ro
+
+  # Брэндийн зураг: лого, icon, maskable icon.
+  #
+  # `BRAND_LOGO_URL` ба хамаатнууд нь энэ хостын зам байж болно — тэдгээрийг
+  # хэн нэгэн үйлчлэх ёстой. Хостын файлын систем рүү гараар хуулахын оронд
+  # контейнерээр өгч байгаа нь бусад хуудсуудынхтай ижил шалтгаан: агуулга
+  # нь репод, тиймээс шинэчлэх нь `git pull && ./deploy.sh`, мартагдах гар
+  # алхам биш. nginx нь eid.gerege.mn ба admin.eid.gerege.mn хоёр дээр
+  # `/brand/` замыг үүн рүү дамжуулна.
+  brand:
+    <<: *static-site
+    container_name: gerege_eid_nexus_brand
+    ports:
+      - "127.0.0.1:3020:80"
+    volumes:
+      - ./brand-assets:/usr/share/nginx/html:ro

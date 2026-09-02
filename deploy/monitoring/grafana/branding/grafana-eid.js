@@ -20,10 +20,10 @@
 
   const svg =
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'>" +
-    "<circle cx='20' cy='20' r='20' fill='#e7eefb'/>" +
+    "<circle cx='20' cy='20' r='20' fill='#EEF4FF'/>" +
     "<text x='20' y='20' text-anchor='middle' dominant-baseline='central'" +
     " font-family='Inter, -apple-system, system-ui, sans-serif' font-size='15'" +
-    " font-weight='700' fill='#1b3a6b'>" + initials + "</text></svg>";
+    " font-weight='700' fill='#3A6DFF'>" + initials + "</text></svg>";
 
   document.documentElement.style.setProperty(
     '--gg-avatar',

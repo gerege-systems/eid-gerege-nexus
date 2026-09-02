@@ -74,7 +74,7 @@ echo "==> Файлуудыг $WEBROOT рүү суулгаж байна"
 mkdir -p "$WEBROOT/grafana-override"
 install -m 644 "$SRC/grafana-eid.css" "$WEBROOT/grafana-eid.css"
 install -m 644 "$SRC/grafana-eid.js"  "$WEBROOT/grafana-eid.js"
-install -m 644 "$SRC/mark.svg"        "$WEBROOT/grafana-favicon.svg"
+install -m 644 "$SRC/mark.png"        "$WEBROOT/grafana-favicon.png"
 
 # Landing хуудас. Домэйн солигдвол текст доторх хаяг ч солигдоно.
 [ -f "$LANDING_SRC" ] || die "$LANDING_SRC олдсонгүй"
@@ -195,10 +195,10 @@ check "брэндийн нэр"        "https://$MONITOR_DOMAIN$GRAFANA_PREFIX/p
 
 icon_type="$(curl -fsS -o /dev/null -w '%{content_type}' --max-time 20 \
   "https://$MONITOR_DOMAIN$GRAFANA_PREFIX/public/build/img/fav32.png" 2>/dev/null || true)"
-if [ "$icon_type" = "image/svg+xml" ]; then
+if [ "$icon_type" = "image/png" ]; then
   say "OK   tab icon"
 else
-  echo "  ДУТУУ tab icon — content-type '$icon_type', image/svg+xml байх ёстой"; fail=1
+  echo "  ДУТУУ tab icon — content-type '$icon_type', image/png байх ёстой"; fail=1
 fi
 
 if [ "$fail" = "1" ]; then
