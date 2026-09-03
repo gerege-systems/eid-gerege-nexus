@@ -53,17 +53,26 @@ object ApiClient {
      * RP-ээр («RP Demo Bank») үүсч, иргэн утсан дээрээ тэр нэрийг уншдаг байв.
      * Нэвтрэлт нь хөтөчтэй ижил route-оор явна.
      *
-     * `callbackUrl` ХООСОН: платформ нь өөрийн origin-ы callback-аас өөрийг
-     * хүлээж авахгүй (цөмийн `validEIDCallback`). eID апп зөвшөөрснийхөө дараа
-     * буцааж нээхгүй тул хүн гараараа эргэж ирнэ — poll нь ажилласаар.
+     * `callbackUrl` нь энэ аппын custom URI. Гурван газарт зэрэг бүртгэгдсэн
+     * байж гэмээнэ ажиллана: manifest-ийн intent-filter ба платформ backend-ийн
+     * `EID_APP_CALLBACKS` хоёрт бүтэн `gerege-eid://auth`, eID RP-ийн
+     * `callback_hosts`-д зөвхөн `gerege-eid://` scheme. Аль нэг нь дутвал
+     * нэвтрэлт дуусах ч хүн eID апп дотроо үлдэнэ — poll үүнээс хамааралгүй.
      */
     suspend fun authStart(): AuthSession =
-        call("/api/v1/auth/eid/start", JSONObject().put("callbackUrl", "")).let { session(it) }
+        call(
+            "/api/v1/auth/eid/start",
+            JSONObject().put("callbackUrl", AppConfig.APP_TO_APP_CALLBACK),
+        ).let { session(it) }
 
     /** `POST /api/v1/auth/eid/start-id` — регистрээр утас руу push. */
     suspend fun authStartById(register: String): AuthSession =
-        call("/api/v1/auth/eid/start-id",
-             JSONObject().put("national_id", register).put("callbackUrl", "")).let { session(it) }
+        call(
+            "/api/v1/auth/eid/start-id",
+            JSONObject()
+                .put("national_id", register)
+                .put("callbackUrl", AppConfig.APP_TO_APP_CALLBACK),
+        ).let { session(it) }
 
     private fun session(it: JSONObject) =
         AuthSession(it.getString("session_id"), it.optString("verification_code").ifEmpty { null })
@@ -102,8 +111,8 @@ object ApiClient {
      * `POST /api/start` — anonymous device-link session (app-to-app-д ашиглана).
      *
      * `callbackUrl` нь eID апп зөвшөөрсний дараа БУЦАХ хаяг. Сервер тал үүнийг
-     * RP-ийн `callback_hosts` allowlist-аар шалгана — бүртгэгдээгүй бол чимээгүй
-     * хаягдаж, зөвшөөрсний дараа хүн eID апп дотроо үлдэнэ.
+     * RP-ийн `callback_hosts` allowlist-дахь scheme-ээр шалгана — бүртгэгдээгүй
+     * бол чимээгүй хаягдаж, зөвшөөрсний дараа хүн eID апп дотроо үлдэнэ.
      */
     suspend fun start(): StartSession =
         call("/api/start", JSONObject().put("callbackUrl", AppConfig.APP_TO_APP_CALLBACK)).let {

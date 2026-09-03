@@ -341,12 +341,11 @@ RP secret, device HMAC, урт насладаг bearer token **аль нь ч б
 **Дөрвүүлэн (macOS, Windows, iOS, Android) одоо хөтөчийн замаар явна.**
 Дагалдах зүйлс:
 
-- `callbackUrl` нь ХООСОН. Платформ нь `${PUBLIC_ORIGIN}/auth/eid/callback`-аас
-  өөр хаягийг хүлээж авдаггүй (цөмийн `validEIDCallback`) тул гуравдагч схем
-  (`gerege-eid://auth`) 400 өгнө. eID апп зөвшөөрснийхөө дараа биднийг өөрөө
-  нээхгүй — хүн гараараа буцаж ирнэ, ажиллаж буй poll нэвтрэлтийг дуусгана.
-  Автомат буцалт сэргэхийн тулд цөм нь `DEVICE_LINE_ORIGINS`-д бүртгэсэн
-  схемийг зөвшөөрөх ёстой.
+- Утасны `callbackUrl` нь бүтэн `gerege-eid://auth`. Платформ backend-ийн
+  `EID_APP_CALLBACKS`-д энэ бүтэн URI ЯГ таарна; eID Mongolia дээрх тухайн
+  RP-ийн `callback_hosts`-д зөвхөн `gerege-eid://` scheme бүртгэлтэй байна.
+  Аль нэг нь дутвал session poll-оороо амжилттай дуусах ч eID апп буцааж
+  нээхгүй. macOS/Windows дээр зөвшөөрөгч нь өөр төхөөрөмж тул callback хоосон.
 - Poll нь 25 секунд барина (`eid.PollWindow`) тул клиентийн хүсэлтийн timeout
   түүнээс ДЭЭГҮҮР байх ёстой — iOS/macOS дээр 60с, Windows дээр
   `RequestTimeoutSeconds: 60`.

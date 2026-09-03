@@ -25,8 +25,9 @@ namespace eIDGeregeDesktop.Infrastructure.Auth;
 /// The poll returns the citizen block inline on completion (no bearer, no
 /// `/me`), so on success we stash that identity in
 /// <see cref="ISessionIdentityCache"/> for `UserProfileService.GetMeAsync`.
-/// `callbackUrl` is empty on purpose: the platform only accepts its own
-/// `${PUBLIC_ORIGIN}/auth/eid/callback`, and a desktop has nowhere to return to.
+/// `callbackUrl` is empty on purpose: approval happens on a different device,
+/// so this desktop has nowhere for the eID mobile app to return to. Mobile uses
+/// its configured `gerege-eid://auth` callback instead.
 public sealed class CitizenAuthService : ICitizenAuthService
 {
     /// The web session default TTL isn't echoed by `/api/*`; use a conservative
