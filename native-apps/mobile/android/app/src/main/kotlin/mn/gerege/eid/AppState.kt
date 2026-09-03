@@ -10,6 +10,7 @@ import mn.gerege.eid.net.ActivityEntry
 import mn.gerege.eid.net.Child
 import mn.gerege.eid.net.Organization
 import mn.gerege.eid.net.StoredIdentity
+import mn.gerege.eid.net.WorkAreaSession
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -49,6 +50,9 @@ class AppState(application: Application) : AndroidViewModel(application) {
 
     fun logout() {
         store.clear()
+        // Ажлын мужийн session нь IdentityStore-д биш WebView-ийн cookie санд
+        // байдаг тул дээрх цэвэрлэгээнд ОРДОГГҮЙ — тусад нь гаргана.
+        WorkAreaSession.clear()
         identity = null
         organizations.clear()
         children.clear()
