@@ -1,4 +1,4 @@
-name: eIDGeregeMN
+name: eIDGeregeDesktop
 options:
   bundleIdPrefix: mn.gerege.eid
   deploymentTarget:
@@ -32,7 +32,7 @@ settings:
       OTHER_SWIFT_FLAGS: "-Xfrontend -disable-reflection-names"
 
 targets:
-  eIDGeregeMN:
+  eIDGeregeDesktop:
     type: application
     platform: macOS
     sources:
@@ -55,7 +55,7 @@ targets:
         PRODUCT_NAME: "eID Gerege"
         INFOPLIST_FILE: Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: mn.gerege.eid.desktop
-        CODE_SIGN_ENTITLEMENTS: eIDGeregeMN.entitlements
+        CODE_SIGN_ENTITLEMENTS: eIDGeregeDesktop.entitlements
         ENABLE_HARDENED_RUNTIME: true
         COMBINE_HIDPI_IMAGES: true
     info:

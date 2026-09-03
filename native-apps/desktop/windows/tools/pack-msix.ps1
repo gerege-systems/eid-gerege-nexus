@@ -10,10 +10,10 @@
     1. Runs `dotnet publish` with EidMsix=true so the WinAppSDK single-project
        MSIX tooling emits a packaged build.
     2. Locates the produced .msix under bin/<arch>/<config>/.../AppPackages/.
-    3. Signs it with tools/dev-cert/eIDMongolia.Dev.pfx (or a custom -PfxPath).
+    3. Signs it with tools/dev-cert/eIDGeregeDesktop.Dev.pfx (or a custom -PfxPath).
     4. Copies the signed file to artifacts/eid-mongolia-setup.msix
        (stable name — referenced by the web download link) AND
-       artifacts/eIDMongolia.{version}.msix (versioned archive copy).
+       artifacts/eIDGeregeDesktop.{version}.msix (versioned archive copy).
 
   For PRODUCTION signing use:
     -PfxPath C:\secrets\eidmongol-codesign.pfx -TimestampUrl http://timestamp.digicert.com
@@ -30,7 +30,7 @@
   for users on auto-update to receive it.
 
 .PARAMETER PfxPath
-  Path to the .pfx code-signing certificate. Default: tools/dev-cert/eIDMongolia.Dev.pfx
+  Path to the .pfx code-signing certificate. Default: tools/dev-cert/eIDGeregeDesktop.Dev.pfx
 
 .PARAMETER PfxPassword
   Cert password. Prompted if not supplied.
@@ -54,10 +54,10 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$clientCsproj = Join-Path $repoRoot "src\eIDMongolia.Client\eIDMongolia.Client.csproj"
+$clientCsproj = Join-Path $repoRoot "src\eIDGeregeDesktop.Client\eIDGeregeDesktop.Client.csproj"
 $artifacts = Join-Path $repoRoot "artifacts"
 if (-not $PfxPath) {
-    $PfxPath = Join-Path $PSScriptRoot "dev-cert\eIDMongolia.Dev.pfx"
+    $PfxPath = Join-Path $PSScriptRoot "dev-cert\eIDGeregeDesktop.Dev.pfx"
 }
 
 if (-not (Test-Path $clientCsproj)) {
@@ -91,9 +91,9 @@ Write-Host "==> dotnet $($buildArgs -join ' ')"
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed (exit $LASTEXITCODE)" }
 
 # --- 2. Locate produced MSIX -------------------------------------------------
-# WinAppSDK single-project MSIX writes to src\eIDMongolia.Client\AppPackages\
+# WinAppSDK single-project MSIX writes to src\eIDGeregeDesktop.Client\AppPackages\
 # <Name>_<Version>_<Platform>_Test\<Name>_<Version>_<Platform>.msix
-$searchRoot = Join-Path $repoRoot "src\eIDMongolia.Client\AppPackages"
+$searchRoot = Join-Path $repoRoot "src\eIDGeregeDesktop.Client\AppPackages"
 $candidates = Get-ChildItem -Path $searchRoot -Filter "*.msix" -Recurse -ErrorAction SilentlyContinue |
     Sort-Object LastWriteTime -Descending
 

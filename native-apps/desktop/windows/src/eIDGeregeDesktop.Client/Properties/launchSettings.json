@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "eIDGeregeDesktop.Client (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "eIDGeregeDesktop.Client (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -20,7 +20,7 @@ backend-ийн нийтийн `/api/*` route-уудыг дууддаг (RP-API-�
 
 ```bash
 xcodegen generate
-xcodebuild -project eIDMongolia.xcodeproj -scheme eIDMongolia \
+xcodebuild -project eIDGeregeDesktop.xcodeproj -scheme eIDGeregeDesktop \
            -configuration Debug -destination 'platform=macOS,arch=arm64' build
 ```
 

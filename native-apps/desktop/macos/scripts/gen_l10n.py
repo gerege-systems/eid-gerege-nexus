@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent          # macos-app/
-STRINGS = HERE.parent / "windows/src/eIDMongolia.Client/Strings"
+STRINGS = HERE.parent / "windows/src/eIDGeregeDesktop.Client/Strings"
 OUT = HERE / "Presentation/Localization/L10nCatalog.swift"
 
 # Swift catalog property name -> .resw culture folder. Key order follows en-US.

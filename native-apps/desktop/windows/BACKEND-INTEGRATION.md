@@ -1,7 +1,7 @@
 # Windows app — backend интеграцийн төлөв (eID Mongolia)
 
 Энэ апп нь `gerege-systems/eid-gerege-mn-v1/desktop-app/windows-app`-аас
-**eID Mongolia** болгон rebrand хийгдэж (`EidGerege*` → `eIDMongolia*`,
+**eID Mongolia** болгон rebrand хийгдэж (`EidGerege*` → `eIDGeregeDesktop*`,
 `mn.eidgerege.desktop` → `mn.eidmongol.desktop`, `e-ID Gerege` → `e-ID Mongolia`,
 `eidgerege.mn` → `eidmongolia.mn`) энэ repo-д орж ирсэн.
 
@@ -21,7 +21,7 @@ desktop нь iOS апп шиг **first-party клиент** — RP secret, devic
 
 | Хийсэн | Файл |
 |---|---|
-| HMAC + Bearer handler-уудыг HTTP pipeline-аас хассан | `eIDMongolia.Infrastructure/DependencyInjection.cs` |
+| HMAC + Bearer handler-уудыг HTTP pipeline-аас хассан | `eIDGeregeDesktop.Infrastructure/DependencyInjection.cs` |
 | `BaseUrl` → web origin (`https://eidmongolia.mn`, dev `http://localhost:3000`) | `appsettings.json`, `appsettings.Development.json` |
 | SPKI pin, X-Road client утгуудыг цэвэрлэсэн | `appsettings*.json` |
 
@@ -77,7 +77,7 @@ desktop нь iOS апп шиг **first-party клиент** — RP secret, devic
 Статус: ✅ хийгдсэн · 🔁 stub (эх нь local-д алга) · ⏳ хараахан хийгээгүй (404 болж
 graceful degrade хийнэ).
 
-| Service (`eIDMongolia.Infrastructure/…`) | Төлөв | `/api/*` буулгалт |
+| Service (`eIDGeregeDesktop.Infrastructure/…`) | Төлөв | `/api/*` буулгалт |
 |---|---|---|
 | `Http/BackendApiClient.GetHealthAsync` | ✅ | `GET /api/health` (live=ready=200) |
 | `Auth/CitizenAuthService.InitiateAsync` | ✅ | `POST /api/login-notify {register}` |
@@ -117,8 +117,8 @@ cert-enroll) шаардана — энэ нь first-party `/api/*` хамрах 
 
 ```powershell
 dotnet restore
-dotnet build eIDMongolia.Desktop.sln -c Debug
-dotnet test tests/eIDMongolia.UnitTests
+dotnet build eIDGeregeDesktop.sln -c Debug
+dotnet test tests/eIDGeregeDesktop.UnitTests
 # packaging: tools/pack-msix.ps1
 ```
 

@@ -18,7 +18,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 CONFIGURATION="${CONFIGURATION:-Debug}"
-SCHEME="${SCHEME:-eIDGeregeMN}"
+SCHEME="${SCHEME:-eIDGeregeDesktop}"
 
 command -v xcodegen >/dev/null || { echo "xcodegen олдсонгүй: brew install xcodegen" >&2; exit 1; }
 

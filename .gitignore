@@ -9,10 +9,10 @@ deploy/.env
 xcuserdata/
 *.xcuserstate
 native-apps/desktop/macos/build/
-native-apps/desktop/macos/eIDGeregeMN
+native-apps/desktop/macos/eIDGeregeDesktop
 # .xcodeproj нь project.yml-ээс ҮҮСГЭГДДЭГ артефакт — build.sh бүрд шинэчлэгдэнэ.
-native-apps/desktop/macos/eIDGeregeMN.xcodeproj/
-native-apps/mobile/ios/eIDGeregeMN.xcodeproj/
+native-apps/desktop/macos/eIDGeregeDesktop.xcodeproj/
+native-apps/mobile/ios/eIDGeregeMobile.xcodeproj/
 native-apps/desktop/windows/**/bin/
 native-apps/desktop/windows/**/obj/
 native-apps/mobile/ios/.build/

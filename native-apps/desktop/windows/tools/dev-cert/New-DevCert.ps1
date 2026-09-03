@@ -8,7 +8,7 @@
   else. Production builds MUST use an EV / OV code-signing certificate from a
   CA in the Microsoft Trusted Root Program (e.g. DigiCert, Sectigo).
 
-  Output: tools/dev-cert/eIDMongolia.Dev.pfx, password-protected.
+  Output: tools/dev-cert/eIDGeregeDesktop.Dev.pfx, password-protected.
 
   The Subject MUST match the <Identity Publisher="..."> in Package.appxmanifest
   exactly. Currently: CN=Gerege Systems LLC, O=Gerege Systems LLC, C=MN.
@@ -33,8 +33,8 @@ $ErrorActionPreference = "Stop"
 
 if (-not (Test-Path $OutDir)) { New-Item -ItemType Directory -Path $OutDir | Out-Null }
 
-$pfxPath = Join-Path $OutDir "eIDMongolia.Dev.pfx"
-$cerPath = Join-Path $OutDir "eIDMongolia.Dev.cer"
+$pfxPath = Join-Path $OutDir "eIDGeregeDesktop.Dev.pfx"
+$cerPath = Join-Path $OutDir "eIDGeregeDesktop.Dev.cer"
 
 if (Test-Path $pfxPath) {
     Write-Warning "$pfxPath already exists. Delete it first if you want to regenerate."
@@ -46,7 +46,7 @@ Write-Host "Generating self-signed code-signing cert (Subject=$Subject, $ValidYe
 $cert = New-SelfSignedCertificate `
     -Subject $Subject `
     -KeyUsage DigitalSignature `
-    -FriendlyName "eIDMongolia Desktop Dev" `
+    -FriendlyName "eIDGeregeDesktop Dev" `
     -CertStoreLocation "Cert:\CurrentUser\My" `
     -KeyExportPolicy Exportable `
     -KeyAlgorithm RSA `

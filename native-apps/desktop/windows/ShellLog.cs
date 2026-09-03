@@ -19,7 +19,7 @@ public static class ShellLog
 
     private static string Path => System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "eIDGeregeMN", "shell.log");
+        "eIDGeregeDesktop", "shell.log");
 
     public static void Write(string message)
     {

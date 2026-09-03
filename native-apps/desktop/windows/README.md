@@ -1,7 +1,7 @@
 # e-ID Mongolia — Windows Desktop Client
 
 C# / WinUI 3 desktop client for the Mongolian e-ID platform — feature-parity with the web frontend (`web/`).
-Internal assembly / project IDs use the `eIDMongolia.*` prefix; display name and MSIX identity use **e-ID Mongolia**.
+Internal assembly / project IDs use the `eIDGeregeDesktop.*` prefix; display name and MSIX identity use **e-ID Mongolia**.
 
 > **⚠️ Port note (read `BACKEND-INTEGRATION.md` first).** This app was ported from
 > the `gerege` Windows client, which was an **RP-holding, direct-backend** client
@@ -21,7 +21,7 @@ Internal assembly / project IDs use the `eIDMongolia.*` prefix; display name and
 - **WinUI 3** via Windows App SDK 2.0
 - **MVVM** with CommunityToolkit.Mvvm (source-generated properties + commands)
 - **Generic Host** (`Microsoft.Extensions.Hosting`) with DI, Configuration, Options
-- **Logging:** Serilog → Console + Debug + rolling file (`%LOCALAPPDATA%/eIDMongolia/logs/`)
+- **Logging:** Serilog → Console + Debug + rolling file (`%LOCALAPPDATA%/eIDGeregeDesktop/logs/`)
 - **HTTP:** `HttpClient` + `Microsoft.Extensions.Http.Resilience` + custom HMAC + cert-pinning handlers (M1)
 - **Validation:** FluentValidation + DataAnnotations
 - **Tests:** xUnit + FluentAssertions + NSubstitute
@@ -32,13 +32,13 @@ Internal assembly / project IDs use the `eIDMongolia.*` prefix; display name and
 ```
 desktop-app/windows-app/
 ├── src/
-│   ├── eIDMongolia.Domain/          # Entities, value objects, errors. No external deps.
-│   ├── eIDMongolia.Application/     # Use-case services, options, contracts. References Domain.
-│   ├── eIDMongolia.Infrastructure/  # HttpClient, cert pinning, DPAPI vault, FCM, etc. Windows TFM.
-│   ├── eIDMongolia.Presentation/    # ViewModels, navigation, validation. UI-agnostic.
-│   └── eIDMongolia.Client/          # WinUI 3 entry point: App.xaml, MainWindow, pages.
+│   ├── eIDGeregeDesktop.Domain/          # Entities, value objects, errors. No external deps.
+│   ├── eIDGeregeDesktop.Application/     # Use-case services, options, contracts. References Domain.
+│   ├── eIDGeregeDesktop.Infrastructure/  # HttpClient, cert pinning, DPAPI vault, FCM, etc. Windows TFM.
+│   ├── eIDGeregeDesktop.Presentation/    # ViewModels, navigation, validation. UI-agnostic.
+│   └── eIDGeregeDesktop.Client/          # WinUI 3 entry point: App.xaml, MainWindow, pages.
 └── tests/
-    └── eIDMongolia.UnitTests/       # xUnit, references all src projects.
+    └── eIDGeregeDesktop.UnitTests/       # xUnit, references all src projects.
 ```
 
 **Reference graph:** `Client → Presentation, Infrastructure, Application, Domain`
@@ -51,21 +51,21 @@ desktop-app/windows-app/
 ```powershell
 cd desktop-app/windows-app
 dotnet restore
-dotnet build eIDMongolia.Desktop.sln -c Debug /p:Platform=x64
+dotnet build eIDGeregeDesktop.sln -c Debug /p:Platform=x64
 dotnet test
 ```
 
-Open `eIDMongolia.Desktop.sln` in **Visual Studio 2022 17.10+** with the *Windows application development* workload installed. Set `eIDMongolia.Client` as startup project. Press F5.
+Open `eIDGeregeDesktop.sln` in **Visual Studio 2022 17.10+** with the *Windows application development* workload installed. Set `eIDGeregeDesktop.Client` as startup project. Press F5.
 
 ## Configuration
 
-`src/eIDMongolia.Client/appsettings.json` is the canonical config. Environment overlay via `appsettings.{ENV}.json` (e.g. `Development`). Environment-variable overrides via the prefix `EIDMNG__` (double-underscore as section separator):
+`src/eIDGeregeDesktop.Client/appsettings.json` is the canonical config. Environment overlay via `appsettings.{ENV}.json` (e.g. `Development`). Environment-variable overrides via the prefix `EIDMNG__` (double-underscore as section separator):
 
 ```powershell
-$env:EIDMNG__eIDMongolia__Backend__BaseUrl = "https://staging.eidmongolia.mn"
+$env:EIDMNG__eIDGeregeDesktop__Backend__BaseUrl = "https://staging.eidmongolia.mn"
 ```
 
-All settings are bound to typed `eIDMongoliaOptions` with DataAnnotations validation at startup.
+All settings are bound to typed `eIDGeregeDesktopOptions` with DataAnnotations validation at startup.
 
 ### Backend connection (RP subsystem-ID header)
 
@@ -73,7 +73,7 @@ The `/rp/v1/*` routes on `api.eidmongolia.mn` require an `X-RP-Client` header (s
 
 ```jsonc
 // appsettings.Development.json
-"eIDMongolia": {
+"eIDGeregeDesktop": {
   "Backend": {
     "BaseUrl": "https://api.eidmongolia.mn",
     "RpClient": "MN/COM/5544334/eid-test"
@@ -133,7 +133,7 @@ See [`tools/README.md`](tools/README.md) for the full pipeline. Short version:
 .\tools\pack-msix.ps1 -Version 0.1.0.0 -Platform x64
 
 # Install locally
-Add-AppPackage -Path .\artifacts\eIDMongolia*.msix
+Add-AppPackage -Path .\artifacts\eIDGeregeDesktop*.msix
 ```
 
 Production builds use an EV / OV code-signing cert with the matching `Publisher` DN; the `.appinstaller` template wires up Windows-native auto-update.

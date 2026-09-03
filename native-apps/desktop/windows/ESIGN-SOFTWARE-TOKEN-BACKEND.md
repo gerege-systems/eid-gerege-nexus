@@ -1,4 +1,4 @@
-# eIDMongolia Desktop — "Программ токен" (ESIGN) — Backend талд хэрэгтэй ажил
+# eIDGeregeDesktop — "Программ токен" (ESIGN) — Backend талд хэрэгтэй ажил
 
 **Зорилго:** Иргэн физик USB токенгүйгээр, зөвхөн гар утсандаа нэвтэрсэн eID Mongolia / Gerege identity-ээ ашиглаж, төрийн вэбсайтуудад (ДАН / sso.gov.mn дамжуулан, жишээ: isf.mn) **тоон гарын үсгээр нэвтрэх**. Өөрөөр хэлбэл desktop апп нь ESIGN токены дүрд орж, гарын үсгийг гар утасны threshold түлхүүрээр зуруулна.
 
@@ -127,9 +127,9 @@ cipher/meta хийх → ws-д буцаах бүхнийг гүйцэтгэнэ 
 ## 7. Холбогдох файлууд (лавлагаа)
 
 **Desktop:**
-- `src/eIDMongolia.Infrastructure/Esign/` — `EsignBridge.cs`, `EsignCrypto.cs`, `EsignWebSocketServer.cs`, `EsignBridgeHostedService.cs`
-- `src/eIDMongolia.Infrastructure/Auth/RpAuthService.cs` — `/api/sign-pdf-start` + `/api/status` (raw signature буцаах жишээ загвар)
-- `src/eIDMongolia.Infrastructure/Auth/CitizenAuthService.cs` — first-party login; M9.B токен-веб-нэвтрэлт байхгүй болохыг тэмдэглэсэн
+- `src/eIDGeregeDesktop.Infrastructure/Esign/` — `EsignBridge.cs`, `EsignCrypto.cs`, `EsignWebSocketServer.cs`, `EsignBridgeHostedService.cs`
+- `src/eIDGeregeDesktop.Infrastructure/Auth/RpAuthService.cs` — `/api/sign-pdf-start` + `/api/status` (raw signature буцаах жишээ загвар)
+- `src/eIDGeregeDesktop.Infrastructure/Auth/CitizenAuthService.cs` — first-party login; M9.B токен-веб-нэвтрэлт байхгүй болохыг тэмдэглэсэн
 
 **Backend (Go):**
 - `server/internal/httpapi/server.go` — `/v3/certificates/etsi/{personEtsi}`, `/v3/signature/notification/etsi/{personEtsi}`, `/v3/authentication/notification/etsi/{personEtsi}`

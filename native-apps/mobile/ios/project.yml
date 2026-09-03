@@ -10,7 +10,7 @@
 #
 # Ширээний-ОНЦЛОГ хэсгүүд энд ОРОХГҮЙ: Core/Token (PKCS#11/APDU), Core/Esign
 # (ws://127.0.0.1 гүүр), MenuBar, Sparkle, login item, SecurityGuard.
-name: eIDGeregeMN
+name: eIDGeregeMobile
 options:
   bundleIdPrefix: mn.gerege.eid
   deploymentTarget:
@@ -26,7 +26,7 @@ settings:
     SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
 
 targets:
-  eIDGeregeMN:
+  eIDGeregeMobile:
     type: application
     platform: iOS
     sources:
@@ -59,7 +59,7 @@ targets:
         PRODUCT_NAME: eID Gerege
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: CQTHTD6YJQ
-        CODE_SIGN_ENTITLEMENTS: eIDGeregeMN.entitlements
+        CODE_SIGN_ENTITLEMENTS: eIDGeregeMobile.entitlements
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: false
         INFOPLIST_KEY_CFBundleDisplayName: eID Gerege
@@ -68,7 +68,7 @@ targets:
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: true
         INFOPLIST_KEY_UILaunchScreen_Generation: true
     info:
-      path: eIDGeregeMN-Info.plist
+      path: eIDGeregeMobile-Info.plist
       properties:
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
@@ -103,10 +103,10 @@ targets:
           - UIInterfaceOrientationLandscapeRight
 
 schemes:
-  eIDGeregeMN:
+  eIDGeregeMobile:
     build:
       targets:
-        eIDGeregeMN: all
+        eIDGeregeMobile: all
     run:
       config: Debug
     archive:

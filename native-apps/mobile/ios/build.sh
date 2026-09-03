@@ -12,7 +12,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-SCHEME="${SCHEME:-eIDGeregeMN}"
+SCHEME="${SCHEME:-eIDGeregeMobile}"
 CONFIGURATION="${CONFIGURATION:-Debug}"
 DESTINATION="${DESTINATION:-generic/platform=iOS Simulator}"
 
@@ -20,7 +20,7 @@ command -v xcodegen >/dev/null || { echo "xcodegen олдсонгүй: brew inst
 xcodegen generate
 
 xcodebuild -quiet \
-  -project eIDGeregeMN.xcodeproj \
+  -project eIDGeregeMobile.xcodeproj \
   -scheme "$SCHEME" \
   -configuration "$CONFIGURATION" \
   -destination "$DESTINATION" \

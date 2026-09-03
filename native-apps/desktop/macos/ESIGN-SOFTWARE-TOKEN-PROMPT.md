@@ -13,7 +13,7 @@ macOS апп (desktop/macos-app, Swift/SwiftUI) дээр "Программ то�
 
 ## Лавлагаа (main дээр аль хэдийн байгаа — Windows хувилбар)
 Windows-app дээр энэ бүхэн хийгдсэн. ЯГ ижил логикийг Swift рүү буулга:
-- desktop/windows-app/src/eIDMongolia.Infrastructure/Esign/  ← гол лавлагаа:
+- desktop/windows/src/eIDGeregeDesktop.Infrastructure/Esign/  ← гол лавлагаа:
     • EsignWebSocketServer.cs — ws://127.0.0.1:59001 + wss://127.0.0.1:59005 (RFC6455)
     • EsignCrypto.cs          — ENCRYPTED_DATA_SIGN схемийн ЯГ хэрэгжүүлэлт
     • EsignBridge.cs          — токен/программ токен салаалалт (fallback)
@@ -21,7 +21,7 @@ Windows-app дээр энэ бүхэн хийгдсэн. ЯГ ижил логи�
     • EsignCertParser.cs, EsignBridgeHostedService.cs
     • README.md
 - desktop/windows-app/ESIGN-SOFTWARE-TOKEN-BACKEND.md — backend контрактын баримт (ЗААВАЛ УНШ)
-- desktop/windows-app/src/eIDMongolia.Infrastructure/Auth/RpAuthService.cs
+- desktop/windows/src/eIDGeregeDesktop.Infrastructure/Auth/RpAuthService.cs
     — sign-pdf start→poll→/api/status{signatureValueB64} загвар
 
 ## ESIGN протокол (type "bb4702f31917793f")

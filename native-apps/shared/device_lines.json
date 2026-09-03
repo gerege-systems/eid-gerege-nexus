@@ -21,7 +21,13 @@
     "Төхөөрөмжийн шугам дээр web нь зөвхөн native хүрээн доторх ажлын муж.",
     "",
     "Энэ файл нь eID Gerege байрлуулалтынх. Код нь цөмийн бүрхүүл (Gerege",
-    "Nexus) боловч шугам, багц ID, харагдах нэр нь энэ бүтээгдэхүүнийх."
+    "Nexus) боловч шугам, багц ID, харагдах нэр нь энэ бүтээгдэхүүнийх.",
+    "",
+    "АППЫН НЭР НЬ ШУГАМАА ДАГАНА: шугам бүрийн `app` талбар нь Xcode-ийн",
+    "target/scheme, Gradle-ийн rootProject, .NET-ийн solution/namespace-ийн нэр.",
+    "Тиймээс `desktop` шугамын macOS ба Windows хоёр НЭГ нэртэй",
+    "(eIDGeregeDesktop) — хүн тэр хоёртой ижил байдлаар харьцдагтай адил.",
+    "`kiosk`, `pos` хоёрын нэр нь ЗАХИАЛГАТАЙ: клиент нь хараахан байхгүй."
   ],
   "$provisioning": [
     "АСААЛТТАЙ шугам ОДООГООР БАЙХГҮЙ. `provisioned` талбар бүр false: DNS нь",
@@ -50,6 +56,7 @@
   "deviceLines": {
     "desktop": {
       "line": "https://desktop.eid.gerege.mn",
+      "app": "eIDGeregeDesktop",
       "platforms": [
         "macos",
         "windows"
@@ -66,6 +73,7 @@
     },
     "mobile": {
       "line": "https://mobile.eid.gerege.mn",
+      "app": "eIDGeregeMobile",
       "platforms": [
         "ios",
         "android"
@@ -82,6 +90,7 @@
     },
     "kiosk": {
       "line": "https://kiosk.eid.gerege.mn",
+      "app": "eIDGeregeKiosk",
       "platforms": [
         "windows",
         "android"
@@ -98,6 +107,7 @@
     },
     "pos": {
       "line": "https://pos.eid.gerege.mn",
+      "app": "eIDGeregePos",
       "platforms": [
         "windows",
         "android"

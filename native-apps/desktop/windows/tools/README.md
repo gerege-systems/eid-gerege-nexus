@@ -7,10 +7,10 @@ and the matching `.appinstaller` manifest for Windows-native auto-update.
 
 | File | Purpose |
 |---|---|
-| `dev-cert/New-DevCert.ps1` | One-time per developer. Generates a self-signed code-signing cert (`eIDMongolia.Dev.pfx`) so MSIX builds install locally without publisher trust prompts. |
+| `dev-cert/New-DevCert.ps1` | One-time per developer. Generates a self-signed code-signing cert (`eIDGeregeDesktop.Dev.pfx`) so MSIX builds install locally without publisher trust prompts. |
 | `pack-msix.ps1` | `dotnet publish -p:EidMsix=true` → locate produced `.msix` → `signtool sign /tr <timestamp>` → copy to `artifacts/`. |
-| `eIDMongolia.appinstaller.template.xml` | Auto-update manifest template; placeholders `{VERSION}`, `{APPINSTALLER_URL}`, `{MSIX_URL}`, `{PUBLISHER}`. |
-| `publish-appinstaller.ps1` | Renders the template into `artifacts/eIDMongolia.appinstaller`, ready to upload alongside the `.msix`. |
+| `eIDGeregeDesktop.appinstaller.template.xml` | Auto-update manifest template; placeholders `{VERSION}`, `{APPINSTALLER_URL}`, `{MSIX_URL}`, `{PUBLISHER}`. |
+| `publish-appinstaller.ps1` | Renders the template into `artifacts/eIDGeregeDesktop.appinstaller`, ready to upload alongside the `.msix`. |
 
 ## Local dev flow (sideload signed by self-signed cert)
 
@@ -22,9 +22,9 @@ and the matching `.appinstaller` manifest for Windows-native auto-update.
 # Step 2 — every build.
 .\tools\pack-msix.ps1 -Version 0.1.0.0 -Platform x64
 
-# Output: artifacts/eIDMongolia.{version}_x64.msix
+# Output: artifacts/eIDGeregeDesktop.{version}_x64.msix
 # Install:
-Add-AppPackage -Path .\artifacts\eIDMongolia*.msix
+Add-AppPackage -Path .\artifacts\eIDGeregeDesktop*.msix
 # Or via Explorer: double-click the .msix.
 ```
 
@@ -56,7 +56,7 @@ commit the PFX**, even encrypted — `.gitignore` already excludes
 
 ## Auto-update
 
-1. Upload `eIDMongolia.X.Y.Z.msix` to your CDN.
+1. Upload `eIDGeregeDesktop.X.Y.Z.msix` to your CDN.
 2. Run `publish-appinstaller.ps1` with the new version + URL and upload the
    resulting `.appinstaller` file alongside.
 3. Existing installations check the `.appinstaller` URL on launch

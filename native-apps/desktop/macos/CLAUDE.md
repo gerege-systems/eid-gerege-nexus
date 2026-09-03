@@ -80,12 +80,12 @@ support/privacy/lock). `organizations`/`children` нь ЗӨВХӨН УНШИХ �
 ```bash
 cd desktop/macos-app
 xcodegen generate
-xcodebuild -project eIDMongolia.xcodeproj -scheme eIDMongolia \
+xcodebuild -project eIDGeregeDesktop.xcodeproj -scheme eIDGeregeDesktop \
            -configuration Debug -destination 'platform=macOS,arch=arm64' build
-open eIDMongolia.xcodeproj    # ⌘R
+open eIDGeregeDesktop.xcodeproj    # ⌘R
 ```
 
-⚠ `-scheme eIDMongolia` (`-target` биш) — local `GeregeTokenKit` SPM resolve-д шаардлагатай.
+⚠ `-scheme eIDGeregeDesktop` (`-target` биш) — local `GeregeTokenKit` SPM resolve-д шаардлагатай.
 
 Локал туршилт: Go сервер (`cd server && go run ./cmd/smartid`, :8080) + web
 (`cd web && npm run dev`, :3000) хоёуланг нь асаана — DEBUG default сервер нь

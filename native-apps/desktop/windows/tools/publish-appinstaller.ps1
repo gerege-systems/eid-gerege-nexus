@@ -5,7 +5,7 @@
 .EXAMPLE
   .\publish-appinstaller.ps1 `
     -Version 0.1.0.0 `
-    -AppInstallerUrl https://eidmongolia.mn/download/eIDMongolia.appinstaller `
+    -AppInstallerUrl https://eidmongolia.mn/download/eIDGeregeDesktop.appinstaller `
     -MsixUrl https://eidmongolia.mn/download/eid-mongolia-setup.msix `
     -Publisher "CN=Gerege Systems LLC, O=Gerege Systems LLC, C=MN"
 #>
@@ -20,9 +20,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 if (-not $OutPath) {
-    $OutPath = Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")) "artifacts\eIDMongolia.appinstaller"
+    $OutPath = Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")) "artifacts\eIDGeregeDesktop.appinstaller"
 }
-$template = Get-Content -Raw -Path (Join-Path $PSScriptRoot "eIDMongolia.appinstaller.template.xml")
+$template = Get-Content -Raw -Path (Join-Path $PSScriptRoot "eIDGeregeDesktop.appinstaller.template.xml")
 $rendered = $template `
     -replace '\{VERSION\}', $Version `
     -replace '\{APPINSTALLER_URL\}', $AppInstallerUrl `

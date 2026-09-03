@@ -4,6 +4,22 @@
 (`mobile/ios`), **Android** (`mobile/android`). Гурвуулаа eID Gerege
 байрлуулалтын иргэн рүү харсан клиент — вэб бүрхүүл БИШ, native апп.
 
+## Нэр нь шугамаа дагана
+
+Аппын нэр нь ПЛАТФОРМЫГ биш, ТӨХӨӨРӨМЖИЙН ШУГАМЫГ нэрлэнэ — хаягуудтайгаа
+яг ижил дүрэм (`shared/device_lines.json`):
+
+| Шугам | Хаяг | Аппын нэр | Юу нь энэ нэрийг барих вэ |
+|---|---|---|---|
+| desktop | `desktop.eid.gerege.mn` | **eIDGeregeDesktop** | Xcode target/scheme, .NET solution ба namespace |
+| mobile | `mobile.eid.gerege.mn` | **eIDGeregeMobile** | Xcode target/scheme, Gradle `rootProject.name` |
+| kiosk | `kiosk.eid.gerege.mn` | **eIDGeregeKiosk** | ЗАХИАЛГАТАЙ — клиент хараахан байхгүй |
+| pos | `pos.eid.gerege.mn` | **eIDGeregePos** | ЗАХИАЛГАТАЙ — клиент хараахан байхгүй |
+
+Ширээний macOS ба Windows хоёр НЭГ нэртэй байгаа нь алдаа биш: хүн тэр
+хоёртой ижил байдлаар харьцдаг тул тэд нэг шугам, нэг апп. Иргэний харах нэр
+нь эдгээрийн аль нь ч биш — **eID Gerege** (`PRODUCT_NAME`, `DisplayName`).
+
 ## Гурван зарчим (гурвуулан дээр ижил)
 
 **1. Клиентэд secret байхгүй.** Бүх дуудлага өөрийн web backend-ийн нийтийн
