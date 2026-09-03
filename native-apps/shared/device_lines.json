@@ -30,19 +30,24 @@
     "`kiosk`, `pos` хоёрын нэр нь ЗАХИАЛГАТАЙ: клиент нь хараахан байхгүй."
   ],
   "$provisioning": [
-    "АСААЛТТАЙ шугам ОДООГООР БАЙХГҮЙ. `provisioned` талбар бүр false: DNS нь",
-    "дөрвүүлээ 38.180.117.155 рүү заадаг ч nginx дээр vhost суугаагүй, гэрчилгээ",
-    "аваагүй тул `https://desktop.eid.gerege.mn` нь одоогоор хариулдаггүй.",
+    "desktop ба mobile нь АСААЛТТАЙ. Дөрвүүлэн 38.180.117.155 рүү заадаг ч",
+    "nginx-ийн server_name, гэрчилгээ хоёр нь тэр хоёрыг л нэрлэдэг:",
+    "  vhost /etc/nginx/sites-enabled/device-lines.eid.gerege.mn.conf",
+    "  TLS   CN=desktop.eid.gerege.mn, SAN-д mobile нь мөн (2026-12-01 хүртэл)",
+    "  API   ALLOWED_ORIGINS-д хоёулаа (compose-ийн DEVICE_LINE_ORIGINS анхдагч)",
+    "  OIDC  OAUTH_REDIRECT_HOSTS-д хоёулаа",
+    "`https://mobile.eid.gerege.mn/` → 307 `/line/mobile` → 200.",
     "",
-    "Тиймээс энэ клиентүүдийг ХЭН НЭГЭНД ТҮГЭЭХГҮЙ. Түгээвэл апп «A server with",
-    "the specified hostname could not be found» гэж унаж, хэн ч нэвтэрч чадахгүй.",
+    "kiosk ба pos нь ХАРИУЛДАГГҮЙ: vhost, гэрчилгээ хоёулангүй тул TLS нь",
+    "буруу нэрээр таарахгүй. Клиент нь ч байхгүй тул одоогоор захиалгат нэр.",
     "",
     "Асаах дараалал (шугам тутамд, ЯГ ЭНЭ ДАРААЛЛААР):",
-    "  1. DNS   <шугам>.eid.gerege.mn → 38.180.117.155  (desktop, mobile нь БЭЛЭН)",
-    "  2. nginx cp nginx/device-lines.eid.gerege.mn.conf /etc/nginx/sites-available/",
-    "           ln -s ../sites-available/... /etc/nginx/sites-enabled/ && nginx -t",
-    "  3. TLS   certbot --nginx -d desktop.eid.gerege.mn -d mobile.eid.gerege.mn",
-    "  4. API   .env-ийн DEVICE_LINE_ORIGINS → ALLOWED_ORIGINS (аль хэдийн бичигдсэн)",
+    "  1. DNS   <шугам>.eid.gerege.mn → 38.180.117.155  (дөрвүүлээ БЭЛЭН)",
+    "  2. nginx device-lines.eid.gerege.mn.conf-ийн server_name дээр нэмж, nginx -t",
+    "  3. TLS   certbot --nginx -d <шугам>.eid.gerege.mn",
+    "  4. API   .env-ийн DEVICE_LINE_ORIGINS → ALLOWED_ORIGINS, мөн",
+    "           OAUTH_REDIRECT_HOSTS. Хоёулангийнх нь compose анхдагч нь",
+    "           desktop, mobile ХОЁРЫГ Л агуулна — гурав дахь шугамыг .env-д бичнэ.",
     "  5. ЭЦЭСТ нь энэ файлын `provisioned`-ыг true болгож, клиентээ түгээнэ.",
     "",
     "Эсрэг дараалал нь аппыг байхгүй host руу чиглүүлнэ — цөмийн репод нэг удаа",
@@ -61,15 +66,15 @@
         "macos",
         "windows"
       ],
-      "provisioned": false,
+      "provisioned": true,
       "devOrigin": "http://localhost:3000",
       "startRoute": "/",
       "client": [
-        "native-apps/desktop/macos/NativeSettings.swift → lineOrigin",
-        "native-apps/desktop/windows/ShellProfile.cs → Desktop.LineOrigin"
+        "native-apps/desktop/macos/Core/Network/AppConfig.swift → defaultBaseURL",
+        "native-apps/desktop/windows/src/eIDGeregeDesktop.Client/appsettings.json"
       ],
       "home": "/line/desktop",
-      "$note": "DNS бэлэн, nginx vhost ба TLS үлдсэн."
+      "$note": "vhost, TLS, ALLOWED_ORIGINS бэлэн — 2026-09-04-нд хариулж байна."
     },
     "mobile": {
       "line": "https://mobile.eid.gerege.mn",
@@ -78,15 +83,15 @@
         "ios",
         "android"
       ],
-      "provisioned": false,
+      "provisioned": true,
       "devOrigin": "http://localhost:3000 (Android эмулятор дээр http://10.0.2.2:3000)",
       "startRoute": "/",
       "client": [
-        "native-apps/mobile/ios/Sources/GeregeShellKit/DeviceLine.swift → origin",
-        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin"
+        "native-apps/desktop/macos/Core/Network/AppConfig.swift → defaultBaseURL (iOS-ийг ч хамарна)",
+        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/eid/AppConfig.kt → DEFAULT_BASE_URL"
       ],
       "home": "/line/mobile",
-      "$note": "DNS бэлэн, nginx vhost ба TLS үлдсэн."
+      "$note": "vhost, TLS, ALLOWED_ORIGINS бэлэн — 2026-09-04-нд хариулж байна."
     },
     "kiosk": {
       "line": "https://kiosk.eid.gerege.mn",
@@ -99,11 +104,11 @@
       "devOrigin": "http://localhost:3000",
       "startRoute": "/",
       "client": [
-        "native-apps/desktop/windows/ShellProfile.cs → Kiosk.LineOrigin",
-        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin (kiosk flavor)"
+        "native-apps/desktop/windows/src/eIDGeregeDesktop.Client/appsettings.json (kiosk)",
+        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/eid/AppConfig.kt → DEFAULT_BASE_URL (kiosk flavor)"
       ],
       "home": "/line/kiosk",
-      "$note": "Хаяг огт байхгүй: DNS-ээс эхлээд дөрвүүлэн хийнэ."
+      "$note": "DNS бэлэн (38.180.117.155). nginx server_name, TLS, origin-ууд үлдсэн."
     },
     "pos": {
       "line": "https://pos.eid.gerege.mn",
@@ -116,11 +121,11 @@
       "devOrigin": "http://localhost:3000",
       "startRoute": "/",
       "client": [
-        "native-apps/desktop/windows/ShellProfile.cs → Pos.LineOrigin",
-        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/nexus/DeviceLine.kt → origin (pos flavor)"
+        "native-apps/desktop/windows/src/eIDGeregeDesktop.Client/appsettings.json (pos)",
+        "native-apps/mobile/android/app/src/main/kotlin/mn/gerege/eid/AppConfig.kt → DEFAULT_BASE_URL (pos flavor)"
       ],
       "home": "/line/pos",
-      "$note": "Хаяг огт байхгүй: DNS-ээс эхлээд дөрвүүлэн хийнэ."
+      "$note": "DNS бэлэн (38.180.117.155). nginx server_name, TLS, origin-ууд үлдсэн."
     }
   }
 }

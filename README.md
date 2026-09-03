@@ -39,10 +39,12 @@ native клиентүүд (`native-apps/`) бөгөөд репо нь
 
 Native клиентүүд нь цөмийн бүрхүүлийн код: шугам (`*.eid.gerege.mn`), багц ID
 (`mn.gerege.eid.*`), харагдах нэр (**eID Gerege**) гурав нь энэ
-бүтээгдэхүүнийх, эх код нь платформынх. Клиентүүд бүгд компайл хийгддэг ч
-ЯМАР Ч ШУГАМ ОДООГООР ХАРИУЛДАГГҮЙ: nginx дээр зөвхөн `eid.` ба `admin.`
-суусан тул `desktop.`/`mobile.` нь vhost, гэрчилгээгүй. Түгээхээсээ өмнө
-`native-apps/shared/device_lines.json` → `$provisioning`-ийг гүйцээнэ.
+бүтээгдэхүүнийх, эх код нь платформынх. `desktop.` ба `mobile.` шугам хоёулаа
+АСААЛТТАЙ: nginx vhost (`device-lines.eid.gerege.mn.conf`), хоёуланг нь
+хамарсан гэрчилгээ, `ALLOWED_ORIGINS` ба `OAUTH_REDIRECT_HOSTS`-д хоёулаа
+бий. `kiosk.`/`pos.` нь DNS-ээсээ эхлээд байхгүй — клиент нь ч хараахан
+байхгүй тул захиалгат нэр. Дэлгэрэнгүйг
+`native-apps/shared/device_lines.json` → `$provisioning`.
 
 Frontend-ийг **барихгүй**: бүрхүүл нь каталогоор ажилладаг тул цөмийн
 нийтэлсэн образ яг таарна. `WEB_IMAGE` нь `go.mod`-ийн цөмийн хувилбарын
@@ -270,6 +272,13 @@ snapshot. iOS нь macOS-тай эх кодоо ШУУД хуваалцдаг; A
 Нэвтрэлт нь платформоороо ялгаатай: мак дээр QR/РД push (хөрш утас
 зөвшөөрнө), утсан дээр app-to-app — eID Mongolia апп руу үсэрч зөвшөөрөөд
 буцна. Session нь ижил тул шинэ backend endpoint нэмээгүй.
+
+Клиент бүр native дэлгэцүүдийнхээ ДАРАА «Платформ» гэсэн таб/дэлгэцтэй: тэр
+нь өөрийн шугамаа (`/line/desktop`, `/line/mobile`) webview-ээр нээсэн ажлын
+муж. Session нь Keychain/Keystore-д биш webview-ийн cookie санд байдаг тул
+`WorkAreaSession` нь API давхаргад НЭГ газар барьж аваад гарахад тусад нь
+цэвэрлэнэ. Cookie нь host-only тул ажлын муж `AppConfig`-ийн ЯГ ТЭР хаягаас
+ачаалагдах ёстой — өөр хост нь 401 биш, зүгээр л «нэвтрээгүй» дэлгэц өгнө.
 
 Байрлуулалтын тал нь `nginx/device-lines.eid.gerege.mn.conf` ба
 `DEVICE_LINE_ORIGINS`. Шугам бүр өөрийн host дээр сууж, тэр host нь `/api/`-г
