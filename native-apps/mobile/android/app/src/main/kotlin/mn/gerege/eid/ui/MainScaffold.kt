@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import mn.gerege.eid.AppState
 import mn.gerege.eid.R
-import mn.gerege.eid.ui.theme.LocalEidColors
+import mn.gerege.eid.ui.theme.LocalGw
 
 /**
  * Нэвтэрсэн үеийн бүрхүүл — iOS-ийн `MainTabView`-тэй ижил дөрвөн зам.
@@ -27,25 +27,29 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 
 @Composable
 fun MainScaffold(state: AppState) {
-    val c = LocalEidColors.current
+    val gw = LocalGw.current
     var tab by remember { mutableStateOf(Tab.DASHBOARD) }
 
     Scaffold(
-        containerColor = c.eidSurface,
+        containerColor = gw.bg,
         bottomBar = {
-            NavigationBar(containerColor = c.eidCardBackground) {
+            NavigationBar(containerColor = gw.surface1) {
                 Tab.entries.forEach { entry ->
                     NavigationBarItem(
                         selected = tab == entry,
                         onClick = { tab = entry },
                         icon = { Icon(entry.icon, contentDescription = null) },
                         label = { Text(stringResource(entry.labelRes)) },
+                        // Сонгогдсон таб нь БРЭНДИЙН цэнхэр биш, дулаан улбар
+                        // шар. Дотор талын карт, товч, холбоос бүр брэндийн
+                        // цэнхэр тул табыг мөн цэнхэр болговол «аль нь идэвхтэй
+                        // вэ» гэдэг ялгарахаа болино (iOS дээр ижил дүрэм).
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = c.eidAccent,
-                            selectedTextColor = c.eidAccent,
-                            indicatorColor = c.eidAccentSubtle,
-                            unselectedIconColor = c.eidMuted,
-                            unselectedTextColor = c.eidMuted,
+                            selectedIconColor = gw.accent,
+                            selectedTextColor = gw.accent,
+                            indicatorColor = gw.accentSoft,
+                            unselectedIconColor = gw.fg3,
+                            unselectedTextColor = gw.fg3,
                         ),
                     )
                 }

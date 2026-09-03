@@ -20,7 +20,10 @@ struct MainTabView: View {
             MobileSettingsPage()
                 .tabItem { Label(loc.t("Nav_Settings"), systemImage: "gearshape") }
         }
-        .tint(Color.eidAccent)
+        // Сонгогдсон таб нь БРЭНДИЙН цэнхэр биш, дулаан улбар шар. Дотор
+        // талын карт, товч, холбоос бүр брэндийн цэнхэр тул табыг мөн цэнхэр
+        // болговол «аль нь идэвхтэй вэ» гэдэг ялгарахаа болино (Apple HIG).
+        .tint(Theme.accent)
     }
 }
 
@@ -33,44 +36,22 @@ struct MobilePage<Content: View>: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: Theme.Space.md) {
                     if let subtitle, !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.eidLabel)
-                            .foregroundStyle(Color.eidMuted)
+                            .font(Theme.TypeScale.footnote)
+                            .foregroundStyle(Theme.fg3)
+                            .padding(.bottom, Theme.Space.xxs)
                     }
                     content()
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 16)
+                .padding(.horizontal, Theme.Space.lg)
+                .padding(.vertical, Theme.Space.lg)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .background(Color.eidSurface.ignoresSafeArea())
+            .background(Theme.bg.ignoresSafeArea())
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.large)
         }
-    }
-}
-
-/// Шошго + утга. Ширээний `WebParityPages.EidField` нь тэр файлын дотор
-/// `private` тул энд ижил дүрсийг богиноор давтав — нэг мөрийн дүрсийг
-/// хуваалцахын тулд 600 мөрийн ширээний файлыг iOS target руу оруулах нь
-/// зөв солилцоо биш.
-struct MobileField: View {
-    let label: String
-    let value: String
-    var mono = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(label.uppercased())
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(Color.textSecondary)
-            Text(value.isEmpty ? "—" : value)
-                .font(.system(size: 14, weight: .semibold, design: mono ? .monospaced : .default))
-                .foregroundStyle(Color.textPrimary)
-                .textSelection(.enabled)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

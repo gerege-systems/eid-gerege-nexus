@@ -41,19 +41,49 @@ desktop/macos/            macOS апп + ХУВААЛЦСАН давхаргуу
   Core/Network            AppConfig, Endpoints, APIClient
   Core/Keychain           identity snapshot
   App/AppState.swift      төлөв, локал лог
-  Design/                 өнгө, фонт, дүрсүүд
+  Design/                 ШИРЭЭНИЙ өнгө, фонт, дүрсүүд (Windows-той нийцтэй)
   Presentation/           локализаци (7 хэл)
   Core/Token, Core/Esign   ← ЗӨВХӨН ширээний (PKCS#11, ws гүүр)
 mobile/ios/               iOS апп — дээрхийг `project.yml`-ээр ШУУД эх файлаар нь оруулна
+  Design/                 ← УТАСНЫ дизайны токенууд + дүрсүүд (доор үзнэ үү)
 mobile/android/           Android апп — өнгө, орчуулгыг ҮҮСГЭНЭ (scripts/gen_from_swift.py)
+  ui/theme/Gw.kt          ← УТАСНЫ дизайны токенууд (үүсгэгддэггүй)
 ```
 
 iOS нь ширээний файлуудыг хуулдаггүй, ШУУД эх файлаар нь компайл хийдэг тул
-endpoint, өнгө, орчуулга хоёр дээр салбарлах боломжгүй. Android өөр хэл дээр
+endpoint, орчуулга хоёр дээр салбарлах боломжгүй. Android өөр хэл дээр
 тул тэр замыг явж чадахгүй — оронд нь `scripts/gen_from_swift.py` нь
 `Design/Colors.swift` → `EidColors.kt`, локализацийн каталог →
 `res/values*/eid_strings.xml` болгож үүсгэнэ. CI нь скриптийг дахин ажиллуулж
 ялгаа гарвал улаан болно.
+
+## Харагдац — ширээ, утас хоёр ӨӨР
+
+Ширээний `Design/` нь Windows аппын `Colors.xaml`/`Typography.xaml`-ийн порт:
+тэр хоёр клиент нэг л зүйл харагдах ёстой. Утас нь **Gerege Wallet-ийн
+дизайны системээс** гаралтай — иргэн Gerege-гийн хоёр аппыг зэрэг барьдаг тул
+гар дээрх хоёр нь нэг гэр бүл байх ёстой.
+
+| | Токен | Дүрсүүд | Фонт |
+|---|---|---|---|
+| macOS, Windows | `desktop/macos/Design/Colors.swift` | `Design/Styles.swift` | системийн |
+| iOS | `mobile/ios/Design/Theme.swift` | `mobile/ios/Design/BrandComponents.swift` | Montserrat |
+| Android | `mobile/android/.../ui/theme/Gw.kt` | `.../ui/components/Components.kt` | Montserrat |
+
+Утасны хоёр файл нь ХАРИЛЦАН ПОРТ: токены нэр (`bg`, `surface1..3`, `fg1..4`,
+`brand`/`brandSoft`/`brandLine`, `credit`/`debit`/`accent`/`gold`), геометр
+(52 оролтын мөр, 56 CTA, 14 радиус), фонтын хэмжээс гурвуулан 1:1. Нэг талд
+утга солиход нөгөөд нь механик — орчуулга биш, хуулбар.
+
+Ширээний `Design/` нь iOS target-д ОРСООР байна (`AppCard`, `StatusPill`,
+`VerificationCodeRow` … нь macOS-ынх); гар дээрх дэлгэцүүд түүнийг уншихаа
+больсон. Android талд `EidColors.kt` ба `gen_from_swift.py` гинж ХЭВЭЭР —
+ширээ↔Android нийцлийн CI шалгалт утасны харагдацаас хамаарахгүй.
+
+Montserrat нь `mobile/ios/Resources/Fonts/` (Info.plist `UIAppFonts`) ба
+`mobile/android/app/src/main/res/font/`-д — ЯГ ижил дөрвөн .ttf. Тоо (регистр,
+баримтын дугаар, баталгаажуулах код) нь monospace хэвээр: Montserrat-д tabular
+figure байхгүй тул баганаар эгнэхгүй.
 
 ## Барих
 

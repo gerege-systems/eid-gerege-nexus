@@ -28,6 +28,7 @@ struct MobileLoginView: View {
     @State private var signedInName = ""
     @State private var task: Task<Void, Never>?
     @State private var showRegisterField = false
+    @FocusState private var registerFocused: Bool
 
     /// eID Mongolia аппын deep link. Схемийг Info.plist-ийн
     /// `LSApplicationQueriesSchemes`-д мөн бүртгэсэн байх ёстой.
@@ -37,48 +38,51 @@ struct MobileLoginView: View {
         // Богино агуулгыг ГОЛЛУУЛЖ, гар гарч ирэхэд ГҮЙЛГЭНЭ. Зөвхөн ScrollView
         // байвал агуулга дээд ирмэг дээр наалдаж, доогуураа хагас дэлгэц хоосон
         // үлддэг; зөвхөн VStack байвал регистр бичих үед гар талбарыг дардаг.
-        GeometryReader { proxy in
-            ScrollView {
-                VStack(spacing: 22) {
-                    brand
-                    card
-                    if !errorMessage.isEmpty {
-                        InlineBanner(text: errorMessage, variant: .error)
+        BrandScreen {
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: Theme.Space.xl) {
+                        brand
+                        card
+                        if !errorMessage.isEmpty {
+                            BrandBanner(text: errorMessage)
+                        }
+                        footer
                     }
-                    footer
+                    .padding(.horizontal, Theme.Space.xl)
+                    .padding(.vertical, Theme.Space.xxl)
+                    .frame(maxWidth: 520)
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 28)
-                .frame(maxWidth: 520)
-                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
             }
         }
-        .background(Color.eidSurface.ignoresSafeArea())
         .onDisappear { task?.cancel() }
     }
 
     // MARK: - Хэсгүүд
 
     private var brand: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: Theme.Space.md) {
             Image(systemName: "person.text.rectangle.fill")
-                .font(.system(size: 34, weight: .semibold))
-                .foregroundStyle(Color.eidAccent)
+                .font(.system(size: 32, weight: .semibold))
+                .foregroundStyle(Theme.Brand.onBrand)
                 .frame(width: 76, height: 76)
-                .background(Color.eidAccentSubtle, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .background(Theme.Brand.gradient,
+                            in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .elevation(2)
             Text(AppConfig.brandName)
-                .font(.eidHeroTitle)
-                .foregroundStyle(Color.textPrimary)
+                .font(Theme.TypeScale.title)
+                .foregroundStyle(Theme.fg1)
             Text(loc.t("Login_Subtitle"))
-                .font(.eidLabel)
-                .foregroundStyle(Color.eidMuted)
+                .font(Theme.TypeScale.footnote)
+                .foregroundStyle(Theme.fg3)
                 .multilineTextAlignment(.center)
         }
-        .padding(.top, 12)
+        .padding(.top, Theme.Space.md)
     }
 
     @ViewBuilder private var card: some View {
-        AppCard {
+        BrandCard(spacing: Theme.Space.lg) {
             switch phase {
             case .idle, .error:   choices
             case .starting:       progress(loc.t("Login_Initiate_Loading"))
@@ -89,120 +93,129 @@ struct MobileLoginView: View {
     }
 
     private var choices: some View {
-        VStack(spacing: 14) {
-            Button {
-                startAppToApp()
-            } label: {
-                Label(loc.pick("eID аппаар нэвтрэх", "Sign in with the eID app",
-                               "Войти через приложение eID", "使用 eID 应用登录"),
-                      systemImage: "arrow.up.forward.app.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.primary(fullWidth: true, height: 46))
+        VStack(spacing: Theme.Space.lg) {
+            BrandInfoBanner(text: loc.pick(
+                "eID Mongolia апп нээгдэж, зөвшөөрөл асууна. Зөвшөөрсний дараа энэ апп руугаа буцна.",
+                "The eID Mongolia app opens and asks for approval. You return here once you approve.",
+                "Откроется приложение eID Mongolia и запросит подтверждение. После подтверждения вы вернётесь сюда.",
+                "eID Mongolia 应用将打开并请求确认。确认后即返回本应用。"))
+
+            LoadingPrimaryButton(
+                title: loc.pick("eID аппаар нэвтрэх", "Sign in with the eID app",
+                                "Войти через приложение eID", "使用 eID 应用登录"),
+                leadingSymbol: "arrow.up.forward.app.fill"
+            ) { startAppToApp() }
 
             if showRegisterField || !isEidAppInstalled {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(loc.t("Login_NationalId"))
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.textSecondary)
-                    TextField(loc.t("Login_NationalId_Placeholder"), text: $register)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                        .textFieldStyle(.roundedBorder)
-                        .font(.eidMono)
-                    Button {
-                        startPush()
-                    } label: {
-                        Label(loc.pick("Регистрээр мэдэгдэл илгээх", "Send a push by registration number",
-                                       "Отправить push по регистрационному номеру", "按登记号发送推送"),
-                              systemImage: "bell.badge")
-                            .frame(maxWidth: .infinity)
+                VStack(alignment: .leading, spacing: Theme.Space.sm) {
+                    BrandSectionLabel(text: loc.t("Login_NationalId"))
+                    BrandInputCard(leadingIcon: "person.text.rectangle",
+                                   validation: registerBadge,
+                                   isFocused: registerFocused) {
+                        TextField(loc.t("Login_NationalId_Placeholder"), text: $register)
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
+                            .font(Theme.TypeScale.mono)
+                            .foregroundStyle(Theme.fg1)
+                            .focused($registerFocused)
                     }
-                    .buttonStyle(.secondary(fullWidth: true, height: 42))
-                    .disabled(register.trimmingCharacters(in: .whitespaces).count < 8)
+                    BrandSecondaryButton(
+                        title: loc.pick("Регистрээр мэдэгдэл илгээх", "Send a push by registration number",
+                                        "Отправить push по регистрационному номеру", "按登记号发送推送"),
+                        systemImage: "bell.badge",
+                        tone: Theme.Brand.primary,
+                        isEnabled: isRegisterValid
+                    ) { startPush() }
                 }
             } else {
-                Button {
+                BrandLinkButton(title: loc.pick("Өөр төхөөрөмж дээрээ зөвшөөрөх",
+                                                "Approve on another device",
+                                                "Подтвердить на другом устройстве",
+                                                "在其他设备上确认")) {
                     showRegisterField = true
-                } label: {
-                    Text(loc.pick("Өөр төхөөрөмж дээрээ зөвшөөрөх",
-                                  "Approve on another device",
-                                  "Подтвердить на другом устройстве",
-                                  "在其他设备上确认"))
-                        .font(.system(size: 13))
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(Color.eidAccent)
             }
         }
     }
 
+    /// Регистр 8+ тэмдэгт болмогц ✓, богино байхад юу ч харуулахгүй —
+    /// хоосон талбар дээр улаан ✗ анивчуулах нь бичиж эхлээгүй хүнийг
+    /// буруутгаж байгаа хэрэг.
+    private var registerBadge: BrandValidationBadge? {
+        let typed = register.trimmingCharacters(in: .whitespaces)
+        guard !typed.isEmpty else { return nil }
+        return BrandValidationBadge(
+            text: isRegisterValid ? loc.pick("зөв", "ok", "верно", "有效")
+                                  : loc.pick("богино", "short", "коротко", "太短"),
+            valid: isRegisterValid)
+    }
+
+    private var isRegisterValid: Bool {
+        register.trimmingCharacters(in: .whitespaces).count >= 8
+    }
+
     private var waitingBody: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Theme.Space.lg) {
             progress(loc.t("Login_Waiting_Subtitle"))
             if !verificationCode.isEmpty {
-                VStack(spacing: 6) {
-                    Text(loc.t("Login_VerificationCode"))
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.textSecondary)
-                    VerificationCodeRow(code: verificationCode)
+                VStack(spacing: Theme.Space.sm) {
+                    BrandSectionLabel(text: loc.t("Login_VerificationCode"))
+                    BrandCodeRow(code: verificationCode)
                     Text(loc.pick("Аппд харагдах кодтой тулгана уу.",
                                   "Match this with the code shown in the app.",
                                   "Сравните с кодом в приложении.",
                                   "请与应用中显示的代码核对。"))
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.eidMuted)
+                        .font(Theme.TypeScale.caption2)
+                        .foregroundStyle(Theme.fg3)
                         .multilineTextAlignment(.center)
                 }
             }
-            Button(loc.t("Login_Cancel")) {
+            BrandLinkButton(title: loc.t("Login_Cancel")) {
                 task?.cancel()
                 phase = .idle
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(Color.eidMuted)
-            .font(.system(size: 13))
         }
     }
 
     private var successBody: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: Theme.Space.md) {
             Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 30))
-                .foregroundStyle(Color.eidSuccess)
+                .font(.system(size: 34))
+                .foregroundStyle(Theme.credit)
             Text(loc.t("Login_Success_Title"))
-                .font(.eidSectionTitle)
-                .foregroundStyle(Color.textPrimary)
+                .font(Theme.TypeScale.title3)
+                .foregroundStyle(Theme.fg1)
             if !signedInName.isEmpty {
                 Text(signedInName)
-                    .font(.eidBody)
-                    .foregroundStyle(Color.textSecondary)
+                    .font(Theme.TypeScale.body)
+                    .foregroundStyle(Theme.fg2)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
+        .padding(.vertical, Theme.Space.sm)
     }
 
     private func progress(_ text: String) -> some View {
-        VStack(spacing: 10) {
-            ProgressView()
+        VStack(spacing: Theme.Space.md) {
+            ProgressView().tint(Theme.Brand.primary)
             Text(text)
-                .font(.eidLabel)
-                .foregroundStyle(Color.textSecondary)
+                .font(Theme.TypeScale.footnote)
+                .foregroundStyle(Theme.fg2)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.vertical, Theme.Space.sm)
     }
 
     private var footer: some View {
-        VStack(spacing: 4) {
-            Label(host, systemImage: "network")
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundStyle(Color.eidMuted.opacity(0.8))
-            Text("\(AppConfig.brandName) v\(appVersion)")
-                .font(.system(size: 10))
-                .foregroundStyle(Color.eidMuted.opacity(0.7))
+        VStack(spacing: Theme.Space.sm) {
+            BrandSecurityFooter(text: loc.pick("eID Mongolia · X-Road хамгаалалттай",
+                                               "eID Mongolia · secured by X-Road",
+                                               "eID Mongolia · защищено X-Road",
+                                               "eID Mongolia · 由 X-Road 保护"))
+            Text("\(host)  ·  \(AppConfig.brandName) v\(appVersion)")
+                .font(Theme.TypeScale.monoSm)
+                .foregroundStyle(Theme.fg4)
         }
     }
 

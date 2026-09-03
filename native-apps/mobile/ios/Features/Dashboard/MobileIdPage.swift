@@ -22,109 +22,109 @@ struct MobileIdPage: View {
                 if !appState.organizations.isEmpty { organizationsCard }
                 if !appState.children.isEmpty { childrenCard }
             } else {
-                AppCard {
+                BrandCard {
                     Text(loc.t("Dashboard_Activity_Empty"))
-                        .font(.eidBody)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(Theme.TypeScale.footnote)
+                        .foregroundStyle(Theme.fg3)
                 }
             }
         }
     }
 
     private func identityCard(_ user: DashboardUser) -> some View {
-        AppCard {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 14) {
-                    UserAvatar(photo: user.photo, initials: initials(user.displayName), size: 64)
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(user.displayName)
-                            .font(.system(size: 19, weight: .bold))
-                            .foregroundStyle(Color.textPrimary)
-                        StatusPill(user.status.lowercased() == "active"
-                                   ? loc.pick("Идэвхтэй", "Active", "Активен", "有效") : user.status,
-                                   variant: user.status.lowercased() == "active" ? .ok : .warn)
-                    }
-                    Spacer(minLength: 0)
+        BrandCard(spacing: Theme.Space.lg) {
+            HStack(spacing: Theme.Space.md) {
+                UserAvatar(photo: user.photo, initials: initials(user.displayName), size: 64,
+                           tint: Theme.Brand.primary,
+                           tintBackground: Theme.Brand.soft)
+                VStack(alignment: .leading, spacing: Theme.Space.sm) {
+                    Text(user.displayName)
+                        .font(Theme.TypeScale.title3)
+                        .foregroundStyle(Theme.fg1)
+                    BrandPill(text: user.status.lowercased() == "active"
+                              ? loc.pick("Идэвхтэй", "Active", "Активен", "有效") : user.status,
+                              tone: user.status.lowercased() == "active" ? .ok : .warn)
                 }
-                Divider()
-                MobileField(label: loc.pick("Регистрийн дугаар", "Registration number",
-                                         "Регистрационный номер", "登记号"),
-                         value: user.nationalId.isEmpty ? "—" : user.nationalId, mono: true)
-                if let civil = user.civilId, !civil.isEmpty {
-                    MobileField(label: loc.pick("Иргэний бүртгэлийн дугаар", "Civil ID",
-                                             "Гражданский ID", "公民号"),
-                             value: civil, mono: true)
-                }
+                Spacer(minLength: 0)
+            }
+            Rectangle().fill(Theme.divider).frame(height: 1)
+            MobileField(label: loc.pick("Регистрийн дугаар", "Registration number",
+                                        "Регистрационный номер", "登记号"),
+                        value: user.nationalId.isEmpty ? "—" : user.nationalId, mono: true)
+            if let civil = user.civilId, !civil.isEmpty {
+                MobileField(label: loc.pick("Иргэний бүртгэлийн дугаар", "Civil ID",
+                                            "Гражданский ID", "公民号"),
+                            value: civil, mono: true)
             }
         }
     }
 
     private func certificateCard(_ user: DashboardUser) -> some View {
-        AppCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(loc.pick("Гэрчилгээ", "Certificate", "Сертификат", "证书").uppercased())
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(Color.textSecondary)
-                MobileField(label: loc.pick("Түвшин", "Level", "Уровень", "等级"),
-                         value: user.kycLevel.isEmpty ? "—" : user.kycLevel)
-                MobileField(label: loc.pick("Баримтын дугаар", "Document number",
-                                         "Номер документа", "文件号"),
-                         value: appState.documentNumber.isEmpty ? "—" : appState.documentNumber, mono: true)
-            }
+        BrandCard {
+            BrandSectionLabel(text: loc.pick("Гэрчилгээ", "Certificate", "Сертификат", "证书"))
+            MobileField(label: loc.pick("Түвшин", "Level", "Уровень", "等级"),
+                        value: user.kycLevel.isEmpty ? "—" : user.kycLevel)
+            MobileField(label: loc.pick("Баримтын дугаар", "Document number",
+                                        "Номер документа", "文件号"),
+                        value: appState.documentNumber.isEmpty ? "—" : appState.documentNumber, mono: true)
         }
     }
 
     private var organizationsCard: some View {
-        AppCard {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(loc.t("Nav_MyOrganizations"))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.textPrimary)
-                ForEach(appState.organizations) { org in
-                    HStack(spacing: 10) {
-                        Image(systemName: "building.2")
-                            .font(.system(size: 13)).foregroundStyle(Color.eidAccent)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(org.orgName).font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
-                            Text(org.orgRegister).font(.eidMonoSmall)
-                                .foregroundStyle(Color.textSecondary)
-                        }
-                        Spacer(minLength: 0)
-                        StatusPill(org.rightType, variant: .accent)
-                    }
+        BrandCard {
+            Text(loc.t("Nav_MyOrganizations"))
+                .font(Theme.TypeScale.calloutBold)
+                .foregroundStyle(Theme.fg1)
+            ForEach(appState.organizations) { org in
+                listRow(icon: "building.2",
+                        title: org.orgName,
+                        subtitle: org.orgRegister) {
+                    BrandPill(text: org.rightType, tone: .brand)
                 }
-                // Ширээнийхтэй ижил дүрэм: энэ жагсаалт ЗӨВХӨН УНШИХ.
-                EidReadOnlyHint()
             }
+            // Ширээнийхтэй ижил дүрэм: энэ жагсаалт ЗӨВХӨН УНШИХ.
+            EidReadOnlyHint()
         }
     }
 
     private var childrenCard: some View {
-        AppCard {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(loc.t("Nav_Children"))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.textPrimary)
-                ForEach(appState.children) { child in
-                    HStack(spacing: 10) {
-                        Image(systemName: "figure.child")
-                            .font(.system(size: 13)).foregroundStyle(Color.eidAccent)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(child.name).font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
-                            Text(child.regNo).font(.eidMonoSmall)
-                                .foregroundStyle(Color.textSecondary)
-                        }
-                        Spacer(minLength: 0)
-                        StatusPill(child.registered
-                                   ? loc.pick("Бүртгэлтэй", "Registered", "Зарегистрирован", "已注册")
-                                   : loc.pick("Хүлээгдэж буй", "Pending", "Ожидает", "待处理"),
-                                   variant: child.registered ? .ok : .warn)
-                    }
+        BrandCard {
+            Text(loc.t("Nav_Children"))
+                .font(Theme.TypeScale.calloutBold)
+                .foregroundStyle(Theme.fg1)
+            ForEach(appState.children) { child in
+                listRow(icon: "figure.child",
+                        title: child.name,
+                        subtitle: child.regNo) {
+                    BrandPill(text: child.registered
+                              ? loc.pick("Бүртгэлтэй", "Registered", "Зарегистрирован", "已注册")
+                              : loc.pick("Хүлээгдэж буй", "Pending", "Ожидает", "待处理"),
+                              tone: child.registered ? .ok : .warn)
                 }
-                EidReadOnlyHint()
             }
+            EidReadOnlyHint()
+        }
+    }
+
+    /// Байгууллага ба хүүхдийн мөр нэг л хэлбэртэй — дүрс, нэр, дугаар, капсул.
+    private func listRow<Trailing: View>(icon: String, title: String, subtitle: String,
+                                         @ViewBuilder trailing: () -> Trailing) -> some View {
+        HStack(spacing: Theme.Space.md) {
+            Image(systemName: icon)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.Brand.primary)
+                .frame(width: 30, height: 30)
+                .background(Theme.Brand.soft, in: Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(Theme.TypeScale.footnoteBold)
+                    .foregroundStyle(Theme.fg1)
+                Text(subtitle)
+                    .font(Theme.TypeScale.monoSm)
+                    .foregroundStyle(Theme.fg3)
+            }
+            Spacer(minLength: 0)
+            trailing()
         }
     }
 
@@ -142,7 +142,7 @@ struct EidReadOnlyHint: View {
                       "Read-only — changes happen in the eID Mongolia app (PIN2).",
                       "Только просмотр — изменения выполняются в приложении eID Mongolia (PIN2).",
                       "仅供查看——更改请在 eID Mongolia 应用中完成（PIN2）。"))
-            .font(.system(size: 11))
-            .foregroundStyle(Color.eidMuted)
+            .font(Theme.TypeScale.caption2)
+            .foregroundStyle(Theme.fg3)
     }
 }

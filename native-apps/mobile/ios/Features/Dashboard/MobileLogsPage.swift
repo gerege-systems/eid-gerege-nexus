@@ -18,37 +18,37 @@ struct MobileLogsPage: View {
                                       "本设备上的登录与签名记录")) {
             let sessions = appState.dashboardData?.sessions ?? []
             if sessions.isEmpty {
-                AppCard {
+                BrandCard {
                     Text(loc.t("Dashboard_Activity_Empty"))
-                        .font(.eidBody)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(Theme.TypeScale.footnote)
+                        .foregroundStyle(Theme.fg3)
                 }
             } else {
                 ForEach(sessions) { session in
-                    AppCard(padding: 14) {
-                        HStack(spacing: 12) {
+                    BrandCard(padding: Theme.Space.md) {
+                        HStack(spacing: Theme.Space.md) {
                             Image(systemName: session.sessionType == "AUTH" ? "arrow.right.circle" : "signature")
                                 .font(.system(size: 15))
-                                .foregroundStyle(Color.eidAccent)
-                                .frame(width: 34, height: 34)
-                                .background(Color.eidAccentSubtle,
-                                            in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                                .foregroundStyle(Theme.Brand.primary)
+                                .frame(width: 36, height: 36)
+                                .background(Theme.Brand.soft,
+                                            in: RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(session.sessionType == "AUTH"
                                      ? loc.t("Dashboard_Activity_Auth") : loc.t("Dashboard_Activity_Sign"))
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(Theme.TypeScale.calloutBold)
+                                    .foregroundStyle(Theme.fg1)
                                 Text(session.rpName)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(Theme.TypeScale.caption)
+                                    .foregroundStyle(Theme.fg2)
                                 Text(MobileDashboardPage.shortDate(session.createdAt))
-                                    .font(.eidMonoSmall)
-                                    .foregroundStyle(Color.eidMuted)
+                                    .font(Theme.TypeScale.monoSm)
+                                    .foregroundStyle(Theme.fg3)
                             }
                             Spacer(minLength: 0)
-                            StatusPill(session.result == "OK"
-                                       ? loc.t("Dashboard_Activity_Success") : loc.t("Dashboard_Activity_Failure"),
-                                       variant: session.result == "OK" ? .ok : .warn)
+                            BrandPill(text: session.result == "OK"
+                                      ? loc.t("Dashboard_Activity_Success") : loc.t("Dashboard_Activity_Failure"),
+                                      tone: session.result == "OK" ? .ok : .warn)
                         }
                     }
                 }

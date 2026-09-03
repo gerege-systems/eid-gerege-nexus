@@ -21,4 +21,8 @@
     <string name="Common_Active">Идэвхтэй</string>
     <string name="Common_Registered">Бүртгэлтэй</string>
     <string name="Common_Pending">Хүлээгдэж буй</string>
+    <string name="Login_AppToApp_Hint">eID Mongolia апп нээгдэж, зөвшөөрөл асууна. Зөвшөөрсний дараа энэ апп руугаа буцна.</string>
+    <string name="Login_SecurityFooter">eID Mongolia · X-Road хамгаалалттай</string>
+    <string name="Common_Valid">зөв</string>
+    <string name="Common_TooShort">богино</string>
 </resources>

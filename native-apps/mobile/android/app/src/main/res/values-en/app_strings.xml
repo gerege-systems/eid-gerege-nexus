@@ -20,4 +20,8 @@
     <string name="Common_Active">Active</string>
     <string name="Common_Registered">Registered</string>
     <string name="Common_Pending">Pending</string>
+    <string name="Login_AppToApp_Hint">The eID Mongolia app opens and asks for approval. You return here once you approve.</string>
+    <string name="Login_SecurityFooter">eID Mongolia · secured by X-Road</string>
+    <string name="Common_Valid">ok</string>
+    <string name="Common_TooShort">short</string>
 </resources>
