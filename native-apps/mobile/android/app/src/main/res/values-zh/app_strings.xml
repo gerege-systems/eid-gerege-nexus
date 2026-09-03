@@ -24,4 +24,5 @@
     <string name="Login_SecurityFooter">eID Mongolia · 由 X-Road 保护</string>
     <string name="Common_Valid">有效</string>
     <string name="Common_TooShort">太短</string>
+    <string name="Id_Certificate">证书</string>
 </resources>

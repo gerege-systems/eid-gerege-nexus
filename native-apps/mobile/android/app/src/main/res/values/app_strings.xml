@@ -25,4 +25,5 @@
     <string name="Login_SecurityFooter">eID Mongolia · X-Road хамгаалалттай</string>
     <string name="Common_Valid">зөв</string>
     <string name="Common_TooShort">богино</string>
+    <string name="Id_Certificate">Гэрчилгээ</string>
 </resources>

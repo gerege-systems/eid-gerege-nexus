@@ -62,6 +62,7 @@ fun IdScreen(state: AppState) {
             }
         }
         EidCard {
+            BrandSectionLabel(stringResource(R.string.Id_Certificate))
             EidField(stringResource(R.string.Id_Level), identity.certificateLevel)
             EidField(stringResource(R.string.Id_DocNumber), identity.documentNumber, mono = true)
         }
