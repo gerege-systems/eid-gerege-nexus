@@ -1,0 +1,188 @@
+{
+  "website.menu.trust": {
+    "mn": "Итгэлцэл", "en": "Trust", "ru": "Доверие", "zh": "信任",
+    "ar": "الثقة", "es": "Confianza", "fr": "Confiance"
+  },
+
+  "website.view.hero_title_lead": { "mn": "Иргэн нь", "en": "Citizens sign in with" },
+  "website.view.hero_title_highlight": { "mn": "өөрийн цахим үнэмлэхээр", "en": "their own national e-ID" },
+  "website.view.hero_title_tail": { "mn": "нэвтэрдэг", "en": "and nothing else" },
+  "website.view.hero_lede": {
+    "mn": "{brand} нууц үг хадгалдаггүй. Хэн болохыг нь eID Mongolia — Монгол Улсын лицензтэй гэрчилгээжүүлэх төв — баталгаажуулна; энэ платформ тэр хариултыг цааш нь session, байгууллага, эрх, аудит болгож барина.",
+    "en": "{brand} keeps no passwords. Who somebody is, is answered by eID Mongolia — Mongolia's licensed certification authority — and this platform carries that answer onward into a session, an organisation, a role and an audit trail."
+  },
+  "website.action.see_features": {
+    "mn": "eID хэрхэн ажилладаг вэ", "en": "How eID works", "ru": "Как работает eID",
+    "zh": "eID 如何运作", "ar": "كيف يعمل eID", "es": "Cómo funciona eID",
+    "fr": "Comment fonctionne eID"
+  },
+
+  "website.stat.apps": {
+    "mn": "үндэсний танилтын рэйл — eID Mongolia",
+    "en": "national identity rail: eID Mongolia",
+    "ru": "национальный контур идентификации — eID Mongolia",
+    "zh": "国家身份认证通道：eID Mongolia",
+    "ar": "مسار الهوية الوطني: eID Mongolia",
+    "es": "vía nacional de identidad: eID Mongolia",
+    "fr": "rail national d'identité : eID Mongolia"
+  },
+  "website.stat.binary_count": {
+    "mn": "3", "en": "3", "ru": "3", "zh": "3", "ar": "3", "es": "3", "fr": "3"
+  },
+  "website.stat.binary": {
+    "mn": "нэвтрэх суваг — QR, регистр, App2App",
+    "en": "sign-in channels: QR, registration number, App2App"
+  },
+
+  "website.view.features_eyebrow": {
+    "mn": "eID MONGOLIA", "en": "eID MONGOLIA", "ru": "eID MONGOLIA", "zh": "eID MONGOLIA",
+    "ar": "eID MONGOLIA", "es": "eID MONGOLIA", "fr": "eID MONGOLIA"
+  },
+  "website.view.features_title": {
+    "mn": "Нэг үнэмлэх, дөрвөн өөр ажил",
+    "en": "One credential, four different jobs"
+  },
+  "website.view.features_lede": {
+    "mn": "eID Mongolia бол нэвтрэлт төдий биш. Танилт, хуулийн хүчин төгөлдөр гарын үсэг, байгууллагыг төлөөлөх эрх, гэрчилгээний амьдралын мөчлөг — дөрвүүлээ нэг PKI дээр, нэг аппын цаана.",
+    "en": "eID Mongolia is not only a sign-in. Identification, a legally valid signature, the right to act for an organisation and certificate lifecycle — four things on one PKI, behind one app."
+  },
+
+  "website.feature.instant_title": { "mn": "PIN1 — танилт", "en": "PIN1 — identification" },
+  "website.feature.instant_body": {
+    "mn": "Гурван суваг: ширээний дэлгэц дээр QR, регистрийн дугаараар утас руу push, гар утсанд App2App. Гурвуулаа ижил session рүү бууна — платформ гурван урсгал биш, нэгийг барина.",
+    "en": "Three channels: a QR code on a desktop, a push to the phone by registration number, App2App on mobile. All three land in the same session, so the platform carries one flow rather than three."
+  },
+  "website.feature.sso_title": {
+    "mn": "PIN2 — хуулийн хүчин төгөлдөр гарын үсэг",
+    "en": "PIN2 — a legally valid signature",
+    "ru": "PIN2 — юридически значимая подпись",
+    "zh": "PIN2 — 具有法律效力的签名",
+    "ar": "PIN2 — توقيع صالح قانونًا",
+    "es": "PIN2: una firma con validez legal",
+    "fr": "PIN2 — une signature juridiquement valable"
+  },
+  "website.feature.sso_body": {
+    "mn": "Баримтын SHA-256 л eID рүү явна; файл нь энд үлдэнэ. Иргэн утсан дээрээ зөвшөөрөх нь хуулийн зөвшөөрөл, буцаж ирэх нь RFC 3161 цагийн тамга бүхий PAdES-T.",
+    "en": "Only the document's SHA-256 leaves for eID; the file stays here. The citizen's approval on their phone is the legal consent, and what comes back is PAdES-T with an RFC 3161 timestamp."
+  },
+  "website.feature.passwordless_title": {
+    "mn": "Байгууллагыг төлөөлөх эрх",
+    "en": "The right to act for an organisation"
+  },
+  "website.feature.passwordless_body": {
+    "mn": "NTRMN-<регистр>-ийн нэрийн өмнөөс гарын үсэг зурахад эрхийг нь eID улсын бүртгэлээс ТЭР МӨЧИД шалгана — гэрчилгээнээс биш. Өчигдөр огцорсон захирал өчигдрийн гэрчилгээгээ барьсан хэвээр байдаг.",
+    "en": "Signing in the name of NTRMN-<register> has eID check the right against the state register at that moment — not against the certificate. A director who resigned yesterday still holds yesterday's certificate."
+  },
+  "website.feature.channels_title": {
+    "mn": "Баталгаажуулах код бол ПИН биш",
+    "en": "The verification code is not a PIN",
+    "ru": "Код подтверждения — это не ПИН",
+    "zh": "验证码不是 PIN 码",
+    "ar": "رمز التحقق ليس رمز PIN",
+    "es": "El código de verificación no es un PIN",
+    "fr": "Le code de vérification n'est pas un PIN"
+  },
+  "website.feature.channels_body": {
+    "mn": "Нэвтрэх бүрд 5 оронтой код дэлгэц дээр ба утсан дээр зэрэг гарна. Тэр нь хоёул таарч байгааг НҮДЭЭР шалгах зориулалттай — хаана ч бичих зүйл биш. ПИН нь дөрвөн оронтой.",
+    "en": "Every sign-in shows a five-digit code on the screen and on the phone at once. It exists to be matched by eye, never typed anywhere. A PIN is four digits."
+  },
+
+  "website.view.trust_eyebrow": {
+    "mn": "ИТГЭЛЦЛИЙН ГИНЖ", "en": "THE CHAIN OF TRUST", "ru": "ЦЕПОЧКА ДОВЕРИЯ",
+    "zh": "信任链", "ar": "سلسلة الثقة", "es": "LA CADENA DE CONFIANZA",
+    "fr": "LA CHAÎNE DE CONFIANCE"
+  },
+  "website.view.trust_title": {
+    "mn": "Гэрчилгээнээс эрх хүртэл, тасалдалгүй",
+    "en": "From certificate to permission, without a gap",
+    "ru": "От сертификата до права — без разрыва",
+    "zh": "从证书到权限，中间没有缺口",
+    "ar": "من الشهادة إلى الإذن، دون فجوة",
+    "es": "Del certificado al permiso, sin huecos",
+    "fr": "Du certificat à l'autorisation, sans rupture"
+  },
+  "website.view.trust_lede": {
+    "mn": "eID гэрчилгээ → PNOMN-<РД> → серверийн session → байгууллагын гишүүнчлэл → RBAC → OIDC клиент. Алхам бүр сервер дээр шалгагдана; нэг нь ч браузерын үгэнд итгэдэггүй.",
+    "en": "eID certificate → PNOMN-<civil id> → server session → organisation membership → RBAC → OIDC client. Every step is checked on the server; not one of them takes the browser's word for it.",
+    "ru": "Сертификат eID → PNOMN-<РД> → сессия на сервере → членство в организации → RBAC → OIDC-клиент. Каждый шаг проверяется на сервере; ни один не верит браузеру на слово.",
+    "zh": "eID 证书 → PNOMN-<公民号> → 服务器 session → 组织成员资格 → RBAC → OIDC 客户端。每一步都在服务器端校验，没有一步听信浏览器。",
+    "ar": "شهادة eID → PNOMN-<الرقم المدني> → جلسة الخادم → عضوية المؤسسة → RBAC → عميل OIDC. كل خطوة يتم التحقق منها على الخادم، ولا واحدة منها تصدّق المتصفح.",
+    "es": "Certificado eID → PNOMN-<nº de identidad> → sesión en el servidor → pertenencia a la organización → RBAC → cliente OIDC. Cada paso se comprueba en el servidor; ninguno se fía del navegador.",
+    "fr": "Certificat eID → PNOMN-<n° d'identité> → session serveur → appartenance à l'organisation → RBAC → client OIDC. Chaque étape est vérifiée sur le serveur ; aucune ne croit le navigateur sur parole."
+  },
+  "website.trust.cookie": {
+    "mn": "httpOnly, SameSite session cookie — RP secret браузерт хэзээ ч очихгүй",
+    "en": "httpOnly, SameSite session cookie — the RP secret never reaches the browser",
+    "ru": "httpOnly, SameSite session cookie — секрет RP никогда не попадает в браузер",
+    "zh": "httpOnly、SameSite session cookie — RP secret 永不进入浏览器",
+    "ar": "ملف تعريف ارتباط جلسة httpOnly وSameSite — سرّ RP لا يصل إلى المتصفح أبدًا",
+    "es": "cookie de sesión httpOnly y SameSite: el secreto RP nunca llega al navegador",
+    "fr": "cookie de session httpOnly, SameSite — le secret RP n'atteint jamais le navigateur"
+  },
+  "website.trust.rbac": {
+    "mn": "ADVANCED нь нэвтрэлтэд, QUALIFIED нь гарын үсэгт — санаатай тусад нь тавьсан хоёр босго",
+    "en": "ADVANCED to sign in, QUALIFIED to sign — two thresholds, set apart on purpose",
+    "ru": "ADVANCED — для входа, QUALIFIED — для подписи: два порога, разделённые намеренно",
+    "zh": "登录用 ADVANCED，签名用 QUALIFIED — 两道门槛，刻意分开",
+    "ar": "ADVANCED لتسجيل الدخول وQUALIFIED للتوقيع — عتبتان مفصولتان عن قصد",
+    "es": "ADVANCED para iniciar sesión, QUALIFIED para firmar: dos umbrales separados a propósito",
+    "fr": "ADVANCED pour se connecter, QUALIFIED pour signer — deux seuils séparés à dessein"
+  },
+  "website.trust.allowlist": {
+    "mn": "Session бүр эзэнтэй: өөр иргэний ceremony-г дугаараар нь таамаглаж хүрэхгүй",
+    "en": "Every session has an owner: another citizen's ceremony cannot be reached by guessing its id"
+  },
+  "website.trust.audit": {
+    "mn": "OCSP (eidmongolia.mn/verify), CRL (crl.eidmongolia.mn), Adobe AATL — гуравдагч тал өөрөө шалгана",
+    "en": "OCSP (eidmongolia.mn/verify), CRL (crl.eidmongolia.mn), Adobe AATL — a third party can check it themselves",
+    "ru": "OCSP (eidmongolia.mn/verify), CRL (crl.eidmongolia.mn), Adobe AATL — третья сторона проверит сама",
+    "zh": "OCSP（eidmongolia.mn/verify）、CRL（crl.eidmongolia.mn）、Adobe AATL — 第三方可自行验证",
+    "ar": "OCSP (eidmongolia.mn/verify) وCRL (crl.eidmongolia.mn) وAdobe AATL — يمكن لطرف ثالث التحقق بنفسه",
+    "es": "OCSP (eidmongolia.mn/verify), CRL (crl.eidmongolia.mn), Adobe AATL: un tercero puede comprobarlo por su cuenta",
+    "fr": "OCSP (eidmongolia.mn/verify), CRL (crl.eidmongolia.mn), Adobe AATL — un tiers peut vérifier lui-même"
+  },
+
+  "website.service.eid_body": {
+    "mn": "Монгол Улсын лицензтэй гэрчилгээжүүлэх төв; түлхүүрүүд нь FIPS 140-2 Level 3 модулиас гардаггүй. Энэ платформ нууц үг хадгалахын оронд түүнээс асууна — QR, регистр эсвэл App2App-аар.",
+    "en": "Mongolia's licensed certification authority; keys never leave its FIPS 140-2 Level 3 modules. Rather than keeping a password, this platform asks it — by QR, registration number or App2App."
+  },
+
+  "website.arch.eyebrow": {
+    "mn": "ЭНЭ ХААЛГАНЫ ЦААНА", "en": "BEHIND THIS DOOR", "ru": "ЧТО ЗА ЭТОЙ ДВЕРЬЮ",
+    "zh": "这扇门背后", "ar": "خلف هذا الباب", "es": "DETRÁS DE ESTA PUERTA",
+    "fr": "DERRIÈRE CETTE PORTE"
+  },
+  "website.arch.lede": {
+    "mn": "eID нь хэн болохыг хэлнэ; цаашдын бүхнийг платформ барина. Компиллогдсон Go модулиуд нэг процесс дотор маршрут, цэс, эрх, миграцаа бүртгэж, аль нь идэвхтэйг байгууллага бүрийн суулгалтын төлөв шийднэ.",
+    "en": "eID says who somebody is; everything after that is the platform's. Compiled Go modules register their routes, menus, permissions and migrations in one process, and each organisation's installation state decides which of them are enabled."
+  },
+
+  "website.depth.lede": {
+    "mn": "Эдгээр нь энэ суулгац дээр бодитоор асаалттай зүйлс — код байгаа гэсэн үг биш, ажиллаж байгаа гэсэн үг: хэмжүүр, лог, trace, өдөр бүрийн шифрлэсэн нөөцлөлт, тенант бүрийн RLS, долоон хэл.",
+    "en": "These are switched on in this deployment — not merely present in the code but running: metrics, logs, traces, a daily encrypted backup, RLS per tenant, seven languages."
+  },
+  "website.depth.gov_title": { "mn": "Төрийн систем рүү нэг хаалга", "en": "One door to the state systems" },
+  "website.depth.gov_body": {
+    "mn": "eID Mongolia-гийн ACSP_V2, ДАН/isf.mn-ийн токен гүүр, XYP-ийн иргэн, хуулийн этгээдийн лавлагаа — гурвуулаа серверийн тал дээр. Браузер ч, ширээний клиент ч ямар ч итгэмжлэл барьдаггүй.",
+    "en": "eID Mongolia over ACSP_V2, the DAN/isf.mn token bridge and XYP citizen and legal-entity lookups — all three on the server side. Neither the browser nor the desktop client holds a credential."
+  },
+  "website.depth.security_body": {
+    "mn": "Session токен хэшээр, нууц үг bcrypt-ээр хадгалагдана; тенантын хүсэлт database role, tenant context, RLS-ээр тусгаарлагдана. eID ceremony бүр эзэнтэй: байхгүй session ба өөр хүний session хоёрт ижил хариу очно.",
+    "en": "Session tokens are hashed and passwords use bcrypt; tenant requests are isolated by a database role, tenant context and RLS. Every eID ceremony has an owner: a session that does not exist and one belonging to somebody else answer identically."
+  },
+
+  "website.tech.eid_body": {
+    "mn": "ACSP_V2: PIN1 нэвтрэлт, PIN2 гарын үсэг, төлөөлөх эрх",
+    "en": "ACSP_V2: PIN1 sign-in, PIN2 signature, representation rights",
+    "ru": "ACSP_V2: вход по PIN1, подпись по PIN2, права представительства",
+    "zh": "ACSP_V2：PIN1 登录、PIN2 签名、代表权",
+    "ar": "ACSP_V2: تسجيل الدخول بـ PIN1، والتوقيع بـ PIN2، وحقوق التمثيل",
+    "es": "ACSP_V2: inicio de sesión con PIN1, firma con PIN2, derechos de representación",
+    "fr": "ACSP_V2 : connexion par PIN1, signature par PIN2, droits de représentation"
+  },
+
+  "website.message.footer_note": {
+    "mn": "eID Mongolia · ACSP_V2 · PAdES-T · Apache 2.0",
+    "en": "eID Mongolia · ACSP_V2 · PAdES-T · Apache 2.0"
+  }
+}

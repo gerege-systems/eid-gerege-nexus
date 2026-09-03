@@ -223,7 +223,32 @@ services:
       # Нэр, лого биш, БИЧВЭР өөрчлөх цэг: brand/copy.json доторх
       # түлхүүрүүд i18n-ийн харгалзах мөрийг дарж бичнэ. Хоосон файл нь
       # хэвийн байдал — ихэнх суулгац нэр, логоороо л ялгагдана.
-      BRAND_COPY_FILE: ${BRAND_COPY_FILE:-}
+      BRAND_COPY_FILE: ${BRAND_COPY_FILE:-/brand/copy.json}
+
+      # ------------------------------------------------------ нүүр хуудас
+      #
+      # Аль хэсгийг ямар дарааллаар зурахыг СУУЛГАЦ шийднэ (цөмийн
+      # frontend/lib/landing.ts). Энд eID-ийн дараалал: хаалга → eID юу
+      # хийдэг → итгэлцлийн гинж → хажууд нь юу ажиллаж байна → цаана нь
+      # ямар платформ байна. `applications` орхигдсон нь санаатай — энэ
+      # репо өөрийн модульгүй тул тэр хэсэг цөмийн ганц бүртгэлийн аппыг
+      # жагсаах байв.
+      LANDING_SECTIONS: ${LANDING_SECTIONS:-hero capabilities trust services architecture platform technology}
+
+      # «Энэ суулгац» хэсгийн картууд. Хаяггүй нь ЗУРАГДАХГҮЙ — тиймээс
+      # монитор, dwh, нөөцлөлтөө асаагаагүй суулгац худал зар тавихгүй.
+      # Эхнийх нь бидний биш: иргэнийг таних үндэсний дэд бүтэц өөрөө.
+      #
+      # Анхдагчууд нь ЭНЭ суулгацынх — хаягууд нь nginx/-д аль хэдийн байгаа
+      # тул нүүр хуудас .env дээрх гар ажил хүлээхгүй. `admin` нь хаягийн
+      # allowlist-ийн цаана (nginx/snippets/eid-cp-allowlist.conf) тул нийтэд
+      # зарахгүй: зочны 99 хувьд тэр карт 403 руу хүргэнэ.
+      SERVICE_URL_EID: ${SERVICE_URL_EID:-https://eidmongolia.mn}
+      SERVICE_URL_ADMIN: ${SERVICE_URL_ADMIN:-}
+      SERVICE_URL_DWH: ${SERVICE_URL_DWH:-https://dwh.eid.gerege.mn}
+      SERVICE_URL_BACKUPS: ${SERVICE_URL_BACKUPS:-https://backups.eid.gerege.mn}
+      SERVICE_URL_MONITOR: ${SERVICE_URL_MONITOR:-https://monitor.eid.gerege.mn}
+      SERVICE_URL_DOCS: ${SERVICE_URL_DOCS:-}
       # Рендерийн серверийн өөрийн алдааны мэдээлэл, ажиллах үед уншигдана.
       # Браузарын тал нь NEXT_PUBLIC_SENTRY_DSN бөгөөд образ барих үед
       # багцад шатдаг — тиймээс энд тавигдах боломжгүй.
