@@ -2,7 +2,7 @@ module github.com/gerege-systems/eid-gerege-nexus
 
 go 1.26
 
-require github.com/gerege-systems/open-gerege-nexus/backend v1.16.0
+require github.com/gerege-systems/open-gerege-nexus/backend v1.17.0
 
 require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect

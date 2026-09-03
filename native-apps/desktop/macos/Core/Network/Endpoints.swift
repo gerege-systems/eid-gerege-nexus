@@ -15,12 +15,10 @@ enum Endpoint {
     // Нэвтрэлт нь эндээс хойш платформын өөрийн RP-ээр явна — вэб (`EIDLogin`)
     // яг эдгээр route-уудыг дууддаг тул апп, хөтөч хоёр НЭГ RP, нэг дүрэм.
     //
-    // `callbackUrl` нь `${PUBLIC_ORIGIN}/auth/eid/callback` эсвэл ХООСОН байх
-    // ёстой (цөмийн `validEIDCallback`) — гуравдагч схем 400 өгнө. Тиймээс
-    // утсан дээр ч хоосон явуулна: eID апп зөвшөөрснийхөө дараа өөрөө буцаахгүй,
-    // хүн гараараа эргэж ирнэ, ажиллаж буй poll нь нэвтрэлтийг дуусгана.
-    // ponytail: схемийг зөвшөөрөх нь цөмийн өөрчлөлт (DEVICE_LINE_ORIGINS-д
-    // бүртгэсэн схемийг validEIDCallback хүлээж авбал автомат буцалт сэргэнэ).
+    // Утасны `callbackUrl` нь `gerege-eid://auth`: платформ backend-ийн
+    // `EID_APP_CALLBACKS`-д бүтэн URI, eID Mongolia RP-ийн `callback_hosts`-д
+    // `gerege-eid://` scheme бүртгэлтэй байна. macOS дээр зөвшөөрөгч нь өөр
+    // төхөөрөмж тул callback хоосон хэвээр.
     /// `POST /api/v1/auth/eid/start` → `{session_id, device_link_url, verification_code}`.
     case authStart(callbackURL: String)
     /// `POST /api/v1/auth/eid/start-id` `{national_id, callbackUrl}` — регистрээр push.

@@ -5,16 +5,17 @@ import org.junit.Test
 import java.io.File
 
 /**
- * App2App-ийн буцах хаяг нь ГУРВАН газарт ижил байх ёстой:
+ * App2App-ийн буцах хаяг нь ДӨРВӨН газарт тохирсон байх ёстой:
  *
  *   1. `AppConfig.APP_TO_APP_CALLBACK` — сервер рүү илгээх утга
  *   2. `AndroidManifest.xml`-ийн intent-filter — OS энэ аппыг сэрээх нөхцөл
- *   3. RP-ийн `callback_hosts` allowlist (сервер тал, admin-аар)
+ *   3. Платформ backend-ийн `EID_APP_CALLBACKS` — бүтэн URI
+ *   4. eID Mongolia RP-ийн `callback_hosts` — зөвхөн `gerege-eid://` scheme
  *
  * Эхний хоёр нь зөрвөл ЮУ Ч алдаа өгөхгүй: eID апп зөв хаягаар буцаах гэж
  * оролдоод OS «ийм зүйл нээх апп алга» гэж чимээгүй хаяна, хүн eID апп дотроо
- * үлдэнэ. Тиймээс тэр хоёрын таарлыг ЭНД барина. Гурав дахийг зөвхөн сервер
- * мэднэ (`NormalizeCallback`) — түүнийг тест барьж чадахгүй.
+ * үлдэнэ. Тиймээс эхний хоёрын таарлыг ЭНД барина. Сүүлийн хоёрыг deployment
+ * ба eID admin тус тус мэднэ — энэ unit test тэдгээрийг уншиж чадахгүй.
  */
 class CallbackContractTest {
 

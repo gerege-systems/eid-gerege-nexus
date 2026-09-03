@@ -236,11 +236,11 @@ struct MobileLoginView: View {
 
     private func startAppToApp() {
         run { () -> (String, String)? in
-            // Буцах хаяг ХООСОН: платформ нь өөрийн origin-ы callback-аас өөрийг
-            // хүлээж авахгүй (`validEIDCallback`). eID апп зөвшөөрснийхөө дараа
-            // энэ аппыг өөрөө нээхгүй тул хүн гараараа буцна — poll нь ажилласаар.
+            // Платформ backend бүтэн URI-г `EID_APP_CALLBACKS`-аар, eID сервер
+            // түүний scheme-ийг RP-ийн `callback_hosts`-оор зөвшөөрнө. Ингэснээр
+            // approve дуусмагц eID апп `gerege-eid://auth`-аар энд буцна.
             let response: AuthStartResponse = try await APIClient.shared
-                .request(.authStart(callbackURL: ""))
+                .request(.authStart(callbackURL: AppConfig.appToAppCallback))
             let sid = response.sessionID
             await MainActor.run {
                 appState.sessionID = sid
@@ -256,7 +256,7 @@ struct MobileLoginView: View {
         let typed = register.trimmingCharacters(in: .whitespaces).uppercased()
         run { () -> (String, String)? in
             let response: AuthStartResponse = try await APIClient.shared
-                .request(.authStartByID(nationalID: typed, callbackURL: ""))
+                .request(.authStartByID(nationalID: typed, callbackURL: AppConfig.appToAppCallback))
             await MainActor.run {
                 appState.sessionID = response.sessionID
                 verificationCode = response.verificationCode ?? ""

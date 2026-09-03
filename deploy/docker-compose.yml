@@ -124,8 +124,9 @@ services:
       # exactly those words in their own app before approving. The core's
       # default is "Gerege Nexus".
       #
-      # The callback registered with eID must be exactly
-      # ${PUBLIC_ORIGIN}/auth/eid/callback.
+      # Browser callback нь ${PUBLIC_ORIGIN}/auth/eid/callback. Native аппын
+      # custom URI нь доорх exact allowlist-д бүтнээрээ, eID Mongolia дээрх
+      # энэ RP-ийн callback_hosts-д scheme (`gerege-eid://`)-ээрээ бүртгэгдэнэ.
       EID_RP_UUID: ${EID_RP_UUID:-}
       EID_RP_SECRET: ${EID_RP_SECRET:-}
       EID_RP_NAME: ${EID_RP_NAME:-eID Gerege}
@@ -133,6 +134,7 @@ services:
       EID_BASE_URL: ${EID_BASE_URL:-https://eidmongolia.mn/v3}
       EID_CERT_LEVEL: ${EID_CERT_LEVEL:-ADVANCED}
       EID_MOCK_MODE: ${EID_MOCK_MODE:-false}
+      EID_APP_CALLBACKS: ${EID_APP_CALLBACKS:-gerege-eid://auth}
 
       # Whether somebody eID vouches for who has no account here gets one.
       # public: they do, in their own home. private: only people invited first.

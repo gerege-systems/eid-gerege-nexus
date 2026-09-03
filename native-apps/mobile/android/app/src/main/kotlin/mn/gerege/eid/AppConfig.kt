@@ -17,8 +17,9 @@ object AppConfig {
 
     /**
      * App2App буцах хаяг. Manifest-ийн intent-filter-тэй (`gerege-eid://auth`)
-     * ЯГ таарах ёстой, мөн RP-ийн `callback_hosts` allowlist-д бүртгэгдсэн байх
-     * ёстой — эс бөгөөс сервер түүнийг хаяж, буцалт ажиллахгүй.
+     * ЯГ таарах ёстой. Платформын backend-ийн `EID_APP_CALLBACKS`-д энэ бүтэн
+     * URI, eID Mongolia RP-ийн `callback_hosts`-д зөвхөн `gerege-eid://`
+     * scheme бүртгэгдсэн байна. Аль нэг нь дутвал буцалт ажиллахгүй.
      */
     const val APP_TO_APP_CALLBACK = "gerege-eid://auth"
 
