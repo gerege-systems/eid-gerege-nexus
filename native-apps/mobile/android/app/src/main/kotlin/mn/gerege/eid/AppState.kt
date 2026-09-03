@@ -6,13 +6,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import mn.gerege.eid.net.ActivityEntry
-import mn.gerege.eid.net.ApiClient
 import mn.gerege.eid.net.Child
 import mn.gerege.eid.net.Organization
 import mn.gerege.eid.net.StoredIdentity
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -43,12 +40,11 @@ class AppState(application: Application) : AndroidViewModel(application) {
     val fullName: String get() = identity?.fullName.orEmpty()
     val civilId: String get() = identity?.civilId.orEmpty()
 
-    fun didLogin(identity: StoredIdentity, sessionId: String, pollToken: String) {
+    fun didLogin(identity: StoredIdentity) {
         store.save(identity)
         this.identity = identity
         screen = Screen.DASHBOARD
         logActivity("AUTH", "OK")
-        loadPersonExtras(sessionId, pollToken)
     }
 
     fun logout() {
@@ -61,17 +57,16 @@ class AppState(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Байгууллага/хүүхдийн ЗӨВХӨН УНШИХ жагсаалт. pollToken нь 10 минут
-     * хүчинтэй тул нэвтэрсэн даруйд НЭГ удаа татна — ширээнийхтэй ижил дүрэм.
+     * Байгууллага/хүүхдийн ЗӨВХӨН УНШИХ жагсаалт нь ОДООГООР ХООСОН.
+     *
+     * Тэдгээр нь eID Mongolia-гийн вэб аппын route-ууд (`/api/representations`,
+     * `/api/children`) бөгөөд ТЭР аппын session-ий `pollToken`-оор л уншигдана.
+     * Нэвтрэлт платформын өөрийн RP руу шилжсэн тул тэр token байхгүй болов —
+     * худал өгөгдөл харуулахын оронд хоосон үлдээнэ.
+     *
+     * ponytail: платформын esign модульд `GET …/organizations` байгаа; түүнийг
+     * холбоход төлөөллийн жагсаалт эргэж ирнэ (platform session cookie хэрэгтэй).
      */
-    private fun loadPersonExtras(sessionId: String, pollToken: String) {
-        viewModelScope.launch {
-            runCatching { ApiClient.organizations(sessionId, pollToken) }
-                .onSuccess { organizations.clear(); organizations.addAll(it) }
-            runCatching { ApiClient.children(sessionId, pollToken) }
-                .onSuccess { children.clear(); children.addAll(it) }
-        }
-    }
 
     fun logActivity(type: String, result: String) {
         val entry = ActivityEntry(

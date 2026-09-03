@@ -46,6 +46,59 @@ object ApiClient {
     }
 
     /**
+     * `POST /api/v1/auth/eid/start` — ЭНЭ ПЛАТФОРМЫН RP-ийн session.
+     *
+     * Доорх `/api/…` бүлэг нь eID Mongolia-гийн ӨӨРИЙН вэб аппынх: nginx
+     * тэднийг `eidmongolia.mn` руу proxy хийдэг тул session нь ТЭДНИЙ demo
+     * RP-ээр («RP Demo Bank») үүсч, иргэн утсан дээрээ тэр нэрийг уншдаг байв.
+     * Нэвтрэлт нь хөтөчтэй ижил route-оор явна.
+     *
+     * `callbackUrl` ХООСОН: платформ нь өөрийн origin-ы callback-аас өөрийг
+     * хүлээж авахгүй (цөмийн `validEIDCallback`). eID апп зөвшөөрснийхөө дараа
+     * буцааж нээхгүй тул хүн гараараа эргэж ирнэ — poll нь ажилласаар.
+     */
+    suspend fun authStart(): AuthSession =
+        call("/api/v1/auth/eid/start", JSONObject().put("callbackUrl", "")).let { session(it) }
+
+    /** `POST /api/v1/auth/eid/start-id` — регистрээр утас руу push. */
+    suspend fun authStartById(register: String): AuthSession =
+        call("/api/v1/auth/eid/start-id",
+             JSONObject().put("national_id", register).put("callbackUrl", "")).let { session(it) }
+
+    private fun session(it: JSONObject) =
+        AuthSession(it.getString("session_id"), it.optString("verification_code").ifEmpty { null })
+
+    /**
+     * `POST /api/v1/auth/eid/poll` — терминал төлөв хүртэл.
+     *
+     * Сервер тал хүсэлтийг 25 секунд хүртэл барина (`eid.PollWindow`) тул
+     * завсарлага хэрэггүй: RUNNING буцах нь тэр цонх дүүрсэн гэсэн үг.
+     */
+    suspend fun waitForPlatformAuth(sessionId: String, timeoutMs: Long = 300_000): AuthResult {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < deadline) {
+            val body = call("/api/v1/auth/eid/poll", JSONObject().put("session_id", sessionId))
+            val state = body.optString("state").ifEmpty { null }
+            if (state == "RUNNING") continue
+            val person = body.optJSONObject("identity")
+            return AuthResult(
+                state = state,
+                identity = person?.let {
+                    AuthIdentity(
+                        civilId = it.optString("civil_id").ifEmpty { null },
+                        regNumber = it.optString("reg_number").ifEmpty { null },
+                        firstName = it.optString("first_name").ifEmpty { null },
+                        lastName = it.optString("last_name").ifEmpty { null },
+                        certificateSerial = it.optString("certificate_serial").ifEmpty { null },
+                        verified = it.optBoolean("verified_status", true),
+                    )
+                },
+            )
+        }
+        throw ApiException("timeout")
+    }
+
+    /**
      * `POST /api/start` — anonymous device-link session (app-to-app-д ашиглана).
      *
      * `callbackUrl` нь eID апп зөвшөөрсний дараа БУЦАХ хаяг. Сервер тал үүнийг

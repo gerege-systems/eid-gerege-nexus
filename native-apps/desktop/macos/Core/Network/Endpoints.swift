@@ -7,7 +7,29 @@ import Foundation
 /// Go RP-API (`/v3/*`) руу дамжуулахдаа хэрэглэнэ.
 enum Endpoint {
 
-    // ─── Нэвтрэлт ─────────────────────────────────────────────────────────
+    // ─── Нэвтрэлт — ЭНЭ ПЛАТФОРМЫН RP ─────────────────────────────────────
+    //
+    // Доорх `/api/*` бүлэг нь eID Mongolia-гийн ӨӨРИЙН вэб аппын route-ууд:
+    // nginx тэдгээрийг `eidmongolia.mn` руу proxy хийдэг тул session нь ТЭДНИЙ
+    // RP-ээр («RP Demo Bank») үүсч, иргэн утсан дээрээ тэр нэрийг уншдаг байв.
+    // Нэвтрэлт нь эндээс хойш платформын өөрийн RP-ээр явна — вэб (`EIDLogin`)
+    // яг эдгээр route-уудыг дууддаг тул апп, хөтөч хоёр НЭГ RP, нэг дүрэм.
+    //
+    // `callbackUrl` нь `${PUBLIC_ORIGIN}/auth/eid/callback` эсвэл ХООСОН байх
+    // ёстой (цөмийн `validEIDCallback`) — гуравдагч схем 400 өгнө. Тиймээс
+    // утсан дээр ч хоосон явуулна: eID апп зөвшөөрснийхөө дараа өөрөө буцаахгүй,
+    // хүн гараараа эргэж ирнэ, ажиллаж буй poll нь нэвтрэлтийг дуусгана.
+    // ponytail: схемийг зөвшөөрөх нь цөмийн өөрчлөлт (DEVICE_LINE_ORIGINS-д
+    // бүртгэсэн схемийг validEIDCallback хүлээж авбал автомат буцалт сэргэнэ).
+    /// `POST /api/v1/auth/eid/start` → `{session_id, device_link_url, verification_code}`.
+    case authStart(callbackURL: String)
+    /// `POST /api/v1/auth/eid/start-id` `{national_id, callbackUrl}` — регистрээр push.
+    case authStartByID(nationalID: String, callbackURL: String)
+    /// `POST /api/v1/auth/eid/poll` `{session_id}` → `{state, identity}`.
+    /// Сервер тал хүсэлтийг 25 секунд хүртэл барина (`eid.PollWindow`).
+    case authPoll(sessionID: String)
+
+    // ─── Нэвтрэлт — eID Mongolia-гийн вэб апп (demo RP) ────────────────────
     /// QR session: `POST /api/start` → `{sessionId, qr, deviceLinkBase, vc}`.
     /// QR-д `qr` (= sessionId) утгыг кодлоно, `vc`-г дэлгэцэнд харуулна.
     case start
@@ -65,6 +87,9 @@ enum Endpoint {
 
     var path: String {
         switch self {
+        case .authStart:      return "/api/v1/auth/eid/start"
+        case .authStartByID:  return "/api/v1/auth/eid/start-id"
+        case .authPoll:       return "/api/v1/auth/eid/poll"
         case .start:        return "/api/start"
         case .loginNotify:  return "/api/login-notify"
         case .status:       return "/api/status"
@@ -100,6 +125,12 @@ enum Endpoint {
 
     func body() throws -> Data? {
         switch self {
+        case .authStart(let callback):
+            return try JSONEncoder().encode(["callbackUrl": callback])
+        case .authStartByID(let nationalID, let callback):
+            return try JSONEncoder().encode(["national_id": nationalID, "callbackUrl": callback])
+        case .authPoll(let sessionID):
+            return try JSONEncoder().encode(["session_id": sessionID])
         case .start:
             // App2App буцалт: ширээн дээр хоосон, утсан дээр өөрийн схем
             // (`AppConfig.appToAppCallback`). Сервер тал үүнийг RP-ийн
@@ -136,6 +167,66 @@ enum Endpoint {
 }
 
 // MARK: - Response Models (web route-уудын яг JSON нэрс)
+
+/// `POST /api/v1/auth/eid/start`, `…/start-id` — платформын өөрийн RP-ийн session.
+///
+/// Талбарууд snake_case: эдгээр нь Go цөмийн `eid.StartResult`-ынх, харин
+/// доорх `/api/*` загварууд Next.js аппынх — хоёр өөр сервер, хоёр өөр хэв маяг.
+struct AuthStartResponse: Decodable {
+    let sessionID: String
+    /// Баталгаажуулах код (5 орон) — утсан дээрхтэй НҮДЭЭР тулгана.
+    let verificationCode: String?
+
+    enum CodingKeys: String, CodingKey {
+        case sessionID = "session_id"
+        case verificationCode = "verification_code"
+    }
+}
+
+/// `POST /api/v1/auth/eid/poll` → `{state, identity}`.
+///
+/// `state` нь COMPLETE | RUNNING | EXPIRED | REFUSED. COMPLETE үед сервер нь
+/// иргэнийг платформ дээр аль хэдийн бүртгэж, session cookie тавьсан байна —
+/// энэ апп cookie хүлээж авдаггүй (`APIClient` дээр зориуд унтраасан) тул
+/// зөвхөн `identity`-г л авч Keychain-д snapshot болгоно.
+struct AuthPollResponse: Decodable {
+    let state: String?
+    let identity: AuthIdentity?
+
+    var isComplete: Bool { state == "COMPLETE" }
+    var isRunning: Bool { state == "RUNNING" }
+}
+
+/// Цөмийн `eid.EIDIdentity` — нэр нь МОНГОЛООР ирдэг тул латин галигийг
+/// нөхөх нэмэлт дуудлага (`/api/dashboard`) хэрэггүй.
+struct AuthIdentity: Decodable {
+    let civilID: String?
+    let regNumber: String?
+    let firstName: String?
+    let lastName: String?
+    let familyName: String?
+    /// Гэрчилгээний сериал — иргэн ЯМАР гэрчилгээгээр зөвшөөрснийг заана.
+    let certificateSerial: String?
+    let verifiedStatus: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case civilID = "civil_id"
+        case regNumber = "reg_number"
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case familyName = "family_name"
+        case certificateSerial = "certificate_serial"
+        case verifiedStatus = "verified_status"
+    }
+
+    /// «Эцгийн нэр Нэр» (ж: «Цэнддорж Эрдэнэбат»).
+    var mongolianName: String? {
+        let parts = [lastName, firstName]
+            .compactMap { $0?.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
+    }
+}
 
 /// `POST /api/start` — QR нэвтрэлтийн session.
 struct StartResponse: Decodable {

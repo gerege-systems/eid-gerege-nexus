@@ -1,5 +1,32 @@
 package mn.gerege.eid.net
 
+/** `/api/v1/auth/eid/start`, `…/start-id` — платформын RP-ийн session. */
+data class AuthSession(val sessionId: String, val vc: String?)
+
+/** `/api/v1/auth/eid/poll` — терминал төлөв ба иргэний блок. */
+data class AuthResult(val state: String?, val identity: AuthIdentity?) {
+    val isComplete get() = state == "COMPLETE"
+}
+
+/**
+ * Цөмийн `eid.EIDIdentity`. Нэр нь МОНГОЛООР ирдэг тул латин галигийг нөхөх
+ * нэмэлт дуудлага (`/api/dashboard`) хэрэггүй.
+ */
+data class AuthIdentity(
+    val civilId: String?,
+    val regNumber: String?,
+    val firstName: String?,
+    val lastName: String?,
+    val certificateSerial: String?,
+    val verified: Boolean,
+) {
+    /** «Эцгийн нэр Нэр» (ж: «Цэнддорж Эрдэнэбат»). */
+    val mongolianName: String?
+        get() = listOfNotNull(lastName, firstName)
+            .map { it.trim() }.filter { it.isNotEmpty() }
+            .takeIf { it.isNotEmpty() }?.joinToString(" ")
+}
+
 /** `/api/start`, `/api/login-notify` — session эхлэх хариу. */
 data class StartSession(val sessionId: String, val vc: String?, val pollToken: String)
 

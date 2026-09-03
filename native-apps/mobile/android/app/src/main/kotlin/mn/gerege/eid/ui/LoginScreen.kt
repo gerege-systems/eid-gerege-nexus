@@ -39,7 +39,7 @@ import mn.gerege.eid.AppConfig
 import mn.gerege.eid.AppState
 import mn.gerege.eid.R
 import mn.gerege.eid.net.ApiClient
-import mn.gerege.eid.net.AuthStatus
+import mn.gerege.eid.net.AuthResult
 import mn.gerege.eid.net.StoredIdentity
 import mn.gerege.eid.ui.components.*
 import mn.gerege.eid.ui.theme.LocalGw
@@ -51,8 +51,12 @@ import mn.gerege.eid.ui.theme.Space
  *
  * Мак дээр QR/РД push-ыг ХӨРШ утас зөвшөөрдөг. Утсан дээр тэр зөвшөөрөгч нь
  * өөрөө байгаа тул session-ийг **app-to-app**-аар eID Mongolia апп руу
- * шилжүүлнэ: `geregesmartid://approve?sessionId=...`. Шинэ backend endpoint
- * нэмээгүй — session нь хэн зөвшөөрснөөс үл хамааран ижил.
+ * шилжүүлнэ: `geregesmartid://approve?sessionId=...`.
+ *
+ * Session нь ЭНЭ ПЛАТФОРМЫН RP-ээр үүснэ (`/api/v1/auth/eid/…`) — хөтөч дээрх
+ * нэвтрэлт яг эдгээр route-уудыг дууддаг. Өмнө нь `/api/start` рүү явдаг
+ * байсан бөгөөд nginx түүнийг eidmongolia.mn руу proxy хийдэг тул иргэн
+ * утсан дээрээ ТЭДНИЙ demo RP-ийн нэрийг («RP Demo Bank») уншдаг байв.
  */
 @Composable
 fun LoginScreen(state: AppState) {
@@ -80,39 +84,45 @@ fun LoginScreen(state: AppState) {
             if (intent.resolveActivity(context.packageManager) != null) intent else null
         }
 
-    fun finish(status: AuthStatus, sessionId: String, pollToken: String, typedId: String) {
-        if (!status.isComplete || !status.isOk || status.documentNumber.isNullOrEmpty()) {
-            errorMessage = status.error ?: context.getString(R.string.Login_Error_Failed)
+    fun finish(result: AuthResult, typedId: String) {
+        val person = result.identity
+        if (!result.isComplete || person == null || !person.verified) {
+            errorMessage = when (result.state) {
+                "EXPIRED" -> context.getString(R.string.Login_Error_Expired)
+                "REFUSED" -> context.getString(R.string.Login_Error_Refused)
+                else -> context.getString(R.string.Login_Error_Failed)
+            }
             phase = "idle"
             return
         }
-        scope.launch {
-            // Гэрчилгээний нэр нь ЛАТИН галиг — иргэн өөрийн нэрийг МОНГОЛООР
-            // харах ёстой тул XYP-ийн хураангуйгаас авна (ширээ, iOS-тэй ижил).
-            val mongolian = runCatching { ApiClient.personSummary(sessionId, pollToken).mongolianName }.getOrNull()
-            val identity = StoredIdentity(
-                documentNumber = status.documentNumber,
-                fullName = mongolian ?: status.name.orEmpty(),
-                civilId = status.idNumber.orEmpty(),
-                nationalId = typedId,
-                certificateLevel = status.certificateLevel ?: "QUALIFIED",
-                loginAt = AppState.isoNow(),
-            )
-            phase = "success"
-            state.didLogin(identity, sessionId, pollToken)
-        }
+        // Нэр нь платформоос МОНГОЛООР ирнэ — латин галигийг нөхөх нэмэлт
+        // дуудлага (`/api/dashboard`) хэрэггүй болов.
+        val identity = StoredIdentity(
+            // Платформ нь eID-ийн `documentNumber`-ыг дээшээ гаргадаггүй.
+            // Гэрчилгээний сериал нь иргэн ЯМАР гэрчилгээгээр зөвшөөрснийг
+            // заадаг цорын ганц бариул тул ID хуудсанд түүнийг харуулна.
+            documentNumber = person.certificateSerial.orEmpty(),
+            fullName = person.mongolianName.orEmpty(),
+            civilId = person.civilId.orEmpty(),
+            nationalId = person.regNumber ?: typedId,
+            // Нэвтрэлтийн доод хязгаар нь ADVANCED (`EID_CERT_LEVEL`); QUALIFIED
+            // гэж бичих нь баталгаагүй зүйлийг батласан болно.
+            certificateLevel = "ADVANCED",
+            loginAt = AppState.isoNow(),
+        )
+        phase = "success"
+        state.didLogin(identity)
     }
 
-    fun run(start: suspend () -> Triple<String, String, String>) {
+    fun run(start: suspend () -> Pair<String, String>) {
         job?.cancel()
         errorMessage = ""
         phase = "starting"
         job = scope.launch {
             runCatching {
-                val (sessionId, pollToken, typedId) = start()
+                val (sessionId, typedId) = start()
                 phase = "waiting"
-                val status = ApiClient.waitForAuth(sessionId, pollToken)
-                finish(status, sessionId, pollToken, typedId)
+                finish(ApiClient.waitForPlatformAuth(sessionId), typedId)
             }.onFailure {
                 errorMessage = it.message ?: context.getString(R.string.Login_Error_Failed)
                 phase = "idle"
@@ -187,7 +197,7 @@ fun LoginScreen(state: AppState) {
                         leadingIcon = Icons.AutoMirrored.Filled.Launch,
                     ) {
                         run {
-                            val session = ApiClient.start()
+                            val session = ApiClient.authStart()
                             verificationCode = session.vc.orEmpty()
                             val intent = eidAppIntent(session.sessionId)
                             if (intent == null) {
@@ -196,7 +206,7 @@ fun LoginScreen(state: AppState) {
                             } else {
                                 context.startActivity(intent)
                             }
-                            Triple(session.sessionId, session.pollToken, "")
+                            session.sessionId to ""
                         }
                     }
 
@@ -238,9 +248,9 @@ fun LoginScreen(state: AppState) {
                         SecondaryButton(stringResource(R.string.Login_Push),
                                         enabled = registerValid, tone = gw.brand) {
                             run {
-                                val session = ApiClient.loginNotify(registerTyped)
+                                val session = ApiClient.authStartById(registerTyped)
                                 verificationCode = session.vc.orEmpty()
-                                Triple(session.sessionId, session.pollToken, registerTyped)
+                                session.sessionId to registerTyped
                             }
                         }
                     } else {

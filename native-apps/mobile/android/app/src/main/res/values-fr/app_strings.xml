@@ -5,6 +5,8 @@
     <string name="Login_Push">Envoyer une notification par numéro d\'enregistrement</string>
     <string name="Login_OtherDevice">Approuver sur un autre appareil</string>
     <string name="Login_Error_Failed">La vérification a échoué.</string>
+    <string name="Login_Error_Expired">La demande a expiré. Réessayez.</string>
+    <string name="Login_Error_Refused">La demande a été refusée sur le téléphone.</string>
     <string name="Login_Error_AppMissing">Application eID Mongolia introuvable. Envoyez une notification par numéro d\'enregistrement.</string>
     <string name="Read_Only_Hint">Lecture seule — les modifications se font dans l\'application eID Mongolia (PIN2).</string>
     <string name="Settings_Server">Serveur</string>
@@ -15,7 +17,7 @@
     <string name="Id_Subtitle">Votre profil e-ID unifié</string>
     <string name="Id_RegNumber">Numéro d\'enregistrement</string>
     <string name="Id_CivilId">Identifiant civil</string>
-    <string name="Id_DocNumber">Numéro du document</string>
+    <string name="Id_DocNumber">Numéro de série du certificat</string>
     <string name="Id_Level">Niveau</string>
     <string name="Common_Active">Actif</string>
     <string name="Common_Registered">Enregistré</string>

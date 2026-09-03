@@ -64,8 +64,11 @@ struct MobileIdPage: View {
             BrandSectionLabel(text: loc.pick("Гэрчилгээ", "Certificate", "Сертификат", "证书"))
             MobileField(label: loc.pick("Түвшин", "Level", "Уровень", "等级"),
                         value: user.kycLevel.isEmpty ? "—" : user.kycLevel)
-            MobileField(label: loc.pick("Баримтын дугаар", "Document number",
-                                        "Номер документа", "文件号"),
+            // Гэрчилгээний сериал: платформ нь eID-ийн `documentNumber`-ыг
+            // дээшээ гаргадаггүй бөгөөд иргэн ЯМАР гэрчилгээгээр зөвшөөрснийг
+            // заадаг нь энэ (`MobileLoginView.finish`).
+            MobileField(label: loc.pick("Гэрчилгээний сериал", "Certificate serial",
+                                        "Серийный номер сертификата", "证书序列号"),
                         value: appState.documentNumber.isEmpty ? "—" : appState.documentNumber, mono: true)
         }
     }

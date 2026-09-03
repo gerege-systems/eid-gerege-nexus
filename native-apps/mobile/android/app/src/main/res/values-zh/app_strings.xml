@@ -5,6 +5,8 @@
     <string name="Login_Push">按登记号发送推送</string>
     <string name="Login_OtherDevice">在其他设备上确认</string>
     <string name="Login_Error_Failed">验证失败。</string>
+    <string name="Login_Error_Expired">请求已过期，请重试。</string>
+    <string name="Login_Error_Refused">已在手机上拒绝该请求。</string>
     <string name="Login_Error_AppMissing">未找到 eID Mongolia 应用。请按登记号发送推送。</string>
     <string name="Read_Only_Hint">仅供查看——更改请在 eID Mongolia 应用中完成（PIN2）。</string>
     <string name="Settings_Server">服务器</string>
@@ -15,7 +17,7 @@
     <string name="Id_Subtitle">您的统一 e-ID 档案</string>
     <string name="Id_RegNumber">登记号</string>
     <string name="Id_CivilId">公民号</string>
-    <string name="Id_DocNumber">文件号</string>
+    <string name="Id_DocNumber">证书序列号</string>
     <string name="Id_Level">等级</string>
     <string name="Common_Active">有效</string>
     <string name="Common_Registered">已注册</string>

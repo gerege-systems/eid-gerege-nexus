@@ -8,13 +8,18 @@ import UIKit
 /// утгагүй — өөрийгөө скан хийх боломжгүй. Оронд нь ижил session-ийг
 /// **app-to-app**-аар eID Mongolia апп руу шилжүүлнэ:
 ///
-///   1. `POST /api/start` → `{sessionId, vc, pollToken}` (мак-тай ЯГ ижил route)
+///   1. `POST /api/v1/auth/eid/start` → `{session_id, verification_code}`
 ///   2. `eidmongolia://approve?sessionId=<sid>` нээнэ — eID апп зөвшөөрөл асууна
-///   3. Энэ апп нь `/api/status`-ыг цаанаа poll хийж, хүн буцаж ирэхэд бэлэн
+///   3. Энэ апп нь `/api/v1/auth/eid/poll`-ыг цаанаа барьж, хүн буцаж ирэхэд бэлэн
 ///
-/// Нэг ч шинэ backend endpoint нэмээгүй: session нь хэн зөвшөөрснөөс үл хамааран
-/// ижил. eID апп суугаагүй бол РД push руу шилжинэ — тэр үед хүн өөр
-/// төхөөрөмж дээрээ зөвшөөрнө.
+/// Session нь ЭНЭ ПЛАТФОРМЫН RP-ээр үүснэ — хөтөч дээрх нэвтрэлт яг эдгээр
+/// route-уудыг дууддаг. Өмнө нь `/api/start` рүү явдаг байсан бөгөөд nginx
+/// түүнийг eidmongolia.mn руу proxy хийдэг тул иргэн утсан дээрээ ТЭДНИЙ demo
+/// RP-ийн нэрийг («RP Demo Bank») уншдаг байв — өөр бүтээгдэхүүн зөвшөөрүүлж
+/// байгаа мэт.
+///
+/// eID апп суугаагүй бол РД push руу шилжинэ — тэр үед хүн өөр төхөөрөмж
+/// дээрээ зөвшөөрнө.
 struct MobileLoginView: View {
     @EnvironmentObject private var appState: AppState
     @ObservedObject private var loc = LocalizationService.shared
@@ -230,43 +235,47 @@ struct MobileLoginView: View {
     }
 
     private func startAppToApp() {
-        run { () -> (String, String, String)? in
-            let response: StartResponse = try await APIClient.shared.request(.start)
-            let sid = response.sessionId
+        run { () -> (String, String)? in
+            // Буцах хаяг ХООСОН: платформ нь өөрийн origin-ы callback-аас өөрийг
+            // хүлээж авахгүй (`validEIDCallback`). eID апп зөвшөөрснийхөө дараа
+            // энэ аппыг өөрөө нээхгүй тул хүн гараараа буцна — poll нь ажилласаар.
+            let response: AuthStartResponse = try await APIClient.shared
+                .request(.authStart(callbackURL: ""))
+            let sid = response.sessionID
             await MainActor.run {
                 appState.sessionID = sid
-                verificationCode = response.vc ?? ""
+                verificationCode = response.verificationCode ?? ""
                 phase = .waiting
             }
             await openEidApp(sessionID: sid)
-            return (sid, response.pollToken ?? "", "")
+            return (sid, "")
         }
     }
 
     private func startPush() {
         let typed = register.trimmingCharacters(in: .whitespaces).uppercased()
-        run { () -> (String, String, String)? in
-            let response: LoginNotifyResponse = try await APIClient.shared
-                .request(.loginNotify(register: typed))
+        run { () -> (String, String)? in
+            let response: AuthStartResponse = try await APIClient.shared
+                .request(.authStartByID(nationalID: typed, callbackURL: ""))
             await MainActor.run {
-                appState.sessionID = response.sessionId
-                verificationCode = response.vc ?? ""
+                appState.sessionID = response.sessionID
+                verificationCode = response.verificationCode ?? ""
                 phase = .waiting
             }
-            return (response.sessionId, response.pollToken ?? "", typed)
+            return (response.sessionID, typed)
         }
     }
 
     /// Session эхлүүлээд poll хийх нийтлэг бүрхүүл — хоёр зам ижил төгсгөлтэй.
-    private func run(_ start: @escaping () async throws -> (String, String, String)?) {
+    private func run(_ start: @escaping () async throws -> (String, String)?) {
         task?.cancel()
         errorMessage = ""
         phase = .starting
         task = Task {
             do {
-                guard let (sessionID, pollToken, typedID) = try await start() else { return }
-                let status = try await APIClient.shared.waitForAuth(sessionID: sessionID, pollToken: pollToken)
-                await finish(status, sessionID: sessionID, pollToken: pollToken, typedID: typedID)
+                guard let (sessionID, typedID) = try await start() else { return }
+                let poll = try await APIClient.shared.waitForPlatformAuth(sessionID: sessionID)
+                await finish(poll, typedID: typedID)
             } catch is CancellationError {
                 // Хүн цуцаллаа.
             } catch {
@@ -297,40 +306,59 @@ struct MobileLoginView: View {
             "未找到 eID Mongolia 应用。请按登记号发送推送，并在其他设备上确认。")
     }
 
-    /// Ширээний `handleAuthResult`-тай ЯГ ижил дүрэм: нэрийг XYP-ийн
-    /// хураангуйгаас МОНГОЛООР авч, identity-г Keychain-д хадгална.
-    private func finish(_ status: StatusResponse, sessionID: String,
-                        pollToken: String, typedID: String) async {
-        guard status.isComplete, status.isOK,
-              let doc = status.documentNumber, !doc.isEmpty else {
+    /// Нэвтрэлтийн төгсгөл: платформын буцаасан identity-г Keychain-д snapshot
+    /// болгож хадгална.
+    ///
+    /// Нэр нь МОНГОЛООР ирдэг тул латин галигийг нөхөх нэмэлт дуудлага
+    /// (`/api/dashboard`) хэрэггүй болов — тэр route нь eidmongolia.mn-ийх
+    /// бөгөөд түүний session бидэнд байхгүй.
+    private func finish(_ poll: AuthPollResponse, typedID: String) async {
+        guard poll.isComplete, let identity = poll.identity, identity.verifiedStatus != false else {
             await MainActor.run {
-                errorMessage = status.error?.isEmpty == false
-                    ? (status.error ?? "")
-                    : loc.pick("Баталгаажуулалт амжилтгүй.", "Verification failed.",
-                               "Проверка не удалась.", "验证失败。")
+                errorMessage = Self.stateMessage(poll.state, loc: loc)
                 phase = .error
             }
             return
         }
-        let summary: PersonSummaryResponse? = try? await APIClient.shared
-            .request(.dashboard(sessionID: sessionID, pollToken: pollToken))
-        let name = summary?.mongolianName ?? (status.name ?? "")
-        let civil = status.idNumber ?? ""
-        let identity = StoredIdentity(
-            documentNumber: doc,
+        let name = identity.mongolianName ?? ""
+        let stored = StoredIdentity(
+            // Платформ нь eID-ийн `documentNumber`-ыг дээшээ гаргадаггүй.
+            // Гэрчилгээний сериал нь иргэн ЯМАР гэрчилгээгээр зөвшөөрснийг
+            // заадаг цорын ганц бариул тул ID хуудсанд түүнийг харуулна.
+            documentNumber: identity.certificateSerial ?? "",
             fullName: name,
-            civilID: civil,
-            nationalID: typedID,
-            certificateLevel: status.certificateLevel ?? "QUALIFIED",
+            civilID: identity.civilID ?? "",
+            nationalID: identity.regNumber ?? typedID,
+            // Нэвтрэлтийн доод хязгаар нь ADVANCED (`EID_CERT_LEVEL`); QUALIFIED
+            // гэж бичих нь баталгаагүй зүйлийг батласан болно.
+            certificateLevel: "ADVANCED",
             loginAt: ISO8601DateFormatter().string(from: Date())
         )
         await MainActor.run {
             signedInName = name
             phase = .success
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                appState.didLogin(identity: identity)
-                appState.loadPersonExtras(sessionID: sessionID, pollToken: pollToken)
+                appState.didLogin(identity: stored)
             }
+        }
+    }
+
+    /// COMPLETE биш терминал төлөвүүд. eID-ийн үгсийг иргэний хэлээр.
+    private static func stateMessage(_ state: String?, loc: LocalizationService) -> String {
+        switch state {
+        case "EXPIRED":
+            return loc.pick("Хугацаа дууслаа. Дахин оролдоно уу.",
+                            "The request expired. Please try again.",
+                            "Срок запроса истёк. Попробуйте снова.",
+                            "请求已过期，请重试。")
+        case "REFUSED":
+            return loc.pick("Утсан дээр татгалзсан байна.",
+                            "The request was refused on the phone.",
+                            "Запрос отклонён на телефоне.",
+                            "已在手机上拒绝该请求。")
+        default:
+            return loc.pick("Баталгаажуулалт амжилтгүй.", "Verification failed.",
+                            "Проверка не удалась.", "验证失败。")
         }
     }
 

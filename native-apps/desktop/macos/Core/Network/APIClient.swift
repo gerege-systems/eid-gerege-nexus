@@ -72,6 +72,27 @@ actor APIClient {
         throw APIError.timeout
     }
 
+    // MARK: - Session poll (платформын өөрийн RP)
+
+    /// `/api/v1/auth/eid/poll`-ыг терминал төлөв хүртэл давтана.
+    ///
+    /// Сервер тал хүсэлтийг 25 секунд хүртэл барьдаг (`eid.PollWindow`) тул энд
+    /// богино завсарлага хэрэггүй — RUNNING буцаж ирэх нь тэр цонх дүүрсэн гэсэн
+    /// үг. COMPLETE боловч баталгаажаагүй бол сервер 401 өгнө: тэр нь энд
+    /// `APIError.server` болж шидэгдэнэ, дуудагч түүнийг л харуулна.
+    func waitForPlatformAuth(
+        sessionID: String,
+        timeout: Duration = .seconds(300)
+    ) async throws -> AuthPollResponse {
+        let deadline = ContinuousClock.now + timeout
+        while ContinuousClock.now < deadline {
+            let poll: AuthPollResponse = try await request(.authPoll(sessionID: sessionID))
+            if !poll.isRunning { return poll }
+            try Task.checkCancellation()
+        }
+        throw APIError.timeout
+    }
+
     // MARK: - Sign (PDF — web demo хуудастай яг ижил урсгал)
 
     /// `POST /api/sign-pdf-download` — эх PDF + sessionId + pollToken →
@@ -159,6 +180,11 @@ actor APIClient {
         }
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Gerege-Desktop/1.0", forHTTPHeaderField: "User-Agent")
+        // Платформын poll нь урт: сервер тал хүсэлтийг 25 секунд хүртэл барина
+        // (`eid.PollWindow`) бөгөөд бодит хэмжилтээр 26с ирдэг. Session-ий
+        // анхдагч 30с нь тэр цонхны ирмэг дээр — RUNNING бүрийг заримдаа
+        // timeout болгож, нэвтрэлт «сүлжээ тасарлаа» гэж унана.
+        if case .authPoll = endpoint { request.timeoutInterval = 60 }
         for (key, value) in endpoint.extraHeaders {
             request.setValue(value, forHTTPHeaderField: key)
         }
