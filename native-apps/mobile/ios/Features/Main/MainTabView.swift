@@ -28,30 +28,35 @@ struct MainTabView: View {
 }
 
 /// Дэлгэц бүрийн нийтлэг хүрээ: гарчиг + гүйлгэх муж + ижил дэвсгэр.
+///
+/// Системийн `navigationTitle` БИШ, гарчгаа өөрөө зурдаг нь санаатай. UIKit-ийн
+/// navigation bar нь SwiftUI-аас фонт, өнгө авдаггүй — `UINavigationBarAppearance`
+/// гэсэн бүхэл давхаргыг апп даяар тааруулж байж л Montserrat орно. Android-ын
+/// `EidScreen` нь гарчгаа ингэж зурдаг тул ийнхүү хоёр платформ ЯГ ижил болж,
+/// нэг платформын хачирхалтай зан урсгалаас хасагдана.
 struct MobilePage<Content: View>: View {
     let title: String
     let subtitle: String?
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Theme.Space.md) {
-                    if let subtitle, !subtitle.isEmpty {
-                        Text(subtitle)
-                            .font(Theme.TypeScale.footnote)
-                            .foregroundStyle(Theme.fg3)
-                            .padding(.bottom, Theme.Space.xxs)
-                    }
-                    content()
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.Space.md) {
+                Text(title)
+                    .font(Theme.TypeScale.title)
+                    .foregroundStyle(Theme.fg1)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(Theme.TypeScale.footnote)
+                        .foregroundStyle(Theme.fg3)
+                        .padding(.bottom, Theme.Space.xxs)
                 }
-                .padding(.horizontal, Theme.Space.lg)
-                .padding(.vertical, Theme.Space.lg)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                content()
             }
-            .background(Theme.bg.ignoresSafeArea())
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.large)
+            .padding(.horizontal, Theme.Space.lg)
+            .padding(.vertical, Theme.Space.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .background(Theme.bg.ignoresSafeArea())
     }
 }

@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 /// eID Gerege — iOS/iPadOS клиент.
 ///
@@ -17,24 +16,6 @@ import UIKit
 @main
 struct EIDGeregeApp: App {
     @StateObject private var appState = AppState()
-
-    /// `navigationTitle` нь SwiftUI-аас фонт авдаггүй — UIKit-ийн гадаад
-    /// төрхөөс уншина. Тиймээс брэндийн Montserrat-ыг энд НЭГ УДАА тавина;
-    /// эс бөгөөс дэлгэц бүрийн том гарчиг ганцаараа системийн фонтоор
-    /// үлдэж, доорх бүх агуулгаас өөр гэр бүлтэй болно.
-    init() {
-        let bar = UINavigationBarAppearance()
-        bar.configureWithTransparentBackground()
-        bar.backgroundColor = UIColor(Theme.bg)
-        if let large = UIFont(name: "Montserrat-Bold", size: 32) {
-            bar.largeTitleTextAttributes = [.font: large, .foregroundColor: UIColor(Theme.fg1)]
-        }
-        if let inline = UIFont(name: "Montserrat-SemiBold", size: 17) {
-            bar.titleTextAttributes = [.font: inline, .foregroundColor: UIColor(Theme.fg1)]
-        }
-        UINavigationBar.appearance().standardAppearance = bar
-        UINavigationBar.appearance().scrollEdgeAppearance = bar
-    }
 
     var body: some Scene {
         WindowGroup {

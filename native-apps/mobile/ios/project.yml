@@ -35,6 +35,12 @@ targets:
       - path: Features
       - path: Design
       - path: Assets.xcassets
+      # Montserrat .ttf. xcodegen-д ТАРГЕТИЙН `resources:` гэсэн түлхүүр
+      # БАЙХГҮЙ — тэрийг чимээгүй алгасдаг тул фонт багцад ордоггүй
+      # (`Font.custom` нь nil буцааж, системийн фонт руу унана). Эх файлын
+      # жагсаалтад орсон эх код БУС файлыг xcodegen нь Resources фазад
+      # өөрөө хийнэ, тиймээс зам нь ЭНД байх ёстой.
+      - path: Resources
       # Ширээний аппаас ХУВААЛЦСАН давхаргууд.
       - path: ../../desktop/macos/App/AppState.swift
       - path: ../../desktop/macos/Core/Network
@@ -46,8 +52,6 @@ targets:
       # SPKI pin-үүд XOR-оор далдлагдсан тул pinning нь энэ файлыг дуудна.
       # Хажуугийн `SecurityGuard.swift` нь ЗӨВХӨН macOS (anti-debug) тул орохгүй.
       - path: ../../desktop/macos/Infrastructure/Security/Integrity/Obfuscated.swift
-    resources:
-      - Resources
     settings:
       base:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -78,8 +82,8 @@ targets:
           - eidmongolia
           - geregesmartid
         UILaunchScreen: {}
-        # Брэндийн фонт. xcodegen нь `resources: Resources`-ийн хавтасны
-        # бүтцийг багцын үндэс рүү ХАВТГАЙЛДАГ тул энд зөвхөн файлын нэр
+        # Брэндийн фонт. xcodegen нь `Resources/` доторх хавтасны бүтцийг
+        # багцын үндэс рүү ХАВТГАЙЛДАГ тул энд зөвхөн файлын нэр
         # (`Fonts/` угтваргүй). `Font.custom` нь файлын нэрээр биш
         # PostScript нэрээр хайдаг — тэр буулгалт `Design/Theme.swift`-ийн
         # `Theme.TypeScale` дотор ганц газар байна.
