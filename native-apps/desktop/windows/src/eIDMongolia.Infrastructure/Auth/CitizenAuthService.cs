@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -12,15 +11,22 @@ namespace eIDMongolia.Infrastructure.Auth;
 
 /// Citizen-facing auth flow — **first-party** model (see BACKEND-INTEGRATION.md).
 ///
-/// Talks to the e-ID Mongolia WEB backend's public `/api/*` routes exactly like
-/// a browser (no RP secret, no device HMAC, no bearer):
-///   • national-id push  → POST /api/login-notify {register}
-///   • QR                → POST /api/start
-///   • poll              → GET  /api/status?sessionId=&pollToken=
+/// Talks to THIS PLATFORM's own public auth routes, exactly like the browser
+/// does (no RP secret, no device HMAC, no bearer):
+///   • national-id push  → POST /api/v1/auth/eid/start-id {national_id, callbackUrl}
+///   • QR                → POST /api/v1/auth/eid/start     {callbackUrl}
+///   • poll              → POST /api/v1/auth/eid/poll      {session_id}
 ///
-/// `/api/status` returns `name` + `idNumber` inline on completion (no bearer /
-/// no `/me`), so on success we stash that identity in
+/// It used to call `/api/start`, `/api/login-notify` and `/api/status`, which
+/// nginx proxies to eidmongolia.mn — eID Mongolia's OWN web app. Sessions were
+/// therefore opened under THEIR demo relying party, and the citizen read
+/// "RP Demo Bank" on the phone while approving a sign-in to this product.
+///
+/// The poll returns the citizen block inline on completion (no bearer, no
+/// `/me`), so on success we stash that identity in
 /// <see cref="ISessionIdentityCache"/> for `UserProfileService.GetMeAsync`.
+/// `callbackUrl` is empty on purpose: the platform only accepts its own
+/// `${PUBLIC_ORIGIN}/auth/eid/callback`, and a desktop has nowhere to return to.
 public sealed class CitizenAuthService : ICitizenAuthService
 {
     /// The web session default TTL isn't echoed by `/api/*`; use a conservative
@@ -56,13 +62,13 @@ public sealed class CitizenAuthService : ICitizenAuthService
             return Result<WebAuthSession>.Failure(ApiError.BadRequest("national_id is required."));
         }
 
-        // POST /api/login-notify {register}. `register` may be РД / civil-id /
-        // PNOMN-… — the server resolves any of them. Rate-limited 3/60s per target.
-        var body = new LoginNotifyBody(nationalId.Trim());
+        // POST /api/v1/auth/eid/start-id. `national_id` may be РД / civil-id /
+        // PNOMN-… — the server resolves any of them. Rate-limited per target.
+        var body = new StartByIdBody(nationalId.Trim(), string.Empty);
         try
         {
             using var resp = await _http
-                .PostAsJsonAsync("/api/login-notify", body, JsonOptions, ct)
+                .PostAsJsonAsync("/api/v1/auth/eid/start-id", body, JsonOptions, ct)
                 .ConfigureAwait(false);
 
             if (!resp.IsSuccessStatusCode)
@@ -71,7 +77,7 @@ public sealed class CitizenAuthService : ICitizenAuthService
             }
 
             var dto = await resp.Content
-                .ReadFromJsonAsync<StartResponse>(JsonOptions, ct)
+                .ReadFromJsonAsync<PlatformStartResponse>(JsonOptions, ct)
                 .ConfigureAwait(false);
 
             return BuildSession(dto, deviceLinkFromQr: false);
@@ -91,10 +97,11 @@ public sealed class CitizenAuthService : ICitizenAuthService
     {
         try
         {
-            // POST /api/start → {sessionId, qr, deviceLinkBase, vc, pollToken}.
-            // `qr` == sessionId (what the mobile app scans + approves).
+            // POST /api/v1/auth/eid/start → {session_id, device_link_url,
+            // verification_code}. What the QR carries is the plain session id:
+            // eID's scanner reads the UUID and resolves it against its own server.
             using var resp = await _http
-                .PostAsJsonAsync("/api/start", new { }, JsonOptions, ct)
+                .PostAsJsonAsync("/api/v1/auth/eid/start", new StartBody(string.Empty), JsonOptions, ct)
                 .ConfigureAwait(false);
 
             if (!resp.IsSuccessStatusCode)
@@ -103,7 +110,7 @@ public sealed class CitizenAuthService : ICitizenAuthService
             }
 
             var dto = await resp.Content
-                .ReadFromJsonAsync<StartResponse>(JsonOptions, ct)
+                .ReadFromJsonAsync<PlatformStartResponse>(JsonOptions, ct)
                 .ConfigureAwait(false);
 
             return BuildSession(dto, deviceLinkFromQr: true);
@@ -125,20 +132,20 @@ public sealed class CitizenAuthService : ICitizenAuthService
         {
             return Result<WebAuthSessionStatus>.Failure(ApiError.BadRequest("sessionId required."));
         }
-        if (string.IsNullOrWhiteSpace(pollToken))
-        {
-            return Result<WebAuthSessionStatus>.Failure(ApiError.BadRequest("pollToken required."));
-        }
+        // The platform's poll needs no token: the session id is the handle, and
+        // the citizen block is only released once eID says COMPLETE. The
+        // parameter stays on the interface for the signing flow, which still
+        // rides eID's own web app and does gate on a token there.
+        _ = pollToken;
 
-        // GET /api/status?sessionId=&pollToken=. The server long-holds ~1s then
-        // returns; the ViewModel re-polls. pollToken gates PII (name/idNumber).
-        var url = string.Create(
-            CultureInfo.InvariantCulture,
-            $"/api/status?sessionId={Uri.EscapeDataString(sessionId.ToString("D"))}&pollToken={Uri.EscapeDataString(pollToken)}");
-
+        // POST /api/v1/auth/eid/poll {session_id}. The server holds the request
+        // for up to 25s (`eid.PollWindow`) and answers RUNNING when that window
+        // fills; the ViewModel re-polls.
         try
         {
-            using var resp = await _http.GetAsync(url, ct).ConfigureAwait(false);
+            using var resp = await _http
+                .PostAsJsonAsync("/api/v1/auth/eid/poll", new PollBody(sessionId.ToString("D")), JsonOptions, ct)
+                .ConfigureAwait(false);
 
             if (!resp.IsSuccessStatusCode)
             {
@@ -146,7 +153,7 @@ public sealed class CitizenAuthService : ICitizenAuthService
             }
 
             var dto = await resp.Content
-                .ReadFromJsonAsync<StatusResponse>(JsonOptions, ct)
+                .ReadFromJsonAsync<PollResponse>(JsonOptions, ct)
                 .ConfigureAwait(false);
 
             if (dto is null)
@@ -194,7 +201,7 @@ public sealed class CitizenAuthService : ICitizenAuthService
         return Result.Success();
     }
 
-    private static Result<WebAuthSession> BuildSession(StartResponse? dto, bool deviceLinkFromQr)
+    private static Result<WebAuthSession> BuildSession(PlatformStartResponse? dto, bool deviceLinkFromQr)
     {
         if (dto is null || string.IsNullOrWhiteSpace(dto.SessionId))
         {
@@ -205,42 +212,46 @@ public sealed class CitizenAuthService : ICitizenAuthService
             return Result<WebAuthSession>.Failure(ApiError.Internal("Backend session id was not a UUID."));
         }
 
-        // QR mode: the QR payload is `qr` (== sessionId). Push mode: no QR.
-        var deviceLink = deviceLinkFromQr ? (dto.Qr ?? dto.SessionId) : null;
+        // QR mode: the payload is the session id itself. Push mode: no QR.
+        var deviceLink = deviceLinkFromQr ? dto.SessionId : null;
 
         return Result<WebAuthSession>.Success(new WebAuthSession(
             sid,
-            dto.Vc ?? string.Empty,
-            dto.PollToken ?? string.Empty,
+            dto.VerificationCode ?? string.Empty,
+            // No poll token in the platform flow — see PollAsync.
+            string.Empty,
             DateTimeOffset.UtcNow.Add(SessionTtl),
             deviceLink));
     }
 
-    private WebAuthSessionStatus MapStatus(Guid sessionId, StatusResponse dto)
+    private WebAuthSessionStatus MapStatus(Guid sessionId, PollResponse dto)
     {
-        // Local session state machine (server/internal/domain/enums.go):
-        //   state:     RUNNING (keep polling) | COMPLETE (terminal)
-        //   endResult: OK | TIMEOUT | USER_REFUSED* | WRONG_VC | FAILED | …
+        // Platform session states (backend/internal/workspace/identity/eid):
+        //   RUNNING (keep polling) | COMPLETE | EXPIRED | REFUSED
         var state = (dto.State ?? string.Empty).ToUpperInvariant();
-        if (state != "COMPLETE")
-        {
-            // RUNNING / anything transient → keep polling.
-            return new WebAuthSessionStatus(WebAuthState.Pushed, null, null, null, null);
-        }
 
-        var end = (dto.EndResult ?? string.Empty).ToUpperInvariant();
-        if (end == "OK")
+        if (state == "COMPLETE" && dto.Identity is { } person)
         {
             // First-party bridge: identity arrives inline; there is no bearer.
             // Synthesize a stable-per-session token + user id and cache the
             // profile so UserProfileService.GetMeAsync can serve it.
+            //
+            // The names arrive in Mongolian, so nothing has to un-transliterate
+            // the Latin subject of the certificate any more.
             var userId = Guid.NewGuid();
+            var mongolian = string.Join(' ', new[] { person.LastName, person.FirstName }
+                .Where(part => !string.IsNullOrWhiteSpace(part)));
+            var latin = string.Join(' ', new[] { person.LastNameEn, person.FirstNameEn }
+                .Where(part => !string.IsNullOrWhiteSpace(part)));
+
             _identity.Set(new UserProfile(
                 userId,
-                dto.IdNumber ?? string.Empty,
-                dto.Name ?? string.Empty,
-                FullNameLatin: string.Empty,
-                KycLevel: dto.CertificateLevel ?? string.Empty,
+                person.CivilId ?? string.Empty,
+                mongolian,
+                FullNameLatin: latin,
+                // The sign-in floor is ADVANCED (`EID_CERT_LEVEL`); claiming
+                // QUALIFIED here would assert something nobody checked.
+                KycLevel: "ADVANCED",
                 Status: "active",
                 CreatedAt: DateTimeOffset.UtcNow));
 
@@ -252,18 +263,24 @@ public sealed class CitizenAuthService : ICitizenAuthService
                 ExpiresAt: DateTimeOffset.UtcNow.Add(SessionTtl));
         }
 
-        if (end == "TIMEOUT")
+        if (state == "EXPIRED")
         {
             return new WebAuthSessionStatus(WebAuthState.Expired, null, null, "timeout", null);
         }
 
-        // USER_REFUSED*, WRONG_VC, FAILED, DOCUMENT_UNUSABLE, … → failed.
-        return new WebAuthSessionStatus(
-            WebAuthState.Failed,
-            null,
-            null,
-            string.IsNullOrWhiteSpace(dto.Error) ? end.ToLowerInvariant() : dto.Error,
-            null);
+        if (state == "REFUSED")
+        {
+            return new WebAuthSessionStatus(WebAuthState.Failed, null, null, "user_refused", null);
+        }
+
+        if (state == "COMPLETE")
+        {
+            // COMPLETE with no citizen block: eID finished, verification did not.
+            return new WebAuthSessionStatus(WebAuthState.Failed, null, null, "verification_failed", null);
+        }
+
+        // RUNNING / anything transient → keep polling.
+        return new WebAuthSessionStatus(WebAuthState.Pushed, null, null, null, null);
     }
 
     private static async Task<ApiError> MapErrorAsync(HttpResponseMessage resp, CancellationToken ct)
@@ -297,25 +314,34 @@ public sealed class CitizenAuthService : ICitizenAuthService
 
     // ── Wire DTOs (camelCase; JsonSerializerDefaults.Web matches case-insensitively) ──
 
-    private sealed record LoginNotifyBody(
-        [property: JsonPropertyName("register")] string Register);
+    private sealed record StartBody(
+        [property: JsonPropertyName("callbackUrl")] string CallbackUrl);
 
-    /// Shared shape of /api/start and /api/login-notify responses.
-    private sealed record StartResponse(
-        [property: JsonPropertyName("sessionId")] string? SessionId,
-        [property: JsonPropertyName("qr")] string? Qr,
-        [property: JsonPropertyName("deviceLinkBase")] string? DeviceLinkBase,
-        [property: JsonPropertyName("vc")] string? Vc,
-        [property: JsonPropertyName("pollToken")] string? PollToken);
+    private sealed record StartByIdBody(
+        [property: JsonPropertyName("national_id")] string NationalId,
+        [property: JsonPropertyName("callbackUrl")] string CallbackUrl);
 
-    private sealed record StatusResponse(
+    private sealed record PollBody(
+        [property: JsonPropertyName("session_id")] string SessionId);
+
+    /// Shape of /api/v1/auth/eid/start and …/start-id (Go core: eid.StartResult).
+    private sealed record PlatformStartResponse(
+        [property: JsonPropertyName("session_id")] string? SessionId,
+        [property: JsonPropertyName("device_link_url")] string? DeviceLinkUrl,
+        [property: JsonPropertyName("verification_code")] string? VerificationCode);
+
+    private sealed record PollResponse(
         [property: JsonPropertyName("state")] string? State,
-        [property: JsonPropertyName("endResult")] string? EndResult,
-        [property: JsonPropertyName("name")] string? Name,
-        [property: JsonPropertyName("idNumber")] string? IdNumber,
-        [property: JsonPropertyName("documentNumber")] string? DocumentNumber,
-        [property: JsonPropertyName("certificateLevel")] string? CertificateLevel,
-        [property: JsonPropertyName("error")] string? Error);
+        [property: JsonPropertyName("identity")] PollIdentity? Identity);
+
+    private sealed record PollIdentity(
+        [property: JsonPropertyName("civil_id")] string? CivilId,
+        [property: JsonPropertyName("reg_number")] string? RegNumber,
+        [property: JsonPropertyName("first_name")] string? FirstName,
+        [property: JsonPropertyName("last_name")] string? LastName,
+        [property: JsonPropertyName("first_name_en")] string? FirstNameEn,
+        [property: JsonPropertyName("last_name_en")] string? LastNameEn,
+        [property: JsonPropertyName("certificate_serial")] string? CertificateSerial);
 
     private sealed record BackendError(
         [property: JsonPropertyName("error")] string? Error);

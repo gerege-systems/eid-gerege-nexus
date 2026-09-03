@@ -54,7 +54,7 @@ public sealed class BackendOptions
     public string BaseUrl { get; init; } = string.Empty;
 
     [Range(1, 600)]
-    public int RequestTimeoutSeconds { get; init; } = 30;
+    public int RequestTimeoutSeconds { get; init; } = 60;
 
     [Range(1000, 60000)]
     public int LongPollTimeoutMs { get; init; } = 25_000;

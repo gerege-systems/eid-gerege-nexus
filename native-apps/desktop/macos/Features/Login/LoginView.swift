@@ -507,7 +507,7 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - Push flow (`POST /api/login-notify`)
+    // MARK: - Push flow (`POST /api/v1/auth/eid/start-id`)
 
     private func initiateLogin() {
         let id = nationalID.trimmingCharacters(in: .whitespaces).uppercased()
@@ -518,22 +518,18 @@ struct LoginView: View {
 
         pollTask = Task {
             do {
-                let response: LoginNotifyResponse = try await APIClient.shared.request(
-                    .loginNotify(register: id)
+                let response: AuthStartResponse = try await APIClient.shared.request(
+                    .authStartByID(nationalID: id, callbackURL: "")
                 )
                 await MainActor.run {
-                    verificationCode = response.vc ?? ""
-                    appState.sessionID = response.sessionId
+                    verificationCode = response.verificationCode ?? ""
+                    appState.sessionID = response.sessionID
                     countdown = 300
                     phase = .waiting
                     startCountdown()
                 }
-                let status = try await APIClient.shared.waitForAuth(
-                    sessionID: response.sessionId,
-                    pollToken: response.pollToken ?? ""
-                )
-                await handleAuthResult(status, sessionID: response.sessionId,
-                                       pollToken: response.pollToken ?? "", typedID: id)
+                let poll = try await APIClient.shared.waitForPlatformAuth(sessionID: response.sessionID)
+                await handleAuthResult(poll, typedID: id)
             } catch is CancellationError {
                 // Cancelled by tab switch — ignore.
             } catch let e as URLError where e.code == .cancelled {
@@ -547,7 +543,7 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - QR flow (`POST /api/start`)
+    // MARK: - QR flow (`POST /api/v1/auth/eid/start`)
 
     private func initQR() {
         pollTask?.cancel()
@@ -556,23 +552,20 @@ struct LoginView: View {
 
         pollTask = Task {
             do {
-                let response: StartResponse = try await APIClient.shared.request(.start)
-                // Web-тэй ижил: QR-д `qr` (= sessionId)-г шууд кодлоно —
-                // утасны app скан хийгээд энэ session-ийг зөвшөөрнө.
-                let image = generateQRCode(from: response.qr)
+                let response: AuthStartResponse = try await APIClient.shared
+                    .request(.authStart(callbackURL: ""))
+                // Хөтөчтэй ижил: QR-д ДАН session id-г кодлоно — eID-ийн сканнер
+                // UUID уншаад өөрийн сервер рүүгээ шийднэ (device-link URL БИШ).
+                let image = generateQRCode(from: response.sessionID)
                 await MainActor.run {
-                    appState.sessionID = response.sessionId
-                    verificationCode = response.vc ?? ""
+                    appState.sessionID = response.sessionID
+                    verificationCode = response.verificationCode ?? ""
                     qrImage = image
                     countdown = 300
                     startCountdown()
                 }
-                let status = try await APIClient.shared.waitForAuth(
-                    sessionID: response.sessionId,
-                    pollToken: response.pollToken ?? ""
-                )
-                await handleAuthResult(status, sessionID: response.sessionId,
-                                       pollToken: response.pollToken ?? "", typedID: "")
+                let poll = try await APIClient.shared.waitForPlatformAuth(sessionID: response.sessionID)
+                await handleAuthResult(poll, typedID: "")
             } catch is CancellationError {
                 // Tab switch / re-init cancelled the in-flight task.
             } catch let e as URLError where e.code == .cancelled {
@@ -588,31 +581,24 @@ struct LoginView: View {
 
     // MARK: - Shared
 
-    private func handleAuthResult(_ status: StatusResponse, sessionID: String, pollToken: String, typedID: String) async {
-        guard status.isComplete, status.isOK,
-              let doc = status.documentNumber, !doc.isEmpty else {
+    private func handleAuthResult(_ poll: AuthPollResponse, typedID: String) async {
+        guard poll.isComplete, let person = poll.identity, person.verifiedStatus != false else {
             await MainActor.run {
-                errorMessage = Self.failureMessage(status)
+                errorMessage = Self.failureMessage(poll.state)
                 phase = .error
             }
             return
         }
 
-        // Web сервер гарын үсгийг баталгаажуулаад cert subject-оос нэр +
-        // иргэний дугаарыг задалж өгсөн. Гэхдээ тэр нэр нь ЛАТИН галиг
-        // («ERDENEBAT TSENDDORJ») — иргэн өөрийн нэрийг МОНГОЛООР харах ёстой
-        // тул XYP-ийн хураангуйгаас авна.
-        //
-        // Энэ дуудлагыг амжилтын дэлгэц гарахаас ӨМНӨ хийж байгаа нь санаатай:
-        // ингэснээр амжилтын карт, Keychain-ий snapshot, самбар гурвуулаа ЭХНИЙ
-        // КАДРААСАА зөв нэртэй байна. Дараа нь засах бол латин нэр хэсэг зуур
-        // анивчина. Алдаа гарвал латин нэр дээрээ үлдэнэ — нэвтрэлт зогсохгүй.
-        let summary: PersonSummaryResponse? = try? await APIClient.shared
-            .request(.dashboard(sessionID: sessionID, pollToken: pollToken))
-        let certName = status.name ?? ""
-        let name = summary?.mongolianName ?? certName
-        let civil = status.idNumber ?? ""
-        let level = status.certificateLevel ?? "QUALIFIED"
+        // Нэр нь платформын `identity`-гээс МОНГОЛООР ирнэ. Өмнө нь гэрчилгээн
+        // дэх ЛАТИН галигийг XYP-ийн хураангуйгаар (`/api/dashboard`) нөхдөг
+        // байсан — тэр route нь eidmongolia.mn-ийх бөгөөд түүний session
+        // бидэнд байхгүй болсон.
+        let name = person.mongolianName ?? ""
+        let civil = person.civilID ?? ""
+        // Нэвтрэлтийн доод хязгаар нь ADVANCED (`EID_CERT_LEVEL`); QUALIFIED гэж
+        // бичих нь баталгаагүй зүйлийг батласан болно.
+        let level = "ADVANCED"
 
         await MainActor.run {
             signedInName = name
@@ -621,32 +607,36 @@ struct LoginView: View {
             phase = .success
 
             let identity = StoredIdentity(
-                documentNumber: doc,
+                // Платформ нь eID-ийн `documentNumber`-ыг дээшээ гаргадаггүй;
+                // гэрчилгээний сериал нь иргэн ЯМАР гэрчилгээгээр зөвшөөрснийг
+                // заадаг цорын ганц бариул.
+                documentNumber: person.certificateSerial ?? "",
                 fullName: name,
                 civilID: civil,
-                nationalID: typedID,
+                nationalID: person.regNumber ?? typedID,
                 certificateLevel: level,
                 loginAt: ISO8601DateFormatter().string(from: Date())
             )
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 appState.didLogin(identity: identity)
-                // Байгууллага/хүүхдийн зөвхөн-унших жагсаалт — pollToken хүчинтэй байхад НЭГ удаа.
-                appState.loadPersonExtras(sessionID: sessionID, pollToken: pollToken)
+                // `loadPersonExtras` энд ДУУДАГДАХГҮЙ: байгууллага, хүүхэд,
+                // ESIGN-ийн гэрчилгээ гурвуулаа eID Mongolia-гийн вэб аппын
+                // `pollToken`-оор л уншигддаг бөгөөд платформын нэвтрэлт тэр
+                // token-ыг үүсгэдэггүй. Keychain-д кэшлэгдсэн гэрчилгээ
+                // байвал ESIGN гүүр түүгээрээ ажиллана.
+                appState.startEsignBridge()
             }
         }
     }
 
-    private static func failureMessage(_ status: StatusResponse) -> String {
-        if let err = status.error, !err.isEmpty { return err }
-        switch status.endResult ?? "" {
-        case "USER_REFUSED", "USER_REFUSED_INTERACTION":
+    private static func failureMessage(_ state: String?) -> String {
+        switch state {
+        case "REFUSED":
             return "Хэрэглэгч татгалзсан байна."
-        case "TIMEOUT":
+        case "EXPIRED":
             return "Хугацаа дууслаа."
-        case "":
-            return status.isComplete ? "Баталгаажуулалт амжилтгүй." : "Хугацаа дууслаа."
         default:
-            return "Баталгаажуулалт амжилтгүй (\(status.endResult ?? ""))."
+            return "Баталгаажуулалт амжилтгүй."
         }
     }
 

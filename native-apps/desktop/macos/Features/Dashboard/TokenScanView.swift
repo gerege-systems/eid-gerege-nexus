@@ -285,7 +285,12 @@ struct TokenScanView: View {
                           "Построение цепочки…", "正在构建证书链…")
         statusIsError = false
         Task {
-            let chain = await Task.detached { certificateChain(for: leaf) }.value
+            // Тэргүүлэх зэрэг нь ЗААВАЛ: тэмдэглээгүй `Task.detached` нь дунд
+            // зэргээр гүйдэг тул түүнийг хүлээж буй UI (user-interactive) утас
+            // өөрөөсөө ДООГУУР зэрэгтэй ажил хүлээх болж, Thread Performance
+            // Checker «Hang Risk — waiting on a lower QoS» гэж бүртгэдэг.
+            // Энэ модуль дахь бусад detached дуудлагууд аль хэдийн ингэсэн.
+            let chain = await Task.detached(priority: .userInitiated) { certificateChain(for: leaf) }.value
             if chain.count == 1 {
                 // AIA байхгүй эсвэл CA татагдаагүй — ганц гэрчилгээг харуулна.
                 status = loc.pick(
