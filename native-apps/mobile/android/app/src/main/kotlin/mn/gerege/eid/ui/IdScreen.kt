@@ -1,38 +1,61 @@
 package mn.gerege.eid.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import mn.gerege.eid.AppState
 import mn.gerege.eid.R
 import mn.gerege.eid.ui.components.*
-import mn.gerege.eid.ui.theme.LocalEidColors
+import mn.gerege.eid.ui.theme.LocalGw
+import mn.gerege.eid.ui.theme.Space
 
 /** Миний ID — iOS-ийн `MobileIdPage`-тай ижил талбарууд, ижил дараалал. */
 @Composable
 fun IdScreen(state: AppState) {
-    val c = LocalEidColors.current
+    val gw = LocalGw.current
     val identity = state.identity
     EidScreen(title = stringResource(R.string.Nav_MyId), subtitle = stringResource(R.string.Id_Subtitle)) {
         if (identity == null) {
-            EidCard { Text(stringResource(R.string.Dashboard_Activity_Empty), fontSize = 13.sp, color = c.eidMuted) }
+            EidCard {
+                Text(stringResource(R.string.Dashboard_Activity_Empty),
+                     style = MaterialTheme.typography.bodySmall, color = gw.fg3)
+            }
             return@EidScreen
         }
-        EidCard {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(identity.fullName.ifEmpty { "—" }, fontSize = 18.sp,
-                     fontWeight = FontWeight.Bold, color = c.textPrimary, modifier = Modifier.weight(1f))
-                StatusPill(stringResource(R.string.Common_Active), PillVariant.OK)
+        EidCard(spacing = Space.lg) {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+                Text(
+                    initials(identity.fullName),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = gw.brand,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(gw.brandSoft, CircleShape)
+                        .wrapContentSize(Alignment.Center),
+                )
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Text(identity.fullName.ifEmpty { "—" },
+                         style = MaterialTheme.typography.titleLarge, color = gw.fg1)
+                    StatusPill(stringResource(R.string.Common_Active), PillVariant.OK)
+                }
             }
-            HorizontalDivider(color = c.eidCardStroke)
+            HorizontalDivider(color = gw.divider)
             EidField(stringResource(R.string.Id_RegNumber), identity.nationalId, mono = true)
             if (identity.civilId.isNotEmpty()) {
                 EidField(stringResource(R.string.Id_CivilId), identity.civilId, mono = true)
@@ -44,42 +67,59 @@ fun IdScreen(state: AppState) {
         }
         if (state.organizations.isNotEmpty()) {
             EidCard {
-                Text(stringResource(R.string.Nav_MyOrganizations), fontSize = 14.sp,
-                     fontWeight = FontWeight.SemiBold, color = c.textPrimary)
+                Text(stringResource(R.string.Nav_MyOrganizations),
+                     style = MaterialTheme.typography.titleMedium, color = gw.fg1)
                 state.organizations.forEach { org ->
-                    Row(verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxWidth()) {
-                        Column(Modifier.weight(1f)) {
-                            Text(org.orgName, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = c.textPrimary)
-                            Text(org.orgRegister, fontSize = 11.sp, fontFamily = FontFamily.Monospace, color = c.eidMuted)
-                        }
+                    ListRow(Icons.Filled.Business, org.orgName, org.orgRegister) {
                         StatusPill(org.rightType, PillVariant.ACCENT)
                     }
                 }
-                Text(stringResource(R.string.Read_Only_Hint), fontSize = 11.sp, color = c.eidMuted)
+                Text(stringResource(R.string.Read_Only_Hint),
+                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
+                     color = gw.fg3)
             }
         }
         if (state.children.isNotEmpty()) {
             EidCard {
-                Text(stringResource(R.string.Nav_Children), fontSize = 14.sp,
-                     fontWeight = FontWeight.SemiBold, color = c.textPrimary)
+                Text(stringResource(R.string.Nav_Children),
+                     style = MaterialTheme.typography.titleMedium, color = gw.fg1)
                 state.children.forEach { child ->
-                    Row(verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxWidth()) {
-                        Column(Modifier.weight(1f)) {
-                            Text(child.name, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = c.textPrimary)
-                            Text(child.regNo, fontSize = 11.sp, fontFamily = FontFamily.Monospace, color = c.eidMuted)
-                        }
+                    ListRow(Icons.Filled.ChildCare, child.name, child.regNo) {
                         StatusPill(
                             stringResource(if (child.registered) R.string.Common_Registered else R.string.Common_Pending),
                             if (child.registered) PillVariant.OK else PillVariant.WARN,
                         )
                     }
                 }
-                Text(stringResource(R.string.Read_Only_Hint), fontSize = 11.sp, color = c.eidMuted)
+                Text(stringResource(R.string.Read_Only_Hint),
+                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
+                     color = gw.fg3)
             }
         }
+    }
+}
+
+/** Байгууллага ба хүүхдийн мөр нэг л хэлбэртэй — дүрс, нэр, дугаар, капсул. */
+@Composable
+private fun ListRow(icon: ImageVector, title: String, subtitle: String, trailing: @Composable () -> Unit) {
+    val gw = LocalGw.current
+    Row(verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+        modifier = Modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier.size(30.dp).background(gw.brandSoft, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, null, tint = gw.brand, modifier = Modifier.size(15.dp))
+        }
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                 color = gw.fg1)
+            Text(subtitle,
+                 style = MaterialTheme.typography.labelSmall.copy(
+                     fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Normal),
+                 color = gw.fg3)
+        }
+        trailing()
     }
 }

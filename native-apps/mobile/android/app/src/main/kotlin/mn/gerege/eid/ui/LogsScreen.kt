@@ -1,6 +1,13 @@
 package mn.gerege.eid.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Draw
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -9,11 +16,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import mn.gerege.eid.AppState
 import mn.gerege.eid.R
 import mn.gerege.eid.ui.components.*
-import mn.gerege.eid.ui.theme.LocalEidColors
+import mn.gerege.eid.ui.theme.LocalGw
+import mn.gerege.eid.ui.theme.Radius
+import mn.gerege.eid.ui.theme.Space
 
 /**
  * Лог түүх — ЭНЭ төхөөрөмжийн локал бүртгэл.
@@ -23,25 +31,44 @@ import mn.gerege.eid.ui.theme.LocalEidColors
  */
 @Composable
 fun LogsScreen(state: AppState) {
-    val c = LocalEidColors.current
+    val gw = LocalGw.current
     EidScreen(title = stringResource(R.string.Nav_Logs), subtitle = stringResource(R.string.Logs_Subtitle)) {
         if (state.activity.isEmpty()) {
-            EidCard { Text(stringResource(R.string.Dashboard_Activity_Empty), fontSize = 13.sp, color = c.eidMuted) }
+            EidCard {
+                Text(stringResource(R.string.Dashboard_Activity_Empty),
+                     style = MaterialTheme.typography.bodySmall, color = gw.fg3)
+            }
         } else {
             state.activity.forEach { entry ->
-                EidCard(padding = 14.dp) {
+                EidCard(padding = Space.md) {
                     Row(verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Space.md),
                         modifier = Modifier.fillMaxWidth()) {
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(gw.brandSoft, RoundedCornerShape(Radius.md)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                if (entry.sessionType == "AUTH") Icons.AutoMirrored.Filled.ArrowForward else Icons.Filled.Draw,
+                                contentDescription = null, tint = gw.brand, modifier = Modifier.size(17.dp),
+                            )
+                        }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                             Text(
                                 stringResource(if (entry.sessionType == "AUTH") R.string.Dashboard_Activity_Auth
                                                else R.string.Dashboard_Activity_Sign),
-                                fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = c.textPrimary,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = gw.fg1,
                             )
-                            Text(entry.rpName, fontSize = 12.sp, color = c.eidMuted)
-                            Text(AppState.shortDate(entry.createdAt), fontSize = 11.sp,
-                                 fontFamily = FontFamily.Monospace, color = c.eidMuted)
+                            Text(entry.rpName,
+                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Normal),
+                                 color = gw.fg2)
+                            Text(AppState.shortDate(entry.createdAt),
+                                 style = MaterialTheme.typography.labelSmall.copy(
+                                     fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Normal),
+                                 color = gw.fg3)
                         }
                         StatusPill(
                             stringResource(if (entry.result == "OK") R.string.Dashboard_Activity_Success
